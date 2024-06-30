@@ -1,3 +1,5 @@
 node_modules
 firebase_config.json
 service_account_key.json
+# server.cert
+# server.key
