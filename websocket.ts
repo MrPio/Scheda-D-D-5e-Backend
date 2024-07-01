@@ -19,8 +19,8 @@ const wss = new WebSocket.Server({ server });
 const messageSubject = new Subject<MessageEvent>();
 wss.on('connection', (ws: WebSocket) => {
     ws.on('message', (message: string) => {
-        console.log(message)
         messageSubject.next({ ws, message });
+        // messageSubject.complete();
     });
 
     ws.send(JSON.stringify({ message: 'Welcome to the WebSocket server!' }));
