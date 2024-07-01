@@ -3,5 +3,4 @@ firebase_config.json
 service_account_key.json
 # server.cert
 # server.key
-index.js
-websocket.js
+*.js
