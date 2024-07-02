@@ -13,7 +13,7 @@ const firebaseConfig = JSON.parse(fs.readFileSync('firebase_configs/firebase_con
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-const signInAndGetIdToken = async (email: string, password: string): Promise<string | null> => {
+export const signInAndGetIdToken = async (email: string, password: string): Promise<string | null> => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
@@ -26,12 +26,14 @@ const signInAndGetIdToken = async (email: string, password: string): Promise<str
     }
 };
 
-signInAndGetIdToken("valeriomorelli50@gmail.com", "aaaaaa").then(token => {
-    if (token) {
-        const decoded = jwt.decode(token);
-        console.log(decoded);
-    }
-    else{
-        console.error('Firebase Auth didn\'t provide a JWT. Please try again.');
-    }
-});
+export const getAndDecodeIdToken = ()=>{
+    signInAndGetIdToken("valeriomorelli50@gmail.com", "aaaaaa").then(token => {
+        if (token) {
+            const decoded = jwt.decode(token);
+            console.log(decoded);
+        }
+        else {
+            console.error('Firebase Auth didn\'t provide a JWT. Please try again.');
+        }
+    });
+}

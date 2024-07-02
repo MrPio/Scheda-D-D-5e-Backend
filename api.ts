@@ -3,6 +3,7 @@ import express from 'express';
 import * as admin from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import * as fs from 'fs';
+import {signInAndGetIdToken} from './request_token';
 
 const serviceAccount = JSON.parse(fs.readFileSync('firebase_configs/service_account_key.json', 'utf8'));
 
@@ -69,23 +70,29 @@ const verifyToken = async (req: RequestWithToken, res: Response, next: NextFunct
     }
 };
 
-app.use(requestTime);
-app.use(checkHeader);
-app.use(checkToken);
-app.use(verifyToken);
+// app.use(requestTime);
+// app.use(checkHeader);
+// app.use(checkToken);
+// app.use(verifyToken);
 
 // An example endpoint. It will only succeed if the token is valid.
-app.get('/', (req: RequestWithToken, res: Response) => {
+app.get('/', requestTime, checkHeader, checkToken, verifyToken, (req: RequestWithToken, res: Response) => {
     res.send('Hello World!');
 });
 
 // This endpoint retrieves the user document associated with the UID 
 // of the JWT token from the Firebase Firestore DB. 
-app.get('/user', (req: RequestWithToken, res: Response) => {
+app.get('/user', requestTime, checkHeader, checkToken, verifyToken, (req: RequestWithToken, res: Response) => {
     getDocument('users', req.decoded_token!.uid)
     res.send(req.decoded_token!.name);
 });
 
+// This endpoint retrieves a 1 hour JWT from Firebase Auth.
+app.get('/token', requestTime, async (req: RequestWithToken, res: Response) => {
+    const token = await signInAndGetIdToken("valeriomorelli50@gmail.com", "aaaaaa");
+    res.send(`Your JWT is ${token}`);
+});
+
 app.listen(3000, () => {
-    console.log('Server is running on port 3000 3');
+    console.log('Server is running on port 3000');
 });
