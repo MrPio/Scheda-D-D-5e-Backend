@@ -9,8 +9,8 @@ interface MessageEvent {
 }
 
 const serverOptions = {
-    cert: fs.readFileSync('server.cert'),
-    key: fs.readFileSync('server.key')
+    cert: fs.readFileSync('websocket_keys/server.cert'),
+    key: fs.readFileSync('websocket_keys/server.key')
 };
 
 const server = new https.Server(serverOptions);
