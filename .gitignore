@@ -1,5 +1,6 @@
 node_modules/
-firebase_configs/
-# server.cert
-# server.key
 *.js
+
+firebase_configs/firebase_config.json
+firebase_configs/service_account_key.json
+websocket_keys/server.key
