@@ -1,6 +1,5 @@
-node_modules
-firebase_config.json
-service_account_key.json
+node_modules/
+firebase_configs/
 # server.cert
 # server.key
 *.js
