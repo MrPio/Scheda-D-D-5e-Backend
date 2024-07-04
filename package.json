@@ -2,9 +2,9 @@
   "name": "scheda_dnd_5e_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "api.ts",
+  "main": "src/api.ts",
   "scripts": {
-    "start": "tsc ./api.ts && node api.js"
+    "start": "tsc src/api.ts && node src/api.js"
   },
   "keywords": [],
   "author": "",

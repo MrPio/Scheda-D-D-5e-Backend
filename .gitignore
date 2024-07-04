@@ -1,6 +1,6 @@
 node_modules/
 *.js
 
-firebase_configs/firebase_config.json
-firebase_configs/service_account_key.json
-websocket_keys/server.key
+src/firebase_configs/firebase_config.json
+src/firebase_configs/service_account_key.json
+src/websocket_keys/server.key

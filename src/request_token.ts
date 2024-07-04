@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
  * This is used to test the backend without using the front-end mobile application. 
  */
 
-const firebaseConfig = JSON.parse(fs.readFileSync('firebase_configs/firebase_config.json', 'utf8'));
+const firebaseConfig = JSON.parse(fs.readFileSync('src/firebase_configs/firebase_config.json', 'utf8'));
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);

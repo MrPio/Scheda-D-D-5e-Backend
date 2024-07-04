@@ -5,7 +5,7 @@ import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import * as fs from 'fs';
 import {signInAndGetIdToken} from './request_token';
 
-const serviceAccount = JSON.parse(fs.readFileSync('firebase_configs/service_account_key.json', 'utf8'));
+const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
@@ -94,5 +94,5 @@ app.get('/token', requestTime, async (req: RequestWithToken, res: Response) => {
 });
 
 app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+    console.log('Servers is running on port 3000');
 });
