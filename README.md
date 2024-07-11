@@ -40,8 +40,8 @@ The websocket server
 |  |  |  |  |
 | `GET` |` /diceRoll` | diceList, modifier | Roll dice |
 | `GET` |` /sessions/{sessionId}/turn` | - | Returns the turn of a session |
-| `GET` |` /sessions/{sessionId}/turn/postpone` | entityId, predecessorEntityId | Postpones an entity's turn |
-| `GET` |` /sessions/{sessionId}/turn/end` | entityId | Ends the turn of an entity |
+| `PATCH` |` /sessions/{sessionId}/turn/postpone` | entityId, predecessorEntityId | Postpones an entity's turn |
+| `PATCH` |` /sessions/{sessionId}/turn/end` | entityId | Ends the turn of an entity |
 |  |  |  |  |
 | `PATCH` |` /sessions/{sessionId}/attack` | attackInfo, attackerId, targetId | Makes one entity attack another |
 | `GET` |` /sessions/{sessionId}/savingThrow` | entitiesId, difficultyClass, skill | Causes an entity to make a saving roll |
@@ -49,7 +49,7 @@ The websocket server
 | `PATCH` |` /sessions/{sessionId}/addEffect` | entitiesId, effectType | Attaches an effect to an entity |
 | `GET` |` /sessions/{sessionId}/{entityId}` | - | Returns entity info |
 | `PATCH` |` /sessions/{sessionId}/{entityId}` | entityInfo | Modifies entity info |
-| `GET` |` /sessions/{sessionId}/reaction` | entitiesId | Enables an entity's reaction |
+| `PATCH` |` /sessions/{sessionId}/reaction` | entitiesId | Enables entities reaction |
 |  |  |  |  |
 | `GET` |` /sessions/{sessionId}/history` | - | Returns the battle history |
 | `POST` |` /sessions/{sessionId}/history` | message | Adds a message to the battle history |
