@@ -13,6 +13,13 @@ The websocket server
 // TODO: chiarire termini characters, allies, monsters e entity
 // - : no param
 // x : descrizioni da riempire
+## UML diagrams
+
+![alt text](png/attack.png)
+![alt text](<png/entity state.png>)
+![alt text](png/history.png)
+![alt text](png/session.png)
+![alt text](png/turn.png)
 
 ## App Routes
 
