@@ -44,7 +44,7 @@ The websocket server
 | `PATCH` |` /sessions/{sessionId}/turn/end` | entityId | Ends the turn of an entity |
 |  |  |  |  |
 | `PATCH` |` /sessions/{sessionId}/attack` | attackInfo, attackerId, targetId | Makes one entity attack another |
-| `GET` |` /sessions/{sessionId}/savingThrow` | entitiesId, difficultyClass, skill | Causes an entity to make a saving roll |
+| `GET` |` /sessions/{sessionId}/savingThrow` | entitiesId, difficultyClass, skill | Requests an entity to make a saving roll |
 |  |  |  |  |
 | `PATCH` |` /sessions/{sessionId}/addEffect` | entitiesId, effectType | Attaches an effect to an entity |
 | `GET` |` /sessions/{sessionId}/{entityId}` | - | Returns entity info |
