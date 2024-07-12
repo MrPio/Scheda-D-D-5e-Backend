@@ -11,17 +11,32 @@ The websocket server
 ```ts-node websocket.ts```
 
 // TODO: chiarire termini characters, allies, monsters e entity
-// - : no param
-// x : descrizioni da riempire
+
 ## UML diagrams
 
-![alt text](png/attack.png)
-![alt text](<png/entity state.png>)
-![alt text](png/history.png)
-![alt text](png/session.png)
-![alt text](png/turn.png)
+### Actors
+The player roles can be mapped as follows. Note that although the client must be authenticated via JWT to participate in the combat session, there is still a route that does not require authentication, namely the `diceRoll/` route.
+
+<img src="png/actors.png" width="500rem">
+
+### Session management
+<img src="png/session.png" width="500rem">
+
+### Turn management
+<img src="png/turn.png" width="500rem">
+
+### Attack management
+<img src="png/attack.png" width="500rem">
+
+### Entity management
+<img src="png/entity state.png" width="500rem">
+
+### History management
+<img src="png/history.png" width="500rem">
 
 ## App Routes
+
+The API server endpoints are listed in the following table. Blank lines separate the routes following the semantic division of the previous use cases.
 
 | Type | Route | Parameters | Description
 | --- | --- | --- | --- |
