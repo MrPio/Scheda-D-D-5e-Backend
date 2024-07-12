@@ -17,12 +17,13 @@ const server = new https.Server(serverOptions);
 const wss = new WebSocket.Server({ server });
 
 const messageSubject = new Subject<MessageEvent>();
-wss.on('connection', (ws: WebSocket) => {
+
+wss.on('connection', (ws: WebSocket, req) => {
+    console.log('Client requested path:', req.url);
+
     ws.on('message', (message: string) => {
         messageSubject.next({ ws, message });
-        // messageSubject.complete();
     });
-
     ws.send(JSON.stringify({ message: 'Welcome to the WebSocket server!' }));
 });
 
@@ -33,6 +34,7 @@ messageSubject.subscribe(({ ws, message }) => {
         }
     });
 });
+
 server.listen(8080, () => {
-    console.log('Secure WebSocket server is running on wss://localhost:8080');
+    console.log('Secure WebSocket server is running on wss://localhost:8080/');
 });
