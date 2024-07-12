@@ -17,22 +17,22 @@ The WebSocket server
 ### Actors
 The player roles can be mapped as follows. Note that although the client must be authenticated via JWT to participate in the combat session, there is still a route that does not require authentication, namely the `diceRoll/` route.
 
-<img src="png/Actors.png" width="500rem">
+<img src="png/Actors.png" width="650rem">
 
 ### Session management
-<img src="png/Session Management.png" width="500rem">
+<img src="png/Session Management.png" width="650rem">
 
 ### Turn management
-<img src="png/Turn Management.png" width="500rem">
+<img src="png/Turn Management.png" width="650rem">
 
 ### Attack management
-<img src="png/Attack Management.png" width="500rem">
+<img src="png/Attack Management.png" width="650rem">
 
 ### Entity management
-<img src="png/Entity State Management.png" width="500rem">
+<img src="png/Entity State Management.png" width="650rem">
 
 ### History management
-<img src="png/History Management.png" width="500rem">
+<img src="png/History Management.png" width="650rem">
 
 ## App Routes
 
@@ -68,3 +68,20 @@ The API server endpoints are listed in the following table. Blank lines separate
 |  |  |  |  |
 | `GET` |` /sessions/{sessionId}/history` | - | Returns the battle history |
 | `POST` |` /sessions/{sessionId}/history` | message | Adds a message to the battle history |
+
+## Sequence diagrams
+
+### Create Session
+<img src="png/CreateSession.png" width="650rem">
+
+### Start Session
+<img src="png/StartSession.png" width="650rem">
+
+### Attack
+<img src="png/attack.png" width="650rem">
+
+### Enable Reaction
+<img src="png/EnableReaction.png" width="650rem">
+
+### Connect To Session
+<img src="png/ConnectToSession.png" width="650rem">
