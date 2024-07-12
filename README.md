@@ -6,7 +6,7 @@ The API server
 
 ```docker run -it --rm -p 3000:3000 --name api01 API```
 
-The websocket server
+The WebSocket server
 
 ```ts-node websocket.ts```
 
@@ -17,22 +17,22 @@ The websocket server
 ### Actors
 The player roles can be mapped as follows. Note that although the client must be authenticated via JWT to participate in the combat session, there is still a route that does not require authentication, namely the `diceRoll/` route.
 
-<img src="png/actors.png" width="500rem">
+<img src="png/Actors.png" width="500rem">
 
 ### Session management
-<img src="png/session.png" width="500rem">
+<img src="png/Session Management.png" width="500rem">
 
 ### Turn management
-<img src="png/turn.png" width="500rem">
+<img src="png/Turn Management.png" width="500rem">
 
 ### Attack management
-<img src="png/attack.png" width="500rem">
+<img src="png/Attack Management.png" width="500rem">
 
 ### Entity management
-<img src="png/entity state.png" width="500rem">
+<img src="png/Entity State Management.png" width="500rem">
 
 ### History management
-<img src="png/history.png" width="500rem">
+<img src="png/History Management.png" width="500rem">
 
 ## App Routes
 
