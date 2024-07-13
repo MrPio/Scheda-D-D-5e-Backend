@@ -88,3 +88,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 
 ### Connect To Session
 <img src="png/ConnectToSession.png" width="650rem">
+
+## Class diagram
+<img src="png/Class Diagram.png" width="650rem">
+
