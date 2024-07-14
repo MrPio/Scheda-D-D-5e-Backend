@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "firebase": "^10.12.3",
+    "firebase-admin": "^12.2.0",
     "jsonwebtoken": "^9.0.2",
     "rxjs": "^7.8.1",
     "sequelize": "^6.37.3",
