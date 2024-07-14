@@ -14,26 +14,26 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 export const signInAndGetIdToken = async (email: string, password: string): Promise<string | null> => {
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        const idToken = await user.getIdToken();
-        console.log('ID Token:', idToken);
-        return idToken;
-    } catch (error) {
-        console.error('Error signing in:', error);
-        return null
-    }
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    const idToken = await user.getIdToken();
+    console.log('ID Token:', idToken);
+    return idToken;
+  } catch (error) {
+    console.error('Error signing in:', error);
+    return null
+  }
 };
 
-export const getAndDecodeIdToken = ()=>{
-    signInAndGetIdToken("valeriomorelli50@gmail.com", "aaaaaa").then(token => {
-        if (token) {
-            const decoded = jwt.decode(token);
-            console.log(decoded);
-        }
-        else {
-            console.error('Firebase Auth didn\'t provide a JWT. Please try again.');
-        }
-    });
+export const getAndDecodeIdToken = () => {
+  signInAndGetIdToken("valeriomorelli50@gmail.com", "aaaaaa").then(token => {
+    if (token) {
+      const decoded = jwt.decode(token);
+      console.log(decoded);
+    }
+    else {
+      console.error('Firebase Auth didn\'t provide a JWT. Please try again.');
+    }
+  });
 }
