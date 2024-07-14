@@ -40,7 +40,6 @@ class SampleModel implements WithUID, JSONSerializable {
 
   static fromJSON(json: any): SampleModel {
     // Log to see what is being passed
-    // console.log('JSON data:', json);
     return new SampleModel(
       json.regDateTimestamp,
       json.deletedCharactersUIDs,
@@ -72,3 +71,35 @@ const testFirestoreManager = async () => {
 };
 
 testFirestoreManager();
+
+
+
+
+
+/*
+export class Person {
+  id: string;
+  name: string;
+  age: number;
+  // ... other properties
+
+  constructor(data: DocumentData) {
+    this.id = data.id;
+    this.name = data.name;
+    this.age = data.age;
+    // ... assign other properties
+  }
+}
+
+export async function loadPerson(personId: string): Promise<Person | null> {
+  const docRef = doc(firestore, 'persons', personId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    const data = docSnap.data() as DocumentData;
+    return new Person(data);
+  } else {
+    return null;
+  }
+}
+*/

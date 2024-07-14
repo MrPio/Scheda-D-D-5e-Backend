@@ -15,7 +15,9 @@ export interface JSONSerializable {
 // Singleton class for managing Firestore interactions
 class FirestoreManager {
   private static instance: FirestoreManager;
+
   private _database: Firestore;
+
   private paginateKeys: Map<string, string | null> = new Map();
 
   // Private constructor to prevent direct instantiation
@@ -45,7 +47,7 @@ class FirestoreManager {
   }
 
   // Get a paginated list of documents from a collection
-  async getList<T extends JSONSerializable>(collectionName: string, factory: (json: any) => T, pageSize: number = 30): Promise<T[]> {
+  async getList<T extends JSONSerializable>(collectionName: string, factory: (json: object) => T, pageSize: number = 30): Promise<T[]> {
     const lastKey = this.paginateKeys.get(collectionName);
     let query = this._database.collection(collectionName).orderBy('id').limit(pageSize);
     if (lastKey) {
@@ -70,13 +72,13 @@ class FirestoreManager {
   }
 
   // Update or create a document at a specific path
-  async put(path: string, object: any): Promise<void> {
+  async put(path: string, object: object): Promise<void> {
     const docRef = this._database.doc(path);
     await docRef.set(object);
   }
 
   // Create a new document in a collection and return its ID
-  async post(collectionName: string, object: any): Promise<string> {
+  async post(collectionName: string, object: object): Promise<string> {
     const collectionRef = this._database.collection(collectionName);
     const docRef = collectionRef.doc();
     await docRef.set(object);
