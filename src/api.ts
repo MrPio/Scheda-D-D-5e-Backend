@@ -8,7 +8,7 @@ import {signInAndGetIdToken} from './request_token';
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const db = admin.firestore();
+export const db = admin.firestore();
 
 const getDocument = async (collection: string, documentId: string) => {
     try {
