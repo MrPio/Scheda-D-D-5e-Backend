@@ -1,128 +1,46 @@
-import { DataTypes, Model} from 'sequelize';
-import { DbConnector } from '../db_connection';
-import { Effect } from './effect'
-import { EntityAttributes } from './entity'
+import { Model, Column, Table, BelongsTo, ForeignKey, HasMany, DataType } from 'sequelize-typescript';
+import { Effect } from './effect';
+import { Session } from './session';
+import { MonsterSkill } from './monster_skill';
 
-/**
- * Connecting to the database using the Sequelize connection module.
- * The database connection is authenticated and the authentication result is managed.
- */
-const sequelize = DbConnector.getConnection();
-sequelize.authenticate().then(() => {
-    console.log('Connection has been established successfully.');
-}).catch((error: any) => {
-    console.error('Unable to connect to the database: ', error);
-});
 
-// Interface defining the attributes of a Monster
-interface MonsterAttributes extends EntityAttributes {
-  effectImmunities: Effect[]; 
-  sessionUID: string;
-}
+@Table({
+  tableName: 'monsters',
+  timestamps: true,
+})
+export class Monster extends Model<Monster> {
+  @Column declare name: string;
 
-// Class definition extending Sequelize Model
-class Monster extends Model<MonsterAttributes> implements MonsterAttributes {
-  public readonly uid!: string;
- 
-  public readonly userUID!: string;
+  @Column declare userUID: string;
 
-  public readonly name!: string;
+  @Column declare maxHp?: number;
 
-  public maxHp!: number;
+  @Column declare hp: number;
 
-  public hp!: number;
+  @Column declare ac?: number;
 
-  public ac!: number;
+  @Column(DataType.ARRAY(DataType.STRING)) declare enchantments?: string[];
 
-  public readonly enchantments!: string[];
+  @Column declare isReactionActivable?: boolean;
 
-  public isReactionActivable!: boolean;
+  @Column declare speed?: number;
 
-  public speed!: number;
+  @Column(DataType.ARRAY(DataType.STRING)) declare weapons?: string[];
 
-  public readonly skills!: Map<string, number>;
+  @Column declare effect?: Effect;
 
-  public readonly weapons!: string[];
+  @Column(DataType.ARRAY(DataType.STRING)) declare effectImmunities?: Effect[];
 
-  public effect!: Effect;
-  
-  public readonly effectImmunities!: Effect[];
- 
-  public readonly sessionUID!: string;
-}
+  @ForeignKey(() => Session)
+  @Column declare sessionId: number;
 
-// Initializing the Monster model with the defined attributes and options
-Monster.init({
-  uid: {
-    type: DataTypes.STRING,
-    primaryKey: true,
-    allowNull: false
-  },
-  userUID: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  maxHp: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  hp: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  ac: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  enchantments: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: true
-  },
-  isReactionActivable: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false
-  },
-  speed: {
-    type: DataTypes.DOUBLE,
-    allowNull: false
-  },
-  skills: {
-    type: DataTypes.JSON,
-    allowNull: false
-  },
-  weapons:{
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false
-  },
-  effect: {
-    type: DataTypes.ENUM,
-    allowNull: false
-  },
-  effectImmunities: {
-    type: DataTypes.ARRAY(DataTypes.ENUM),
-    allowNull: true
-  },
-  sessionUID:{
-    type: DataTypes.STRING,
-    allowNull: false
+  @BelongsTo(() => Session)
+  declare session: Session;
+
+  @HasMany(() => MonsterSkill)
+  declare skills: MonsterSkill[];
+
+  get isDead(): boolean {
+    return this.hp <= 0;
   }
-}, {
-  sequelize,
-  modelName: 'Monster',
-  freezeTableName: true,
-  timestamps: false
-});
-
-// Exporting the Monster model for use in other parts of the application
-export default Monster;
-
-// Syncing the Sequelize model with the database
-sequelize.sync().then(() => {
-  console.log('Monster table created successfully!');
-}).catch((error: any) => {
-  console.error('Unable to create table : ', error);
-});
+}

@@ -1,4 +1,4 @@
-import { Model, Column, Table, ForeignKey, HasMany, BelongsTo } from 'sequelize-typescript';
+import { Model, Column, Table, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Session } from './session';
 
 @Table({

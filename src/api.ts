@@ -4,7 +4,7 @@ import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import * as fs from 'fs';
 import { signInAndGetIdToken } from './request_token';
 import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from "./controller/session_controller";
-import { addEffect, addEntity, addMonster, deleteEntity, enableReaction, getEntityInfo, getMonsterInfo, getSavingThrow, makeAttack, updateEntityInfo } from "./controller/entity_controller";
+import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getMonsterInfo, getSavingThrow, makeAttack, updateEntityInfo } from "./controller/entity_controller";
 
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
@@ -90,6 +90,7 @@ app.get('/token', requestTime, async (req: RequestWithToken, res: Res) => {
   res.send(`Your JWT is ${token}`);
 });
 
+// =========================================================
 
 app.get('/sessions', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
   getSessions(req, res);
@@ -129,10 +130,6 @@ app.patch('/sessions/:sessionId/addEntity', checkToken, verifyToken, (req: Reque
 
 app.get('/sessions/:sessionId/monsters/:monsterId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
   getMonsterInfo(req, res);
-});
-
-app.post('/sessions/:sessionId/monsters/:monsterId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
-  addMonster(req, res);
 });
 
 app.delete('/sessions/:sessionId/entity', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
