@@ -4,13 +4,13 @@ import * as https from 'https';
 import * as fs from 'fs';
 
 interface MessageEvent {
-    ws: WebSocket;
-    message: string;
+  ws: WebSocket;
+  message: string;
 }
 
 const serverOptions = {
-    cert: fs.readFileSync('src/websocket_keys/server.cert'),
-    key: fs.readFileSync('src/websocket_keys/server.key')
+  cert: fs.readFileSync('src/websocket_keys/server.cert'),
+  key: fs.readFileSync('src/websocket_keys/server.key'),
 };
 
 const server = new https.Server(serverOptions);
@@ -19,22 +19,22 @@ const wss = new WebSocket.Server({ server });
 const messageSubject = new Subject<MessageEvent>();
 
 wss.on('connection', (ws: WebSocket, req) => {
-    console.log('Client requested path:', req.url);
+  console.log('Client requested path:', req.url);
 
-    ws.on('message', (message: string) => {
-        messageSubject.next({ ws, message });
-    });
-    ws.send(JSON.stringify({ message: 'Welcome to the WebSocket server!' }));
+  ws.on('message', (message: string) => {
+    messageSubject.next({ ws, message });
+  });
+  ws.send(JSON.stringify({ message: 'Welcome to the WebSocket server!' }));
 });
 
 messageSubject.subscribe(({ ws, message }) => {
-    wss.clients.forEach(client => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ message: message.toString() }));
-        }
-    });
+  wss.clients.forEach(client => {
+    if (client !== ws && client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ message: message.toString() }));
+    }
+  });
 });
 
 server.listen(8080, () => {
-    console.log('Secure WebSocket server is running on wss://localhost:8080/');
+  console.log('Secure WebSocket server is running on wss://localhost:8080/');
 });

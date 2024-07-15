@@ -1,30 +1,19 @@
-import FirestoreManager from '../src/repository/firestore_manager';
-import { WithUID, JSONSerializable } from '../src/repository/firestore_manager';
+import { DocumentData } from 'firebase-admin/firestore';
+import { WithUID, JSONSerializable, FirestoreManager } from '../src/repository/firestore_manager';
 
-// Sample model that implements WithUID and JSONSerializable
-class SampleModel implements WithUID, JSONSerializable {
-  uid?: string;
-  regDateTimestamp: number;
-  deletedCharactersUIDs: string[];
-  nickname: string;
-  email: string;
-  campaignsUIDs: string[];
-  charactersUIDs: string[];
+// Sample model that implements JSONSerializable
+export class SampleModel extends JSONSerializable implements WithUID {
 
   constructor(
-    regDateTimestamp: number,
-    deletedCharactersUIDs: string[],
-    nickname: string,
-    email: string,
-    campaignsUIDs: string[],
-    charactersUIDs: string[]
+    public regDateTimestamp: number,
+    public deletedCharactersUIDs: string[],
+    public nickname: string,
+    public email: string,
+    public campaignsUIDs: string[],
+    public charactersUIDs: string[],
+    public uid?: string,
   ) {
-    this.regDateTimestamp = regDateTimestamp;
-    this.deletedCharactersUIDs = deletedCharactersUIDs;
-    this.nickname = nickname;
-    this.email = email;
-    this.campaignsUIDs = campaignsUIDs;
-    this.charactersUIDs = charactersUIDs;
+    super();
   }
 
   toJSON(): object {
@@ -34,36 +23,32 @@ class SampleModel implements WithUID, JSONSerializable {
       nickname: this.nickname,
       email: this.email,
       campaignsUIDs: this.campaignsUIDs,
-      charactersUIDs: this.charactersUIDs
+      charactersUIDs: this.charactersUIDs,
     };
   }
 
-  static fromJSON(json: any): SampleModel {
-    // Log to see what is being passed
+
+  static fromJSON(json: DocumentData): SampleModel {
     return new SampleModel(
       json.regDateTimestamp,
       json.deletedCharactersUIDs,
       json.nickname,
       json.email,
       json.campaignsUIDs,
-      json.charactersUIDs
+      json.charactersUIDs,
     );
   }
 }
 
-// Make sure that SampleModel has fromJSON as part of its instance
-interface SampleModel extends JSONSerializable {
-  fromJSON: (json: object) => SampleModel;
-}
 
 const testFirestoreManager = async () => {
   const firestoreManager = FirestoreManager.getInstance();
-  
+
   const sampleUID = 'k9vc0kojNcO9JB9qVdf33F6h3eD2';
   const sampleCollection = 'users';
 
   try {
-    const document = await firestoreManager.get<SampleModel>(sampleCollection, sampleUID, SampleModel.fromJSON);
+    const document = await firestoreManager.get(sampleCollection, sampleUID, SampleModel.fromJSON);
     console.log('Retrieved document:', document);
   } catch (error) {
     console.error('Error retrieving document:', error);

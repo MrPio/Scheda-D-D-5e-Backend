@@ -1,15 +1,25 @@
-import { Firestore } from 'firebase-admin/firestore';
-import { db } from '../api';
+import { DocumentData, Firestore } from 'firebase-admin/firestore';
+import * as fs from 'fs';
+import * as admin from 'firebase-admin';
+import { Type } from 'typescript';
+import {SampleModel} from '../../test/test_firestore_manager';
+
+const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
+
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+export const db = admin.firestore();
 
 // Interface representing an object with a unique identifier
 export interface WithUID {
   uid?: string;
 }
 
-// Interface representing a JSON serializable object
-export interface JSONSerializable {
-  toJSON: () => object;
-  fromJSON: (json: object) => JSONSerializable;
+export abstract class JSONSerializable {
+  static fromJSON(json: DocumentData):JSONSerializable {
+    throw new Error('Abstract method not implemented');
+  }
+  
+  abstract toJSON(): object;
 }
 
 // Singleton class for managing Firestore interactions
@@ -34,7 +44,7 @@ export class FirestoreManager {
   }
 
   // Get a document from a collection by its UID
-  async get<T extends WithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: any) => T): Promise<T> {
+  async get<T extends WithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
     const docRef = this._database.collection(collectionName).doc(uid);
     const docSnap = await docRef.get();
     if (!docSnap.exists) {

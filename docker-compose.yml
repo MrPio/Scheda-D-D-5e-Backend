@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+  bitbattle_db:
+    image: postgres
+    container_name: db
+    restart: always
+    environment:
+      - POSTGRES_USER: ${PG_USERNAME}
+      - POSTGRES_PASSWORD: ${PG_PASSWORD}
+    ports:
+      - 5432:${PG_PORT}
+    volumes:
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  bitbattle_node:
+    container_name: node_server
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - bitbattle_db
+    volumes:
+      - ./pdf:/usr/src/app/pdf
+      - ./json:/usr/src/app/json

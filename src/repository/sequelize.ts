@@ -4,16 +4,17 @@ import { EntityTurn } from '../model/entity_turn';
 import { Monster } from '../model/monster';
 import { MonsterSkill } from '../model/monster_skill';
 import { Effect } from '../model/effect';
+import dotenv from 'dotenv';
 
-// TODO singleton and .env
+dotenv.config();
 
 const sequelize = new Sequelize({
-  database: 'schedadnd5e',
+  database: process.env.DB_NAME,
   dialect: 'postgres',
-  username: 'postgres',
-  password: 'toor',
-  port: 5432,
-  host: 'localhost',
+  username: process.env.PG_USERNAME,
+  password: process.env.PG_PASSWORD,
+  port: +(process.env.PG_PORT ?? 5432),
+  host: 'localhost', 
   // models: [__dirname + '/../model/**/*.ts'],
   // modelMatch: (filename, member) => {
   //   console.log(filename, member.toLowerCase());

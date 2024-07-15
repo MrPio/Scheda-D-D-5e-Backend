@@ -5,3 +5,4 @@ node_modules/
 src/firebase_configs/firebase_config.json
 src/firebase_configs/service_account_key.json
 src/websocket_keys/server.key
+.vscode/
