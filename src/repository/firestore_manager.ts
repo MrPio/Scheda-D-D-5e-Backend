@@ -13,7 +13,7 @@ export interface JSONSerializable {
 }
 
 // Singleton class for managing Firestore interactions
-class FirestoreManager {
+export class FirestoreManager {
   private static instance: FirestoreManager;
 
   private _database: Firestore;

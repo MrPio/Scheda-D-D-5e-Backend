@@ -3,6 +3,8 @@ import * as admin from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import * as fs from 'fs';
 import { signInAndGetIdToken } from './request_token';
+import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from "./controller/session_controller";
+import { addEffect, addEntity, addMonster, deleteEntity, enableReaction, getEntityInfo, getMonsterInfo, getSavingThrow, makeAttack, updateEntityInfo } from "./controller/entity_controller";
 
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
@@ -26,7 +28,7 @@ const getDocument = async (collection: string, documentId: string) => {
 const app = express();
 
 
-interface RequestWithToken extends Req {
+export interface RequestWithToken extends Req {
   requestTime?: number;
   token?: string;
   decoded_token?: DecodedIdToken;
@@ -86,6 +88,103 @@ app.get('/user', requestTime, checkHeader, checkToken, verifyToken, (req: Reques
 app.get('/token', requestTime, async (req: RequestWithToken, res: Res) => {
   const token = await signInAndGetIdToken('valeriomorelli50@gmail.com', 'aaaaaa');
   res.send(`Your JWT is ${token}`);
+});
+
+
+app.get('/sessions', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  getSessions(req, res);
+});
+
+app.post('/sessions', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  createSession(req, res);
+});
+
+app.get('/sessions/:sessionId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  getSessionInfo(req, res);
+});
+
+app.delete('/sessions/:sessionId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  deleteSession(req, res);
+});
+
+app.patch('/sessions/:sessionId/start', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  startSession(req, res);
+});
+
+app.patch('/sessions/:sessionId/pause', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  pauseSession(req, res);
+});
+
+app.patch('/sessions/:sessionId/continue', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  continueSession(req, res);
+});
+
+app.patch('/sessions/:sessionId/stop', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  stopSession(req, res);
+});
+
+app.patch('/sessions/:sessionId/addEntity', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  addEntity(req, res);
+});
+
+app.get('/sessions/:sessionId/monsters/:monsterId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  getMonsterInfo(req, res);
+});
+
+app.post('/sessions/:sessionId/monsters/:monsterId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  addMonster(req, res);
+});
+
+app.delete('/sessions/:sessionId/entity', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  deleteEntity(req, res);
+});
+
+app.get('/diceRoll', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  diceRoll(req, res);
+});
+
+app.get('/sessions/:sessionId/turn', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  getTurn(req, res);
+});
+
+app.patch('/sessions/:sessionId/turn/postpone', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  postponeTurn(req, res);
+});
+
+app.patch('/sessions/:sessionId/turn/end', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  endTurn(req, res);
+});
+
+app.patch('/sessions/:sessionId/attack', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  makeAttack(req, res);
+});
+
+app.get('/sessions/:sessionId/savingThrow', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  getSavingThrow(req, res);
+});
+
+app.patch('/sessions/:sessionId/addEffect', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  addEffect(req, res);
+});
+
+app.get('/sessions/:sessionId/:entityId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  getEntityInfo(req, res);
+});
+
+app.patch('/sessions/:sessionId/:entityId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  updateEntityInfo(req, res);
+});
+
+app.patch('/sessions/:sessionId/reaction', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  enableReaction(req, res);
+});
+
+app.get('/sessions/:sessionId/history', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  getHistory(req, res);
+});
+
+app.post('/sessions/:sessionId/history', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+  updateHistory(req, res);
 });
 
 app.listen(3000, () => {
