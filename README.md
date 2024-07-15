@@ -51,9 +51,8 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `PATCH` |` /sessions/{sessionId}/pause` | - | Pauses a combat session |
 | `PATCH` |` /sessions/{sessionId}/continue` | - | Resumes a combat session |
 | `PATCH` |` /sessions/{sessionId}/stop` | - | Ends a combat session |
-| `PATCH` |` /sessions/{sessionId}/addEntity` | entityInfo | Adds a new entity to a fight |
+| `PATCH` |` /sessions/{sessionId}/addEntity` | entityType, entityInfo | Adds a new entity to a fight |
 | `GET` |` /sessions/{sessionId}/monsters/{monsterId}` | - | Returns a monster's info in a session |
-| `POST` |` /sessions/{sessionId}/monsters` | monsterInfo | Adds a monster to a session |
 | `DELETE` |` /sessions/{sessionId}/entity` | entityId | Removes an entity from a session |
 |  |  |  |  |
 | `GET` |` /diceRoll` | diceList, modifier | Roll dice |
