@@ -22,20 +22,32 @@ interface MonsterAttributes extends EntityAttributes {
 
 // Class definition extending Sequelize Model
 class Monster extends Model<MonsterAttributes> implements MonsterAttributes {
-  public readonly uid!: string; 
+  public readonly uid!: string;
+ 
   public readonly userUID!: string;
+
   public readonly name!: string;
+
   public maxHp!: number;
+
   public hp!: number;
+
   public ac!: number;
+
   public readonly enchantments!: string[];
+
   public isReactionActivable!: boolean;
+
   public speed!: number;
+
   public readonly skills!: Map<string, number>;
+
   public readonly weapons!: string[];
+
   public effect!: Effect;
   
-  public readonly effectImmunities!: Effect[]; 
+  public readonly effectImmunities!: Effect[];
+ 
   public readonly sessionUID!: string;
 }
 

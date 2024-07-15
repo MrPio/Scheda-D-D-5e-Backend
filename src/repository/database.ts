@@ -1,25 +1,6 @@
-// import { Sequelize } from 'sequelize';
-// import * as fs from 'fs';
-import { House } from '../model/house';
-import { Person } from '../model/person';
-import { } from '../model/session';
-
-// const dbConfig = JSON.parse(fs.readFileSync('src/repository/config.json', 'utf8'));
-// const env = process.env.NODE_ENV || 'development';
-// const sequelize = new Sequelize(
-//   'schedadnd5e',
-//   'postgres',
-//   'toor',
-//   {
-//     host: 'localhost',
-//     port: 5432,
-//     dialect: 'postgres',
-//   },
-// );
-
-// TODO: make singleton
-
 import { Sequelize } from 'sequelize-typescript';
+import { Session, SessionStatus } from '../model/session';
+import { EntityTurn } from '../model/entity_turn';
 
 const sequelize = new Sequelize({
   database: 'schedadnd5e',
@@ -34,16 +15,15 @@ const sequelize = new Sequelize({
   //   return filename === member.toLowerCase();
   // },
 });
-sequelize.addModels([Person, House]);
+sequelize.addModels([Session, EntityTurn]);
 export default sequelize;
-
 
 (async () => {
   await sequelize.sync({ force: true });
-  const villa = await House.create({ name: 'Villa1' } as House);
-  await Person.create({ name: 'John Doe', age: 30, houseId: villa.id } as Person);
+  const session = await Session.create({ name: 'Session1', sessionStatus: SessionStatus.ongoing } as Session);
+  await EntityTurn.create({ entityUID: '111', posX: 1, posY: 4, sessionId: session.id } as EntityTurn);
 
-  const person = await Person.findOne({ where: { name: 'John Doe' }, include: [House] });
-  console.log(person?.houseId, person?.house);
+  const turn = await EntityTurn.findOne({ where: { entityUID: '111' }, include: [Session] });
+  console.log(turn?.session.sessionStatus == SessionStatus.ongoing);
 })();
 
