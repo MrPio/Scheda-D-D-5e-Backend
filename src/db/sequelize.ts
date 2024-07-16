@@ -29,9 +29,9 @@ export default sequelize;
   const session = await Session.create({ name: 'Session1', sessionStatus: SessionStatus.ongoing } as Session);
   await EntityTurn.create({ entityUID: '111', posX: 1, posY: 4, sessionId: session.id } as EntityTurn);
 
-  await Monster.create({ name: 'Orco', hp: 10, maxHp: 100, effectImmunities: [Effect.blinded, Effect.charmed], sessionId: session.id } as Monster);
+  await Monster.create({ _name: 'Orco', _hp: 10, _maxHp: 100, effectImmunities: [Effect.blinded, Effect.charmed], sessionId: session.id } as Monster);
 
-  const monster = await Monster.findOne({ where: { name: 'Orco' }, include: [Session] });
+  const monster = await Monster.findOne({ where: { _name: 'Orco' }, include: [Session] });
   if (monster?.effectImmunities)
     console.log(Effect[monster?.effectImmunities[0]]);
 })();

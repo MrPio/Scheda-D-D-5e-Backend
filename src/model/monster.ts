@@ -28,7 +28,7 @@ export class Monster extends Model<Monster> implements Entity {
 
   @Column(DataType.ARRAY(DataType.STRING)) declare weapons: string[];
 
-  @Column declare effects?: Effect[];
+  @Column(DataType.ARRAY(DataType.STRING)) declare effects?: Effect[];
 
   @Column(DataType.ARRAY(DataType.STRING)) declare effectImmunities?: Effect[];
 
