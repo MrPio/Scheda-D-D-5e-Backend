@@ -49,7 +49,7 @@ export class FirestoreManager {
   }
 
   // Get a document from a collection by its UID
-  async get<T extends WithUID & JSONSerializable>( collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
+  async get<T extends WithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
     const docRef = this._database.collection(collectionName).doc(uid);
     const docSnap = await docRef.get();
     if (!docSnap.exists) {
@@ -62,7 +62,7 @@ export class FirestoreManager {
   }
 
   // Get a paginated list of documents from a collection
-  async getList<T extends JSONSerializable>(collectionName: string, factory: (json: object) => T, pageSize: number = 30): Promise<T[]> {
+  async getList<T extends JSONSerializable>(collectionName: string, factory: (json: DocumentData) => T, pageSize: number = 30): Promise<T[]> {
     const lastKey = this.paginateKeys.get(collectionName);
     let query = this._database.collection(collectionName).orderBy('id').limit(pageSize);
     if (lastKey) {
@@ -76,7 +76,7 @@ export class FirestoreManager {
   }
 
   // Get a list of documents by their UIDs from a collection
-  async getListFromUIDs<T extends WithUID & JSONSerializable>(collectionName: string, uids: string[], factory: (json: any) => T): Promise<T[]> {
+  async getListFromUIDs<T extends WithUID & JSONSerializable>(collectionName: string, uids: string[], factory: (json: DocumentData) => T): Promise<T[]> {
     const querySnapshot = await this._database.collection(collectionName).where('id', 'in', uids).get();
     return querySnapshot.docs.map(docSnap => {
       const data = docSnap.data()!;
@@ -115,6 +115,12 @@ export class FirestoreManager {
       batch.delete(docSnap.ref);
     });
     await batch.commit();
+  }
+
+  // Delete the document at the given location
+  async delete(path: string): Promise<void> {
+    const docRef = this._database.doc(path);
+    docRef.delete();
   }
 }
 

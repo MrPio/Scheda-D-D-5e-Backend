@@ -7,7 +7,6 @@ export enum Effect {
   grappled,
   incapacitated,
   invisible,
-  none,
   paralyzed,
   petrified,
   poisoned,
