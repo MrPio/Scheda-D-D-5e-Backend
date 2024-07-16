@@ -1,8 +1,7 @@
+
 import { DocumentData, Firestore } from 'firebase-admin/firestore';
 import * as fs from 'fs';
 import * as admin from 'firebase-admin';
-import { Type } from 'typescript';
-import { SampleModel } from '../../test/test_firestore_manager';
 
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
@@ -15,18 +14,11 @@ export interface WithUID {
 }
 
 export abstract class JSONSerializable {
-  static fromJSON(json: DocumentData): JSONSerializable {
-    throw new Error(`Abstract method not implemented: ${json}`);
+  static fromJSON(json: DocumentData):JSONSerializable {
+    throw new Error('Abstract method not implemented');
   }
-
-  toJSON(): object {
-    if ('uid' in this) {
-      const { uid, ...plainObject } = this;
-      return { ...plainObject };
-    } else {
-      return { ...this };
-    }
-  }
+  
+  abstract toJSON(): object;
 }
 
 // Singleton class for managing Firestore interactions
@@ -86,12 +78,6 @@ export class FirestoreManager {
       model.uid = docSnap.id;
       return model;
     });
-  }
-
-  // Update only a specific subset of fields of an existing document
-  async patch<T>(path: string, object: Partial<T>): Promise<void> {
-    const docRef = this._database.doc(path);
-    await docRef.update(object);
   }
 
   // Update or create a document at a specific path
