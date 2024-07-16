@@ -2,30 +2,31 @@ import { Model, Column, Table, BelongsTo, ForeignKey, HasMany, DataType } from '
 import { Effect } from './effect';
 import { Session } from './session';
 import { MonsterSkill } from './monster_skill';
+import Entity from './entity';
 
 
 @Table({
   tableName: 'monsters',
   timestamps: true,
 })
-export class Monster extends Model<Monster> {
+export class Monster extends Model<Monster> implements Entity {
   @Column declare name: string;
 
   @Column declare userUID: string;
 
-  @Column declare maxHp?: number;
+  @Column declare maxHp: number;
 
   @Column declare hp: number;
 
-  @Column declare ac?: number;
+  @Column declare ac: number;
 
-  @Column(DataType.ARRAY(DataType.STRING)) declare enchantments?: string[];
+  @Column(DataType.ARRAY(DataType.STRING)) declare enchantments: string[];
 
-  @Column declare isReactionActivable?: boolean;
+  @Column declare isReactionActivable: boolean;
 
-  @Column declare speed?: number;
+  @Column declare speed: number;
 
-  @Column(DataType.ARRAY(DataType.STRING)) declare weapons?: string[];
+  @Column(DataType.ARRAY(DataType.STRING)) declare weapons: string[];
 
   @Column declare effect?: Effect;
 

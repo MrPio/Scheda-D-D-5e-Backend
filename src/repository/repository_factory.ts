@@ -2,7 +2,7 @@ import { IRepository } from './repository';
 import { SequelizeRepository } from './sequelize_repository';
 import { FirestoreRepository } from './firestore_repository';
 import { ModelCtor, Model } from 'sequelize-typescript';
-import { WithUID, JSONSerializable } from '../db/firestore_manager';
+import { WithUID, JSONSerializable } from '../db/firestore';
 
 export class RepositoryFactory {
   static getSequelizeRepository<T extends Model>(model: ModelCtor<T>): IRepository<T> {

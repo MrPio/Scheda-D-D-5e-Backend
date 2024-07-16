@@ -1,5 +1,5 @@
 import { IRepository } from './repository';
-import { FirestoreManager, WithUID, JSONSerializable } from '../db/firestore_manager';
+import { FirestoreManager, WithUID, JSONSerializable } from '../db/firestore';
 
 export class FirestoreRepository<T extends WithUID & JSONSerializable> implements IRepository<T> {
   private collectionName: string;

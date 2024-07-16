@@ -1,8 +1,7 @@
-import { Effect } from './effect'
+import { Effect } from './effect';
 
 //Interface defining the attributes of an Entity
-export interface EntityAttributes {
-  uid: string; 
+export default interface Entity {
   userUID: string;
   name: string;
   maxHp: number;
@@ -11,7 +10,6 @@ export interface EntityAttributes {
   enchantments: string[];
   isReactionActivable: boolean;
   speed: number;
-  skills: Map<string, number>;
   weapons: string[];
-  effect: Effect;
+  effect?: Effect;
 }

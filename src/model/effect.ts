@@ -17,19 +17,18 @@ export enum Effect {
   unconscious,
 }
 
-/**
- * interface PizzaSizeSpec {
-    key: number,
-    value: number
-}
-function getPizzaSizeSpec(pizzaSize: PizzaSize): PizzaSizeSpec {
-    switch (pizzaSize) {
-        case PizzaSize.small:
-            return {key:0, value: 25};
-        case PizzaSize.medium:
-            return {key:0, value: 35};
-        case PizzaSize.large:
-            return {key:0, value: 50};
-    }
-}
- */
+export const cannotSee = (effect: Effect): boolean =>
+  effect in [];
+
+export const cannotMove = (effect: Effect): boolean =>
+  effect in [Effect.grappled, Effect.paralyzed, Effect.petrified, Effect.unconscious, Effect.stunned];
+
+export const cannotAttack = (effect: Effect): boolean =>
+  effect in [];
+
+export const cannotUseReaction = (effect: Effect): boolean =>
+  effect in [];
+
+export const cannotCastEnchantment = (effect: Effect): boolean =>
+  effect in [];
+

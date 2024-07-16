@@ -1,5 +1,5 @@
 import { DocumentData } from 'firebase-admin/firestore';
-import { WithUID, JSONSerializable, FirestoreManager } from '../src/db/firestore_manager';
+import { WithUID, JSONSerializable, FirestoreManager } from '../src/db/firestore';
 
 // Sample model that implements JSONSerializable
 export class SampleModel extends JSONSerializable implements WithUID {

@@ -1,8 +1,6 @@
 import { DocumentData, Firestore } from 'firebase-admin/firestore';
 import * as fs from 'fs';
 import * as admin from 'firebase-admin';
-import { Type } from 'typescript';
-import { SampleModel } from '../../test/test_firestore_manager';
 
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
@@ -51,7 +49,7 @@ export class FirestoreManager {
   }
 
   // Get a document from a collection by its UID
-  async get<T extends WithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
+  async get<T extends WithUID & JSONSerializable>( collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
     const docRef = this._database.collection(collectionName).doc(uid);
     const docSnap = await docRef.get();
     if (!docSnap.exists) {
@@ -59,7 +57,7 @@ export class FirestoreManager {
     }
     const data = docSnap.data()!;
     const model = factory(data);
-    model.uid = uid;
+    (model as WithUID).uid = uid;
     return model;
   }
 
