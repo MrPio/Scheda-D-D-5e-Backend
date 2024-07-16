@@ -54,16 +54,6 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `PATCH` |` /sessions/{sessionId}/continue` | - | Resumes a combat session |
 | `PATCH` |` /sessions/{sessionId}/stop` | - | Ends a combat session |
 
-### Entity Routes
-
-| Type | Route | Parameters | Description |
-| --- | --- | --- | --- |
-| `PATCH` |` /sessions/{sessionId}/entity` | entityType, entityInfo | Adds a new entity to a fight |
-| `GET` |` /sessions/{sessionId}/monsters/{monsterId}` | - | Returns a monster's info in a session |
-| `DELETE` |` /sessions/{sessionId}/entity` | entityId | Removes an entity from a session |
-| `GET` |` /sessions/{sessionId}/{entityId}` | - | Returns entity info |
-| `PATCH` |` /sessions/{sessionId}/{entityId}` | entityInfo | Modifies entity info |
-
 ### Turn Routes
 
 | Type | Route | Parameters | Description |
@@ -71,14 +61,6 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `GET` |` /sessions/{sessionId}/turn` | - | Returns the turn of a session |
 | `PATCH` |` /sessions/{sessionId}/turn/postpone` | entityId, predecessorEntityId | Postpones an entity's turn |
 | `PATCH` |` /sessions/{sessionId}/turn/end` | entityId | Ends the turn of an entity |
-
-### History Routes
-
-| Type | Route | Parameters | Description |
-| --- | --- | --- | --- |
-| `GET` |` /sessions/{sessionId}/history` | - | Returns the battle history |
-| `POST` |` /sessions/{sessionId}/history` | message | Adds a message to the battle history |
-
 
 ### Attack Routes
 
@@ -89,6 +71,23 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `GET` |` /sessions/{sessionId}/savingThrow` | entitiesId, difficultyClass, skill | Requests an entity to make a saving roll |
 | `PATCH` |` /sessions/{sessionId}/effect` | entitiesId, effectType | Assign or remove an effect to an entity |
 | `PATCH` |` /sessions/{sessionId}/reaction` | entitiesId | Enables entities reaction |
+
+### Entity Routes
+
+| Type | Route | Parameters | Description |
+| --- | --- | --- | --- |
+| `PATCH` |` /sessions/{sessionId}/entity` | entityType, entityInfo | Adds a new entity to a fight |
+| `GET` |` /sessions/{sessionId}/monsters/{monsterId}` | - | Returns a monster's info in a session |
+| `DELETE` |` /sessions/{sessionId}/entity` | entityId | Removes an entity from a session |
+| `GET` |` /sessions/{sessionId}/{entityId}` | - | Returns entity info |
+| `PATCH` |` /sessions/{sessionId}/{entityId}` | entityInfo | Modifies entity info |
+
+### History Routes
+
+| Type | Route | Parameters | Description |
+| --- | --- | --- | --- |
+| `GET` |` /sessions/{sessionId}/history` | - | Returns the battle history |
+| `POST` |` /sessions/{sessionId}/history` | message | Adds a message to the battle history |
 
 
 ## Sequence diagrams
