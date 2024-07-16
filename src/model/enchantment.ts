@@ -2,18 +2,18 @@ import { DocumentData } from 'firebase-admin/firestore';
 import { JSONSerializable } from '../db/firestore';
 
 export enum EnchantmentCategory {
-  damage,
-  savingThrow,
-  descriptive,
+  damage = 'attacco',
+  savingThrow = 'tiroSalvezza',
+  descriptive = 'descrittivo',
 }
 
 enum RangeType {
-  punto,
-  raggio,
-  semisfera,
-  linea,
-  cono,
-  cubo,
+  point = 'punto',
+  ray = 'raggio',
+  hemisphere = 'semisfera',
+  line = 'linea',
+  cone = 'cono',
+  cube = 'cubo',
 }
 
 const rangeConversion: { [key: string]: number } = {

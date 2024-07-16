@@ -4,10 +4,10 @@ import { Monster } from './monster';
 
 // The different states that a session can be in during its life cycle.
 export enum SessionStatus {
-  created = 'created',
-  ongoing = 'ongoing',
-  paused = 'paused',
-  ended = 'ended',
+  created = 'creata',
+  ongoing = 'inCorso',
+  paused = 'inPausa',
+  ended = 'terminata',
 }
 
 @Table({

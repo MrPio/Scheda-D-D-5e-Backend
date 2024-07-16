@@ -15,6 +15,6 @@ abstract class ErrorProduct {
 
 class ModelNotFound extends ErrorProduct{
   constructor(
-    public 
+    public string
   )
 }

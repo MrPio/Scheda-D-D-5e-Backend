@@ -1,19 +1,19 @@
 // The different effects an entity can have. Most of these restrict the actions of the entity.
 export enum Effect {
-  blinded,
-  charmed,
-  deafened,
-  frightened,
-  grappled,
-  incapacitated,
-  invisible,
-  paralyzed,
-  petrified,
-  poisoned,
-  prone,
-  restrained,
-  stunned,
-  unconscious,
+  blinded = 'cieco',
+  charmed = 'affascinato',
+  deafened = '•	assordato',
+  frightened = 'spaventato',
+  grappled = 'afferrato',
+  incapacitated = 'incapacitato',
+  invisible = 'invisibile',
+  paralyzed = 'paralizzato',
+  petrified = 'pietrificato',
+  poisoned = 'avvelenato',
+  prone = 'prono',
+  restrained = 'trattenuto',
+  stunned = 'stordito',
+  unconscious = 'privoDiSensi',
 }
 
 export const cannotSee = (effect: Effect): boolean =>
