@@ -16,18 +16,6 @@ export class SampleModel extends JSONSerializable implements WithUID {
     super();
   }
 
-  toJSON(): object {
-    return {
-      regDateTimestamp: this.regDateTimestamp,
-      deletedCharactersUIDs: this.deletedCharactersUIDs,
-      nickname: this.nickname,
-      email: this.email,
-      campaignsUIDs: this.campaignsUIDs,
-      charactersUIDs: this.charactersUIDs,
-    };
-  }
-
-
   static fromJSON(json: DocumentData): SampleModel {
     return new SampleModel(
       json.regDateTimestamp,
@@ -40,7 +28,6 @@ export class SampleModel extends JSONSerializable implements WithUID {
   }
 }
 
-
 const testFirestoreManager = async () => {
   const firestoreManager = FirestoreManager.getInstance();
 
@@ -48,8 +35,8 @@ const testFirestoreManager = async () => {
   const sampleCollection = 'users';
 
   try {
-    const document = await firestoreManager.get(sampleCollection, sampleUID, SampleModel.fromJSON);
-    console.log('Retrieved document:', document);
+    const obj = await firestoreManager.get(sampleCollection, sampleUID, SampleModel.fromJSON);
+    console.log('Retrieved document:', obj.toJSON());
   } catch (error) {
     console.error('Error retrieving document:', error);
   }
