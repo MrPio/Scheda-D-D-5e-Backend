@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import { signInAndGetIdToken } from './request_token';
 import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from "./controller/session_controller";
 import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getMonsterInfo, getSavingThrow, makeAttack, updateEntityInfo } from "./controller/entity_controller";
+import { initializeSequelize } from './db/sequelize';
 
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
@@ -184,6 +185,9 @@ app.post('/sessions/:sessionId/history', checkToken, verifyToken, (req: RequestW
   updateHistory(req, res);
 });
 
-app.listen(3000, () => {
-  console.log('Servers is running on port 3000');
-});
+(async () => {
+  await initializeSequelize();
+  app.listen(3000, () => {
+    console.log('Servers is running on port 3000');
+  });
+})();

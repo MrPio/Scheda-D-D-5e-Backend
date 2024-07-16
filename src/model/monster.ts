@@ -4,7 +4,9 @@ import { Session } from './session';
 import { MonsterSkill } from './monster_skill';
 import Entity from './entity';
 
-
+/**
+ * A monster is a disposable `Entity` that the master may add at the beginning of each combat `Session`.
+ */
 @Table({
   tableName: 'monsters',
   timestamps: true,

@@ -1,6 +1,6 @@
 import { Effect } from './effect';
 
-//Interface defining the attributes of an Entity
+//Interface defining the attributes of an entity
 export default interface Entity {
   authorUID: string;
   _name: string;

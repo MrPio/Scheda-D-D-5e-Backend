@@ -1,34 +1,32 @@
 import { SequelizeRepository } from '../src/repository/sequelize_repository';
-import sequelize from '../src/db/sequelize';
+import sequelize, { initializeSequelize } from '../src/db/sequelize';
 import { Session, SessionStatus } from '../src/model/session';
 import Character from '../src/model/character';
 import { FirestoreRepository } from '../src/repository/firestore_repository';
+import { assert } from 'console';
 
 async function testSequelizeRepository() {
-  try {
-    await sequelize.sync({ force: true });
+  await initializeSequelize();
+  const sessionRepository = new SequelizeRepository(Session);
+  const newSessionStatus = SessionStatus.ongoing;
 
-    const sessionRepository = new SequelizeRepository(Session);
+  // Create a new session inside the 'sessions' table
+  const session = await sessionRepository.create({
+    name: 'Session1',
+    masterUID: 'master123',
+    sessionStatus: SessionStatus.created,
+  } as Session);
+  console.log('Session created, status =', session.sessionStatus);
 
-    const newSession = await sessionRepository.create({
-      name: 'Session1',
-      masterUID: 'master123',
-      sessionStatus: SessionStatus.ongoing,
-    } as Session);
+  // Update the session status value
+  await sessionRepository.update(session.id, { sessionStatus: newSessionStatus });
 
-    console.log('Nuova sessione creata:', newSession.toJSON());
+  // Check the new status value
+  const newSession = await sessionRepository.getById(session.id);
+  console.log('Session updated, new status =', newSession?.sessionStatus);
+  assert(newSession?.sessionStatus === newSessionStatus);
 
-    const loadedSession = await sessionRepository.getById(newSession.id.toString());
-    if (loadedSession) {
-      console.log('Sessione caricata dal database:', loadedSession.toJSON());
-    } else {
-      console.log('Sessione non trovata.');
-    }
-  } catch (error) {
-    console.error('Errore durante il test del repository Sequelize:', error);
-  } finally {
-    await sequelize.close();
-  }
+  sequelize.close();
 }
 
 async function testFirestoreRepository() {
@@ -36,44 +34,28 @@ async function testFirestoreRepository() {
     'characters',
     Character.fromJSON,
   );
+  const existingCharacterUID = 'y3XoTWriYvkNgQMNLSPF';
+  const newAC = 99;
 
-  const newCharacter = new Character(
-    'author123',
-    'Hero',
-    100,
-    100,
-    18,
-    [],
-    false,
-    30,
-    [],
-    new Map(),
-    new Map(),
-    [],
-    new Map(),
-    new Map(),
-  );
+  // Look for an existing character
+  const character = await characterRepository.getById(existingCharacterUID);
+  console.log('Character found, UID =', character.uid);
 
-  try {
-    const createdCharacter = await characterRepository.create(newCharacter);
-    console.log('Nuovo personaggio creato:', createdCharacter.toJSON());
+  // Update the character AC value
+  await characterRepository.update(character.uid!, { armorClass: newAC });
 
-    const updatedCharacter = await characterRepository.update(createdCharacter.uid!, {
-      ...createdCharacter,
-      _name: 'Updated Hero',
-    } as Character);
+  // Check the new AC value
+  const newCharacter = await characterRepository.getById(existingCharacterUID);
+  console.log('Character updated, new AC =', newCharacter.armorClass);
+  assert(newCharacter.armorClass === newAC);
 
-    if (updatedCharacter) {
-      console.log('Personaggio aggiornato:', updatedCharacter.toJSON());
-    } else {
-      console.log('Personaggio non trovato per l\'aggiornamento.');
-    }
-  } catch (error) {
-    console.error('Errore durante il test del repository Firestore:', error);
-  }
+  // Restore the character old AC value
+  await characterRepository.update(character.uid!, { armorClass: character.armorClass });
 }
 
 (async () => {
-  //await testSequelizeRepository();
+  console.log('Launching Sequelize repository test ...');
+  await testSequelizeRepository();
+  console.log('Launching Firestore repository test ...');
   await testFirestoreRepository();
 })();

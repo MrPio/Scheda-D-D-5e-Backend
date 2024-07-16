@@ -21,12 +21,10 @@ export class SequelizeRepository<T extends Model> implements IRepository<T> {
     return this.model.create(item as MakeNullishOptional<T>);
   }
 
-  async update(id: string, item: T): Promise<T | null> {
+  async update(id: string, item: Partial<T>): Promise<void> {
     const existingItem = await this.getById(id);
-    if (!existingItem) {
-      return null;
-    }
-    return existingItem.update(item as MakeNullishOptional<T>);
+    if (existingItem)
+      await existingItem.update(item as MakeNullishOptional<T>);
   }
 
   async delete(id: string): Promise<void> {

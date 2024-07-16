@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-class ErrorProduct {
+abstract class ErrorProduct {
   constructor(
     public statusCode: number,
     public message: string,
@@ -8,9 +8,13 @@ class ErrorProduct {
 
   public setStatus(res: Response): void {
     res.status(this.statusCode).json({
-      error: this.constructor.name, message: this.message,
+      error: this.constructor.name, ...this,
     });
   }
 }
 
-console.log({ ...new ErrorProduct(200, "ciao")});
+class ModelNotFound extends ErrorProduct{
+  constructor(
+    public 
+  )
+}

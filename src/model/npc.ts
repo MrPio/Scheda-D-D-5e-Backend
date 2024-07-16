@@ -16,8 +16,8 @@ export default class NPC extends JSONSerializable implements WithUID, Entity {
     public isReactionActivable: boolean,
     public speed: number,
     public weapons: string[],
-    public skills: Map<Skill, number>,
-    public skillsModifier: Map<Skill, number>,
+    public skills: { [key: string]: number },
+    public skillsModifier: { [key: string]: number },
     public effects?: Effect[],
     public level?: number,
     public uid?: string,
@@ -34,8 +34,8 @@ export default class NPC extends JSONSerializable implements WithUID, Entity {
       json.isReactionActivable ?? false,
       json.speed,
       (json._inventory as string[]).filter(it => it.includes('Weapon.')).map(it => it.split('Weapon.')[1]) ?? [],
-      json.skills ?? new Map(Object.entries(Object.values(Skill).filter(value => typeof value === 'string').reduce((acc, key) => ({ ...acc, [key]: 0 }), {}))) as unknown as Map<Skill, number>,
-      json.skillsModifier ?? new Map(Object.entries(Object.values(Skill).filter(value => typeof value === 'string').reduce((acc, key) => ({ ...acc, [key]: 0 }), {}))) as unknown as Map<Skill, number>,
+      json.skills ?? Object.values(Skill).reduce((acc, key) => ({ ...acc, [key]: 0 }), {}),
+      json.skillsModifier ?? Object.values(Skill).reduce((acc, key) => ({ ...acc, [key]: 0 }), {}),
       json.effects ?? [],
     );
   }

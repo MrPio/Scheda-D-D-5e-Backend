@@ -31,13 +31,8 @@ export class FirestoreRepository<T extends JSONSerializable> implements IReposit
     return item;
   }
 
-  async update(id: string, item: T): Promise<T | null> {
-    // const existingItem = await this.getById(id);
-    // if (!existingItem) {
-    //   return null;
-    // }
-    await this.firestoreManager.patch(`${this.collectionName}/${id}`, item.toJSON());
-    return item;
+  async update(id: string, item: Partial<T>): Promise<void> {
+    await this.firestoreManager.patch(`${this.collectionName}/${id}`, item);
   }
 
   async delete(id: string): Promise<void> {
