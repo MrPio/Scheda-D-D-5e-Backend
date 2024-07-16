@@ -18,17 +18,17 @@ export enum Effect {
 }
 
 export const cannotSee = (effect: Effect): boolean =>
-  effect in [];
+  effect in [Effect.blinded, Effect.petrified, Effect.unconscious];
 
 export const cannotMove = (effect: Effect): boolean =>
-  effect in [Effect.grappled, Effect.paralyzed, Effect.petrified, Effect.unconscious, Effect.stunned];
+  effect in [Effect.restrained, Effect.paralyzed, Effect.petrified, Effect.unconscious, Effect.grappled, Effect.stunned];
 
 export const cannotAttack = (effect: Effect): boolean =>
-  effect in [];
+  effect in [Effect.incapacitated, Effect.paralyzed, Effect.petrified, Effect.unconscious, Effect.prone, Effect.stunned];
 
 export const cannotUseReaction = (effect: Effect): boolean =>
-  effect in [];
+  effect in [Effect.incapacitated, Effect.paralyzed, Effect.petrified, Effect.unconscious, Effect.prone, Effect.stunned];
 
 export const cannotCastEnchantment = (effect: Effect): boolean =>
-  effect in [];
+  effect in [Effect.incapacitated, Effect.paralyzed, Effect.petrified, Effect.unconscious, Effect.prone, Effect.stunned];
 
