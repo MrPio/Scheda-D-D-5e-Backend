@@ -1,3 +1,4 @@
+import { MakeNullishOptional } from 'sequelize/types/utils';
 import { IRepository } from './repository';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
@@ -17,7 +18,7 @@ export class SequelizeRepository<T extends Model> implements IRepository<T> {
   }
 
   async create(item: T): Promise<T> {
-    return this.model.create(item as any);
+    return this.model.create(item as MakeNullishOptional<T>);
   }
 
   async update(id: string, item: T): Promise<T | null> {
@@ -25,7 +26,7 @@ export class SequelizeRepository<T extends Model> implements IRepository<T> {
     if (!existingItem) {
       return null;
     }
-    return existingItem.update(item as any);
+    return existingItem.update(item as MakeNullishOptional<T>);
   }
 
   async delete(id: string): Promise<void> {
