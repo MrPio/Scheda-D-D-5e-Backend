@@ -27,6 +27,8 @@ export class Session extends Model<Session> {
 
   @Column declare sessionStatus?: SessionStatus;
 
+  @Column declare history?: string[];
+
   @HasMany(() => Monster)
   declare monsters: Monster[];
 
