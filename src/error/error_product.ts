@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-abstract class ErrorProduct {
+export default abstract class ErrorProduct {
   constructor(
     public statusCode: number,
     public message: string,
@@ -13,8 +13,9 @@ abstract class ErrorProduct {
   }
 }
 
-class ModelNotFound extends ErrorProduct{
+export class ModelNotFound extends ErrorProduct {
   constructor(
-    public string
-  )
+    public className: string,
+    public id: string,
+  ) { super(404, `id ${id} not found for model ${className}`); }
 }
