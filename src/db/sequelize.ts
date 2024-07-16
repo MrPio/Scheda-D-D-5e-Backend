@@ -23,7 +23,7 @@ const sequelize = new Sequelize({
 });
 sequelize.addModels([Session, EntityTurn, Monster, MonsterSkill]);
 export default sequelize;
-
+/*
 (async () => {
   await sequelize.sync({ force: true });
   const session = await Session.create({ name: 'Session1', sessionStatus: SessionStatus.ongoing } as Session);
@@ -35,4 +35,4 @@ export default sequelize;
   if (monster?.effectImmunities)
     console.log(Effect[monster?.effectImmunities[0]]);
 })();
-
+*/
