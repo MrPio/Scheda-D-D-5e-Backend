@@ -1,8 +1,6 @@
 import { DocumentData, Firestore } from 'firebase-admin/firestore';
 import * as fs from 'fs';
 import * as admin from 'firebase-admin';
-import { Type } from 'typescript';
-import {SampleModel} from '../../test/test_firestore_manager';
 
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
