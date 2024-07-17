@@ -3,7 +3,7 @@ import { Repository } from './repository';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
 export class SequelizeRepository<T extends Model> extends Repository<T> {
-  constructor(private model: ModelCtor<T>, ttl: number) {
+  constructor(private model: ModelCtor<T>, private relatedModel: ModelCtor<Model>[], ttl: number) {
     super(model.name, ttl);
   }
 
@@ -13,18 +13,18 @@ export class SequelizeRepository<T extends Model> extends Repository<T> {
     if (item) return item;
 
     // Otherwise retrieve it with Sequelize ORM
-    item = await this.model.findByPk(id);
+    item = await this.model.findByPk(id, { include: this.relatedModel });
     await super.setCache(id, item);
     return item;
   }
 
   async getAll(): Promise<T[]> {
-    return this.model.findAll();
+    return this.model.findAll({ include: this.relatedModel });
   }
 
   async create(item: T): Promise<T> {
     const itemWithId = await this.model.create(item as MakeNullishOptional<T>);
-    await super.setCache(itemWithId.id, itemWithId);
+    // await super.setCache(itemWithId.id, itemWithId);
     return itemWithId;
   }
 

@@ -1,6 +1,7 @@
 import { Model, Column, Table, HasMany, DataType } from 'sequelize-typescript';
 import { EntityTurn } from './entity_turn';
 import { Monster } from './monster';
+import { HistoryMessage } from './history';
 
 // The different states that a session can be in during its life cycle.
 export enum SessionStatus {
@@ -19,7 +20,11 @@ export class Session extends Model<Session> {
 
   @Column declare masterUID: string;
 
-  @Column declare entityUIDs?: string;
+  @Column declare characterUIDs?: string;
+
+  @Column declare npcUIDs?: string;
+
+  @Column declare monsterUIDs?: string;
 
   @Column declare campaignName?: string;
 
@@ -27,8 +32,10 @@ export class Session extends Model<Session> {
 
   @Column declare sessionStatus?: SessionStatus;
 
-  // FIXME: make history table
-  @Column(DataType.ARRAY(DataType.STRING)) declare history?: string[];
+  @Column(DataType.JSON) declare mapSize?: { width: number, height: number };
+
+  @HasMany(() => HistoryMessage)
+  declare history: HistoryMessage[];
 
   @HasMany(() => Monster)
   declare monsters: Monster[];

@@ -3,6 +3,7 @@ import { Session, SessionStatus } from '../src/model/session';
 import { assert } from 'console';
 import { RepositoryFactory } from '../src/repository/repository_factory';
 import { redis } from '../src/db/redis';
+import { EntityTurn } from '../src/model/entity_turn';
 
 async function testSequelizeRepository() {
   await initializeSequelize();
@@ -10,12 +11,17 @@ async function testSequelizeRepository() {
   const newSessionStatus = SessionStatus.ongoing;
 
   // Create a new session inside the 'sessions' table
-  const session = await sessionRepository.create({
+  let session = await sessionRepository.create({
     name: 'Session1',
     masterUID: 'master123',
     sessionStatus: SessionStatus.created,
   } as Session);
   console.log('Session created, status =', session.sessionStatus);
+  
+  // Eager Loading session
+  await EntityTurn.create({ entityUID: 'abc', posX: 0, posY: 3, sessionId: session.id } as EntityTurn);
+  session = (await sessionRepository.getById(session.id))!;
+  assert(session.entityTurn.length === 1);
 
   // Update the session status value
   await sessionRepository.update(session.id, { sessionStatus: newSessionStatus });

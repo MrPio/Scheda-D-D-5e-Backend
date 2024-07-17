@@ -8,5 +8,5 @@ export const redis = process.env.USE_REDIS ? new Redis({
   port: +(process.env.REDIS_PORT ?? 6379),
 }) : undefined;
 
-redis?.on('connect', () => console.log('Connected to Redis'));
+redis?.on('connect', () => {console.log('Connected to Redis'); redis.flushall()});
 redis?.on('error', (error) => console.error('Redis connection error:', error));

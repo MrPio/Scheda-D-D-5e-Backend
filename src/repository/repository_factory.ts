@@ -9,11 +9,14 @@ import Enchantment from '../model/enchantment';
 import User from '../model/user';
 import { CachedToken } from '../model/cached_token';
 import { RedisRepository } from './redis_repository';
+import { HistoryMessage } from '../model/history';
+import { MonsterSkill } from '../model/monster_skill';
+import { EntityTurn } from '../model/entity_turn';
 
 export class RepositoryFactory {
-  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, 300);
+  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, [Monster, HistoryMessage, EntityTurn], 300);
 
-  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, 300);
+  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, [MonsterSkill, Session], 300);
 
   tokenRepository = (): Repository<CachedToken> => new RedisRepository('cached_token', 300);
 

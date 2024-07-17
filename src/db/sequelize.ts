@@ -3,6 +3,7 @@ import { Session } from '../model/session';
 import { EntityTurn } from '../model/entity_turn';
 import { Monster } from '../model/monster';
 import { MonsterSkill } from '../model/monster_skill';
+import { HistoryMessage } from '../model/history';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -21,7 +22,7 @@ const sequelize = new Sequelize({
   //   return filename === member.toLowerCase();
   // },
 });
-sequelize.addModels([Session, EntityTurn, Monster, MonsterSkill]);
+sequelize.addModels([Session, EntityTurn, Monster, MonsterSkill, HistoryMessage]);
 export default sequelize;
 
 export const initializeSequelize = async () => sequelize.sync({ force: true });
