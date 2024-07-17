@@ -1,39 +1,21 @@
 import express, { Request as Req, Response as Res, NextFunction, json } from 'express';
-import * as admin from 'firebase-admin';
-import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
-import * as fs from 'fs';
 import { signInAndGetIdToken } from './db/auth';
 import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from './controller/session_controller';
 import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
 import { initializeSequelize } from './db/sequelize';
 import dotenv from 'dotenv';
 import { CachedToken } from './model/cached_token';
+import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 
 dotenv.config();
-const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
-if (!admin.apps.length) {
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+// If not in production, load the development .env file
+if ((process.env.NODE_ENV ?? 'prod') === 'dev') {
+  console.warn('Development enviroment active ---> load .dev.env');
+  dotenv.config({ path: '.dev.env' });
 }
-export const db = admin.firestore();
-
-const getDocument = async (collection: string, documentId: string) => {
-  try {
-    const docRef = db.collection(collection).doc(documentId);
-    const doc = await docRef.get();
-    if (doc.exists) {
-      console.log('Document data:', doc.data());
-    } else {
-      console.log('No such document!');
-    }
-  } catch (error) {
-    console.error('Error getting document:', error);
-  }
-};
 
 const app = express();
-// Configure app to parse json
-app.use(json());
 
 export interface AugmentedRequest extends Req {
   requestTime?: number;
@@ -44,54 +26,16 @@ const requestTime = (req: AugmentedRequest, res: Res, next: NextFunction) => {
   req.requestTime = Date.now();
   next();
 };
+app.use(json());
+app.use(requestTime);
 
-// TODO: MrPio is in charge of these
-const checkHeader = function (req: AugmentedRequest, res: Res, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (authHeader) {
-    next();
-  } else {
-    // let err = new Error('ahi ahi no auth header');
-    res.sendStatus(403);
-  }
-};
-
-const checkToken = function (req: AugmentedRequest, res: Res, next: NextFunction) {
-  const bearerHeader = req.headers.authorization;
-  if (typeof bearerHeader !== 'undefined') {
-    const bearerToken = bearerHeader.split(' ')[1];
-    req.token = bearerToken;
-    next();
-  } else {
-    res.sendStatus(403);
-  }
-};
-
-const verifyToken = async (req: AugmentedRequest, res: Res, next: NextFunction) => {
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(req.token!);
-    console.log('Token is valid:', decodedToken);
-    req.decoded_token = decodedToken;
-    next();
-
-  } catch (error) {
-    console.error('Error verifying token:', error);
-    res.sendStatus(403);
-  }
-};
-
-// An example endpoint. It will only succeed if the token is valid.
-app.get('/', requestTime, checkHeader, checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+// Test Routes =================================================================================
+// An Hello World endpoint. It will succeed if the provided JWT is valid.
+app.get('/', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   res.send('Hello World!');
 });
-// This endpoint retrieves the user document associated with the UID 
-// of the JWT token from the Firebase Firestore DB. 
-app.get('/user', requestTime, checkHeader, checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
-  getDocument('users', req.decoded_token!.uid);
-  res.send(req.decoded_token!.name);
-});
-// This endpoint retrieves a 1 hour JWT from Firebase Auth.
-app.get('/token', requestTime, async (req: AugmentedRequest, res: Res) => {
+// Retrieves a 1 hour JWT from Firebase Auth. This is an endpoint used for testing.
+app.get('/token', async (req: AugmentedRequest, res: Res) => {
   const token = await signInAndGetIdToken({
     email: process.env.FIREBASE_AUTH_TEST_EMAIL ?? '',
     password: process.env.FIREBASE_AUTH_TEST_PASSWORD ?? '',
@@ -101,39 +45,39 @@ app.get('/token', requestTime, async (req: AugmentedRequest, res: Res) => {
 
 
 // Session Routes ==============================================================================
-app.get('/sessions', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.get('/sessions', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   getSessions(req, res);
 });
-app.post('/sessions', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.post('/sessions', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   createSession(req, res);
 });
-app.get('/sessions/:sessionId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   getSessionInfo(req, res);
 });
-app.delete('/sessions/:sessionId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.delete('/sessions/:sessionId', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   deleteSession(req, res);
 });
-app.patch('/sessions/:sessionId/start', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/start', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   startSession(req, res);
 });
-app.patch('/sessions/:sessionId/pause', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/pause', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   pauseSession(req, res);
 });
-app.patch('/sessions/:sessionId/continue', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/continue', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   continueSession(req, res);
 });
-app.patch('/sessions/:sessionId/stop', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   stopSession(req, res);
 });
 
 // Turn Routes =================================================================================
-app.get('/sessions/:sessionId/turn', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   getTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/postpone', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   postponeTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/end', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   endTurn(req, res);
 });
 
@@ -141,42 +85,42 @@ app.patch('/sessions/:sessionId/turn/end', checkToken, verifyToken, (req: Augmen
 app.get('/diceRoll', (req: AugmentedRequest, res: Res) => {
   diceRoll(req, res);
 });
-app.patch('/sessions/:sessionId/attack', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   makeAttack(req, res);
 });
-app.get('/sessions/:sessionId/savingThrow', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   getSavingThrow(req, res);
 });
-app.patch('/sessions/:sessionId/effect', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   addEffect(req, res);
 });
-app.patch('/sessions/:sessionId/reaction', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   enableReaction(req, res);
 });
 
 
 // Entity Routes ===============================================================================
-app.patch('/sessions/:sessionId/entities', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   addEntity(req, res);
 });
-// app.get('/sessions/:sessionId/monsters/:monsterId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+// app.get('/sessions/:sessionId/monsters/:monsterId', checkHasToken, checkTokenIsValid, (req: RequestWithToken, res: Res) => {
 // getMonsterInfo(req, res);
 // });
-app.delete('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.delete('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   deleteEntity(req, res);
 });
-app.get('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   getEntityInfo(req, res);
 });
-app.patch('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   updateEntityInfo(req, res);
 });
 
 // History Routes ==============================================================================
-app.get('/sessions/:sessionId/history', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   getHistory(req, res);
 });
-app.post('/sessions/:sessionId/history', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
+app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {
   updateHistory(req, res);
 });
 

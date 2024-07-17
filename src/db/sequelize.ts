@@ -18,7 +18,6 @@ const sequelize = new Sequelize({
   logging: false,
   // models: [__dirname + '/../model/**/*.ts'],
   // modelMatch: (filename, member) => {
-  //   console.log(filename, member.toLowerCase());
   //   return filename === member.toLowerCase();
   // },
 });

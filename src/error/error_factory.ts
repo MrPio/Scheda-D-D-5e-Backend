@@ -1,11 +1,15 @@
 import { Session } from '../model/session';
-import ErrorProduct, { ModelNotFound } from './error_product';
+import ErrorProduct, { AuthError, GenericServerError, ModelNotFound } from './error_product';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
 import Enchantment from '../model/enchantment';
 import User from '../model/user';
 
+/**
+ * The errors related to the 400 series status code.
+ * These errors are thrown for errors on the client side.
+ */
 export class Error400Factory {
   sessionNotFound = (id: string): ErrorProduct => new ModelNotFound(Session.name, id);
 
@@ -20,4 +24,20 @@ export class Error400Factory {
   enchantmentNotFound = (id: string): ErrorProduct => new ModelNotFound(Enchantment.name, id);
 
   // diceNotFound = (id: string): ErrorProduct => new ModelNotFound('Dice', id);
+
+  noJWT = (): ErrorProduct => new AuthError('No JWT provided!');
+
+  invalidJWT = (): ErrorProduct => new AuthError('The JWT provided was not valid!');
+
+  wrongFormatJWT = (): ErrorProduct => new AuthError('The JWT provided has an invalid format!');
+
+  expiredJWT = (): ErrorProduct => new AuthError('The JWT provided has expired!');
+}
+
+/**
+ * The errors related to the 500 series status code.
+ * These errors are thrown for errors on the server side.
+ */
+export class Error500Factory {
+  genericError = (): ErrorProduct => new GenericServerError('Internal Server Error!');
 }

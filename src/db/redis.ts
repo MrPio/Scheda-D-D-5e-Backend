@@ -2,7 +2,7 @@ import { Redis } from 'ioredis';
 import dotenv from 'dotenv';
 
 dotenv.config();
-export const redis = process.env.USE_REDIS ? new Redis({
+export const redis = ((process.env.USE_REDIS ?? 'true') == 'true') ? new Redis({
   host: process.env.REDIS_HOST ?? 'localhost',
   password: process.env.REDIS_PASSWORD ?? 'toor',
   port: +(process.env.REDIS_PORT ?? 6379),
