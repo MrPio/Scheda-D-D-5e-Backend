@@ -1,18 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-
-function checkMessage(message: unknown): boolean {
-  // Esempio di controllo del tipo di messaggio
-  // Sostituisci questo con la tua logica di controllo del tipo
-  return typeof message === 'string' && message.trim().length > 0;
-}
+import { RepositoryFactory } from '../repository/repository_factory';
   
-export const validateMessage = (req: Request, res: Response, next: NextFunction) => {
+export const getHistory = async (req: Request, res: Response, next: NextFunction) => {
   
-  const { message } = req.query;
-  
-  // Check if the message is of the intended type
-  if (!checkMessage(message)) {
-    return res.status(400).json({ error: 'Invalid message type.' });
+  const { sessionId } = req.query;
+  const sessionID = String(sessionId);
+  const session = await new RepositoryFactory().sessionRepository().getById( sessionID );
+  if (!session) {
+    return res.status(400).json({ error: 'Session not found' });
   }
 
   next();

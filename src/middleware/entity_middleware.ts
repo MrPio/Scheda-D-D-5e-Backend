@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Effect } from '../model/effect';
+import { RepositoryFactory } from '../repository/repository_factory';
 
 // Utility function to check if a value is a positive integer
 function isPositiveInteger(value: number): boolean {
@@ -26,17 +27,24 @@ function isValidAttributeValue(value: number): boolean {
 }
 
 // Middleware function to validate the add of an entity
-export const addEntity = (req: Request, res: Response, next: NextFunction) => {
+export const addEntity = async (req: Request, res: Response, next: NextFunction) => {
   
-  const { entityInfo } = req.query;
+  const { sessionId } = req.query;
+  const sessionID = String(sessionId);
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
+  if (!session) {
+    return res.status(400).json({ error: 'Session not found' });
+  }
+
+  const { entityType } = req.query;
     
   // Check if the message is of the intended type
-  if (entityInfo !== 'Npc' && entityInfo !== 'Monster' && entityInfo !== 'Character') {
+  if (entityType !== 'Npc' && entityType !== 'Monster' && entityType !== 'Character') {
     return res.status(400).json({ error: 'Invalid entityType. It must be one of the following values: Npc, Monster, Characters' });
   }
 
   // Check if the entity is a Monster
-  if (entityInfo === 'Monster') {
+  if (entityType === 'Monster') {
     const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.query;
 
     // Convert values ​​to numbers
@@ -102,60 +110,100 @@ export const addEntity = (req: Request, res: Response, next: NextFunction) => {
 
     // Check enchantments
     if (enchantments) {
+
       if (!Array.isArray(enchantments)) {
         return res.status(400).json({ error: 'enchantments must be a list of string.' });
       }
 
+      const enchantmentRepository = new RepositoryFactory().enchantmentRepository();
+    
+      // verify the name of the enchantments
+      for (const enchantmentId of enchantments) {
+        const enchantment = await enchantmentRepository.getById(enchantmentId);
+        if (!enchantment) {
+          return res.status(400).json({ error: `enchantment not found: ${enchantmentId}` });
+        }
+      }
+      
     }
 
     // Check weapons
     if (weapons) {
       if (!Array.isArray(weapons)) {
-        return res.status(400).json({ error: 'weapons must be a list of string.' });
+        return res.status(400).json({ error: 'weapons must be a list.' });
       }
-  
+
     }
   }
 
+  // Check if the entity is a Character
+  if (entityType === 'Character') {
+
+    const { uid } = req.query;
+    const Uid = String(uid);
+
+    if (session.entityUIDs?.includes(Uid)) {
+      return res.status(400).json({ error: 'The character is already in the battle' }); 
+    }
+    //const character = await new RepositoryFactory().npcRepository().getById(uid);
+    
+  }
+
   // Check if the entity is a Npc
-  if (entityInfo === 'Npc') {
+  if (entityType === 'Npc') {
 
-    const { name } = req.query;
+    const { uid } = req.query;
+    const Uid = String(uid);
 
+    if (session.entityUIDs?.includes(Uid)) {
+      return res.status(400).json({ error: 'Npc is already in the battle' });
+    }
   }
    
-  // Check if the entity is a Npc
-  if (entityInfo === 'Character') {
-
-    const { name } = req.query;
-
-  }
+  
   
   next();
 };
 
-// Middleware function to validate the get of monster info
-export const getMonsterInfo = (req: Request, res: Response, next: NextFunction) => {
+// Middleware function to validate the get of monster info & the elimination of an entity & before modifying an entity
+export const getEntity = async (req: Request, res: Response, next: NextFunction) => {
 
-};
+  const { uid, sessionId } = req.query;
+  const sessionID = String(sessionId);
+  const Uid = String(uid);
 
-// Middleware function to validate the get of entity info
-export const getEntityInfo = (req: Request, res: Response, next: NextFunction) => {
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
+  if (!session) {
+    return res.status(400).json({ error: 'session not found' });
+  }
 
-};
+  if (!session.entityUIDs?.includes(Uid)) {
+    return res.status(400).json({ error: 'entity not found' });
+  }
 
-// Middleware function to validate the elimination of an entity
-export const delelteEntity = (req: Request, res: Response, next: NextFunction) => {
-
+  next();
 };
 
 // Middleware function to validate modifications of an entity
-export const modifyEntity = (req: Request, res: Response, next: NextFunction) => {
+export const modifyEntity = async (req: Request, res: Response, next: NextFunction) => {
+
+  const { uid, sessionId } = req.query;
+  const sessionID = String(sessionId);
+  const Uid = String(uid);
+
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
+  if (!session) {
+    return res.status(400).json({ error: 'session not found' });
+  }
+
+  const entity = session.entityUIDs?.includes(Uid);
+  if (!entity) {
+    return res.status(400).json({ error: 'entity not found' });
+  }
 
   // Convert enum values to an array of strings
   const validEffect = Object.values(Effect) as string[];
-
-  const { slots, hp, armorClass, speed, effects } = req.query;
+  const { hp, armorClass, speed, effects } = req.query;
 
   // Convert values ​​to numbers
   const parsedHp = Number(hp);
@@ -168,14 +216,14 @@ export const modifyEntity = (req: Request, res: Response, next: NextFunction) =>
   }
 
   // Check for any modification
-  if (!slots && !hp && !armorClass && !speed && !effects) {
+  if (hp && !armorClass && !speed && !effects) {
     return res.status(400).json({ error: 'you need to change at least one parameter.' });
   }
 
   // Check if the element is a valid value based on the enum Effect. 
   for (const element of effects as string[]) {
     if (!validEffect.includes(element)) {
-      return res.status(400).json({ error: `Invalid dice in the list: ${element}. The dice must be one of the following values: ${validEffect.join(', ')}.` });
+      return res.status(400).json({ error: `Invalid element in the list: ${element}. The list must contain at least one of the following values: ${validEffect.join(', ')}.` });
     }
   }
 
