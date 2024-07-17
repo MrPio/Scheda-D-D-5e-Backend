@@ -1,10 +1,7 @@
 import * as fs from 'fs';
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import jwt from 'jsonwebtoken';
-import { Res } from 'express';
-import { app, checkToken, verifyToken, RequestWithToken } from './api';
-import { stopSession } from './controller/session_controller';
 
 /**
  * Run this script to retrieve a 1 hour JWT from Firebase Auth.
@@ -25,21 +22,17 @@ export const signInAndGetIdToken = async (email: string, password: string): Prom
     return idToken;
   } catch (error) {
     console.error('Error signing in:', error);
-    return null
+    return null;
   }
 };
 
 export const getAndDecodeIdToken = () => {
-  signInAndGetIdToken("valeriomorelli50@gmail.com", "aaaaaa").then(token => {
+  signInAndGetIdToken('valeriomorelli50@gmail.com', 'aaaaaa').then(token => {
     if (token) {
       const decoded = jwt.decode(token);
       console.log(decoded);
-    }
-    else {
+    } else {
       console.error('Firebase Auth didn\'t provide a JWT. Please try again.');
     }
   });
 };
-app.patch('/sessions/:sessionid/stop', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
-  stopSession(req, res);
-});

@@ -1,8 +1,8 @@
-import { RequestWithToken } from '../api';
+import { AugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { randomInt } from 'crypto'; // For generating random numbers
 
-export async function diceRollService(req: RequestWithToken, res: Res) {
+export async function diceRollService(req: AugmentedRequest, res: Res) {
   const { diceList, modifier } = req.query;
   // TODO: remove error check here and use middleware
   
@@ -44,10 +44,10 @@ export async function diceRollService(req: RequestWithToken, res: Res) {
 }
 
 
-export async function makeAttackService(req: RequestWithToken, res: Res) {
+export async function makeAttackService(req: AugmentedRequest, res: Res) {
   // TODO
 }
 
-export async function getSavingThrowService(req: RequestWithToken, res: Res) {
+export async function getSavingThrowService(req: AugmentedRequest, res: Res) {
   // TODO
 }

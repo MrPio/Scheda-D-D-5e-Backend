@@ -36,5 +36,4 @@ const diceRollMiddleware = (req: Request, res: Response, next: NextFunction) => 
   next();
 };
 
-// Export the middleware function as the default export
 export default diceRollMiddleware;

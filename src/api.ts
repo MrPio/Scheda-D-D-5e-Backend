@@ -31,17 +31,17 @@ const getDocument = async (collection: string, documentId: string) => {
 const app = express();
 
 
-export interface RequestWithToken extends Req {
+export interface AugmentedRequest extends Req {
   requestTime?: number;
   token?: string;
   decoded_token?: DecodedIdToken;
 }
-const requestTime = (req: RequestWithToken, res: Res, next: NextFunction) => {
+const requestTime = (req: AugmentedRequest, res: Res, next: NextFunction) => {
   req.requestTime = Date.now();
   next();
 };
 
-const checkHeader = function (req: RequestWithToken, res: Res, next: NextFunction) {
+const checkHeader = function (req: AugmentedRequest, res: Res, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (authHeader) {
     next();
@@ -51,7 +51,7 @@ const checkHeader = function (req: RequestWithToken, res: Res, next: NextFunctio
   }
 };
 
-const checkToken = function (req: RequestWithToken, res: Res, next: NextFunction) {
+const checkToken = function (req: AugmentedRequest, res: Res, next: NextFunction) {
   const bearerHeader = req.headers.authorization;
   if (typeof bearerHeader !== 'undefined') {
     const bearerToken = bearerHeader.split(' ')[1];
@@ -62,7 +62,7 @@ const checkToken = function (req: RequestWithToken, res: Res, next: NextFunction
   }
 };
 
-const verifyToken = async (req: RequestWithToken, res: Res, next: NextFunction) => {
+const verifyToken = async (req: AugmentedRequest, res: Res, next: NextFunction) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(req.token!);
     console.log('Token is valid:', decodedToken);
@@ -76,99 +76,99 @@ const verifyToken = async (req: RequestWithToken, res: Res, next: NextFunction) 
 };
 
 // An example endpoint. It will only succeed if the token is valid.
-app.get('/', requestTime, checkHeader, checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/', requestTime, checkHeader, checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   res.send('Hello World!');
 });
 // This endpoint retrieves the user document associated with the UID 
 // of the JWT token from the Firebase Firestore DB. 
-app.get('/user', requestTime, checkHeader, checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/user', requestTime, checkHeader, checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   getDocument('users', req.decoded_token!.uid);
   res.send(req.decoded_token!.name);
 });
 // This endpoint retrieves a 1 hour JWT from Firebase Auth.
-app.get('/token', requestTime, async (req: RequestWithToken, res: Res) => {
+app.get('/token', requestTime, async (req: AugmentedRequest, res: Res) => {
   const token = await signInAndGetIdToken('valeriomorelli50@gmail.com', 'aaaaaa');
   res.send(`Your JWT is ${token}`);
 });
 
 
 // Session Routes ==============================================================================
-app.get('/sessions', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/sessions', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   getSessions(req, res);
 });
-app.post('/sessions', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.post('/sessions', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   createSession(req, res);
 });
-app.get('/sessions/:sessionId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/sessions/:sessionId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   getSessionInfo(req, res);
 });
-app.delete('/sessions/:sessionId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.delete('/sessions/:sessionId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   deleteSession(req, res);
 });
-app.patch('/sessions/:sessionId/start', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/start', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   startSession(req, res);
 });
-app.patch('/sessions/:sessionId/pause', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/pause', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   pauseSession(req, res);
 });
-app.patch('/sessions/:sessionId/continue', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/continue', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   continueSession(req, res);
 });
-app.patch('/sessions/:sessionId/stop', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/stop', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   stopSession(req, res);
 });
 
 // Turn Routes =================================================================================
-app.get('/sessions/:sessionId/turn', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/sessions/:sessionId/turn', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   getTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/postpone', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/turn/postpone', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   postponeTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/end', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/turn/end', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   endTurn(req, res);
 });
 
 // Attack Routes ===============================================================================
-app.get('/diceRoll', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/diceRoll', (req: AugmentedRequest, res: Res) => {
   diceRoll(req, res);
 });
-app.patch('/sessions/:sessionId/attack', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/attack', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   makeAttack(req, res);
 });
-app.get('/sessions/:sessionId/savingThrow', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/sessions/:sessionId/savingThrow', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   getSavingThrow(req, res);
 });
-app.patch('/sessions/:sessionId/effect', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/effect', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   addEffect(req, res);
 });
-app.patch('/sessions/:sessionId/reaction', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/reaction', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   enableReaction(req, res);
 });
 
 
 // Entity Routes ===============================================================================
-app.patch('/sessions/:sessionId/entities', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/entities', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   addEntity(req, res);
 });
 // app.get('/sessions/:sessionId/monsters/:monsterId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
-getMonsterInfo(req, res);
+// getMonsterInfo(req, res);
 // });
-app.delete('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.delete('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   deleteEntity(req, res);
 });
-app.get('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   getEntityInfo(req, res);
 });
-app.patch('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.patch('/sessions/:sessionId/entities/:entityId', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   updateEntityInfo(req, res);
 });
 
 // History Routes ==============================================================================
-app.get('/sessions/:sessionId/history', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.get('/sessions/:sessionId/history', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   getHistory(req, res);
 });
-app.post('/sessions/:sessionId/history', checkToken, verifyToken, (req: RequestWithToken, res: Res) => {
+app.post('/sessions/:sessionId/history', checkToken, verifyToken, (req: AugmentedRequest, res: Res) => {
   updateHistory(req, res);
 });
 
