@@ -111,7 +111,6 @@ The API server endpoints are listed in the following table. Blank lines separate
 | Type | Route | Parameters | Description |
 | --- | --- | --- | --- |
 | `PATCH` |`/sessions/{sessionId}/entities` | entityType, entityInfo | Adds an entity to the `sessionId`. If the `entityType` is monster, `entityInfo` must contain all of its information. Otherwise it must only contain the uid.  |
-<!-- | `GET` |`/sessions/{sessionId}/monsters/{monsterId}` | - | Returns all the info from `monsterId`. | -->
 | `DELETE` |`/sessions/{sessionId}/entities/{entityId}` | - | Removes `entityId` from `sessionId`. Fails if not found. |
 | `GET` |`/sessions/{sessionId}/entities/{entityId}` | - | Returns all the info from `entityId`. Fails if not found in `sessionId`.|
 | `PATCH` |`/sessions/{sessionId}/entities/{entityId}` | entityInfo | Updates the info of `entityId`. Fails if not found in `sessionId`. |
