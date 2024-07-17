@@ -56,14 +56,6 @@ export async function pauseSessionService(req: AugmentedRequest, res: Res) {
   return;
 }
 
-export async function continueSessionService(req: AugmentedRequest, res: Res) {
-  const { sessionId } = req.params;
-  const session = await sessionRepository.getById(sessionId);
-  await sessionRepository.update(session?.id, { sessionStatus: SessionStatus.ongoing });
-  res.status(200).send(`Session ${sessionId} continued succesfully!`);
-  return;
-}
-
 export async function stopSessionService(req: AugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
