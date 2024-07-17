@@ -40,7 +40,7 @@ export async function diceRollService(req: AugmentedRequest, res: Res) {
   total += mod;
 
   // Return the result
-  res.status(200).json({ result: total });
+  return res.status(200).json({ result: total });
 }
 
 

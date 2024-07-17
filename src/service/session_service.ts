@@ -22,7 +22,7 @@ export async function createSessionService(req: AugmentedRequest, res: Res) {
     mapSize,
   } as Session);
 
-  return res.status(200).json(newSession);
+  return res.status(201).json(newSession);
 }
 
 export async function getSessionInfoService(req: AugmentedRequest, res: Res) {
