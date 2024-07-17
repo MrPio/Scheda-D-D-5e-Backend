@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/api.ts",
-  "scripts": {
-    "start": "tsc src/api.ts && node src/api.js"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -27,6 +27,7 @@ export class Session extends Model<Session> {
 
   @Column declare sessionStatus?: SessionStatus;
 
+  // FIXME: make history table
   @Column(DataType.ARRAY(DataType.STRING)) declare history?: string[];
 
   @HasMany(() => Monster)

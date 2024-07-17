@@ -1,27 +1,26 @@
-version: '3.7'
-services:
-  bitbattle_db:
-    image: postgres
-    container_name: db
-    restart: always
-    environment:
-      - POSTGRES_USER: ${PG_USERNAME}
-      - POSTGRES_PASSWORD: ${PG_PASSWORD}
-    ports:
-      - 5432:${PG_PORT}
-    volumes:
-      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+version: '3.8'
 
-  bitbattle_node:
-    container_name: node_server
-    build: .
+services:
+  # db:
+  #   image: postgres
+  #   container_name: ${DB_CONTAINER_NAME}
+  #   restart: always
+  #   environment:
+  #     - POSTGRES_USER: ${PG_USERNAME}
+  #     - POSTGRES_PASSWORD: ${PG_PASSWORD}
+  #   ports:
+  #     - 5432:${PG_PORT}
+  #   volumes:
+  #     - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  redis:
+    image: redis:latest
     restart: always
+    container_name: ${REDIS_CONTAINER_NAME}
     ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      - bitbattle_db
+      - "${REDIS_PORT}:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
-      - ./pdf:/usr/src/app/pdf
-      - ./json:/usr/src/app/json
+      - ./redis-data:/data
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]

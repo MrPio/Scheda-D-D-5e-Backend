@@ -1,8 +1,9 @@
 import { AugmentedRequest } from "../api";
 import {Response as Res} from 'express';
+import { RepositoryFactory } from "../repository/repository_factory";
 
 export async function getAllSessionsService(req: AugmentedRequest, res: Res) {
-    // TODO
+    new RepositoryFactory().sessionRepository().getAll();
 }
 
 export async function createSessionService(req: AugmentedRequest, res: Res) {

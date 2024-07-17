@@ -1,17 +1,20 @@
 import { redis } from '../db/redis';
 
-export const useRedis: boolean = false;
-
 export abstract class Repository<T> {
-  constructor(private modelName: string, private ttl: number) { }
+  constructor(private modelName: string, private ttl: number) { console.log(redis); }
 
-  protected async setCache(item: T | null, id: string) {
-    if (useRedis && item)
+  protected async setCache(id: string, item: T | null) {
+    if (process.env.USE_REDIS && item)
       await redis!.set(`${this.modelName}:${id}`, JSON.stringify(item), 'EX', this.ttl);
   }
 
-  async getById(id: string): Promise<T | null> {
-    if (!useRedis) return null;
+  protected async invalidateCache(id: string) {
+    if (process.env.USE_REDIS)
+      await redis!.del(`${this.modelName}:${id}`);
+  }
+
+  async getById(id: string, noCache: boolean = false): Promise<T | null> {
+    if (!process.env.USE_REDIS || noCache) return null;
     // Check if the object is in cache
     const item = await redis!.get(`${this.modelName}:${id}`);
     if (item)

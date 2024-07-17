@@ -19,5 +19,5 @@ export class Error400Factory {
 
   enchantmentNotFound = (id: string): ErrorProduct => new ModelNotFound(Enchantment.name, id);
 
-  diceNotFound = (id: string): ErrorProduct => new ModelNotFound('Dice', id);
+  // diceNotFound = (id: string): ErrorProduct => new ModelNotFound('Dice', id);
 }

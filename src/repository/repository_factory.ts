@@ -7,11 +7,15 @@ import Character from '../model/character';
 import NPC from '../model/npc';
 import Enchantment from '../model/enchantment';
 import User from '../model/user';
+import { CachedToken } from '../model/cached_token';
+import { RedisRepository } from './redis_repository';
 
 export class RepositoryFactory {
   sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, 300);
 
   monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, 300);
+
+  tokenRepository = (): Repository<CachedToken> => new RedisRepository('cached_token', 300);
 
   characterRepository = (): Repository<Character> => new FirestoreRepository('characters', Character.fromJSON, 30);
 
@@ -20,5 +24,4 @@ export class RepositoryFactory {
   enchantmentRepository = (): Repository<Enchantment> => new FirestoreRepository('enchantments', Enchantment.fromJSON, 3600 * 24 * 7);
 
   userRepository = (): Repository<User> => new FirestoreRepository('users', User.fromJSON, 300);
-
 }
