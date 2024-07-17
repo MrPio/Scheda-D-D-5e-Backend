@@ -1,6 +1,6 @@
 import { AugmentedRequest } from '../api';
 import { Response as Res } from 'express';
-import { continueSessionService, createSessionService, deleteSessionService, getAllSessionsService, getSessionInfoService, pauseSessionService, startSessionService, stopSessionService } from '../service/session_service';
+import { createSessionService, deleteSessionService, getAllSessionsService, getSessionInfoService, pauseSessionService, startSessionService, stopSessionService } from '../service/session_service';
 import { getTurnService, postponeTurnService, endTurnService } from '../service/turn_service';
 import { getHistoryService, updateHistoryService } from '../service/history_service';
 import { diceRollService } from '../service/dice_service';
@@ -31,7 +31,7 @@ export const pauseSession = (req: AugmentedRequest, res: Res) => {
 };
 
 export const continueSession = (req: AugmentedRequest, res: Res) => {
-  return continueSessionService(req, res);
+  return startSessionService(req, res);
 };
 
 export const stopSession = (req: AugmentedRequest, res: Res) => {

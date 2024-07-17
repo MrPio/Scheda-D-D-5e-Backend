@@ -38,7 +38,7 @@ export const monsterIdParametr = (req: Request, res: Response, next: NextFunctio
   next();
 };
 
-// Check mandatory parameter DELETE/sessions/{sessionId}/entity, GET/sessions/{sessionId}/{entityId}, PATCH/sessions/{sessionId}/{entityId}
+// Check mandatory parameter 
 export const entityIdParametr = (req: Request, res: Response, next: NextFunction) => {
 
   const { entityId } = req.query;
@@ -50,7 +50,6 @@ export const entityIdParametr = (req: Request, res: Response, next: NextFunction
 
   next();
 };
-
 
 // Check mandatory parameter for POST/sessions/{sessionId}/history
 export const historyParametr = (req: Request, res: Response, next: NextFunction) => {
@@ -66,7 +65,7 @@ export const historyParametr = (req: Request, res: Response, next: NextFunction)
 };
 
 // Check mandatory parameter for PATCH/sessions/{sessionId}/entity
-export const entityParametr = (req: Request, res: Response, next: NextFunction) => {
+export const EntityParametr = (req: Request, res: Response, next: NextFunction) => {
 
   const { entityType } = req.query;
 
