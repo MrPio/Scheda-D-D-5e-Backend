@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { decodeToken, signInAndGetIdToken } from '../src/db/auth';
 import { RepositoryFactory } from '../src/repository/repository_factory';
 import { assert } from 'console';
+import { redis } from '../src/db/redis';
 
 dotenv.config();
 
@@ -24,4 +25,5 @@ dotenv.config();
   const newCachedToken = await tokenRepository.getById(token!);
   assert(newCachedToken?.username === 'Valerio Morelli');
   console.log('Username =', newCachedToken?.username);
+  redis?.disconnect();
 })();
