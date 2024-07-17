@@ -36,6 +36,11 @@
   * [Connect To Session](#ConnectToSession)
 * [📐 Class diagram](#Classdiagram)
 
+<!-- * [🪄 Patterns used](#Patternsused)
+  * [Middlewares: Chain of Responsability](#ChainofResponsability)
+  * [Exceptions handling: Factory](#ChainofResponsability)
+  * [Data sources handling: Repository + Factory + Singleton](#ChainofResponsability)
+  * [Websocket communication: Observer](#ChainofResponsability) -->
 
 <a name="Usecasediagram"></a>
 ## 📄 Use case diagram
