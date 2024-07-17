@@ -117,7 +117,7 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
 
       const enchantmentRepository = new RepositoryFactory().enchantmentRepository();
     
-      // verify the name of the enchantments
+      // Verify the name of the enchantments
       for (const enchantmentId of enchantments) {
         const enchantment = await enchantmentRepository.getById(enchantmentId);
         if (!enchantment) {
@@ -142,6 +142,11 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
     const { uid } = req.query;
     const Uid = String(uid);
 
+    const character = await new RepositoryFactory().characterRepository().getById(Uid);
+    if (!character) {
+      return res.status(400).json({ error: 'The character is not found' }); 
+    }
+
     if (session.entityUIDs?.includes(Uid)) {
       return res.status(400).json({ error: 'The character is already in the battle' }); 
     }
@@ -154,6 +159,11 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
 
     const { uid } = req.query;
     const Uid = String(uid);
+
+    const npc = await new RepositoryFactory().npcRepository().getById(Uid);
+    if (!npc) {
+      return res.status(400).json({ error: 'The npc is not found' }); 
+    }
 
     if (session.entityUIDs?.includes(Uid)) {
       return res.status(400).json({ error: 'Npc is already in the battle' });
