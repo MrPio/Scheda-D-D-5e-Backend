@@ -3,7 +3,7 @@ import { Session } from '../model/session';
 import { EntityTurn } from '../model/entity_turn';
 import { Monster } from '../model/monster';
 import { MonsterSkill } from '../model/monster_skill';
-import { HistoryMessage } from '../model/history';
+import { HistoryMessage } from '../model/history_message';
 import dotenv from 'dotenv';
 
 dotenv.config();

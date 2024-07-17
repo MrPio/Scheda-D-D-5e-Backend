@@ -1,7 +1,7 @@
 import { Model, Column, Table, HasMany, DataType } from 'sequelize-typescript';
 import { EntityTurn } from './entity_turn';
 import { Monster } from './monster';
-import { HistoryMessage } from './history';
+import { HistoryMessage } from './history_message';
 
 // The different states that a session can be in during its life cycle.
 export enum SessionStatus {

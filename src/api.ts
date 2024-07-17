@@ -7,6 +7,7 @@ import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHi
 import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
 import { initializeSequelize } from './db/sequelize';
 import dotenv from 'dotenv';
+import { CachedToken } from './model/cached_token';
 
 dotenv.config();
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
@@ -37,13 +38,14 @@ app.use(json());
 export interface AugmentedRequest extends Req {
   requestTime?: number;
   token?: string;
-  decoded_token?: DecodedIdToken;
+  decoded_token?: CachedToken;
 }
 const requestTime = (req: AugmentedRequest, res: Res, next: NextFunction) => {
   req.requestTime = Date.now();
   next();
 };
 
+// TODO: MrPio is in charge of these
 const checkHeader = function (req: AugmentedRequest, res: Res, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (authHeader) {
