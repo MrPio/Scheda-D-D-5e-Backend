@@ -2,7 +2,7 @@
 export enum Effect {
   blinded = 'cieco',
   charmed = 'affascinato',
-  deafened = '•	assordato',
+  deafened = 'assordato',
   frightened = 'spaventato',
   grappled = 'afferrato',
   incapacitated = 'incapacitato',
