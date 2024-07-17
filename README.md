@@ -13,34 +13,65 @@
 [![Redis](https://img.shields.io/badge/Made%20with-Redis-FF6C37?style=plastic&logo=redis&logoColor=white)](https://redis.io/)
 [![RxJS](https://img.shields.io/badge/Made%20with-RxJS-FF6C37?style=plastic&logo=rxjs&logoColor=white)](https://rxjs.dev/)
 
-// TODO: chiarire termini characters, allies, monsters e entity
+<a name="index"></a>
+## 📘 Table of Contents
 
-## Use case diagram
+* [📄 Use case diagram](#Usecasediagram)
+  * [Actors](#Actors)
+  * [Session management](#Sessionmanagement)
+  * [Turn management](#Turnmanagement)
+  * [Attack management](#Attackmanagement)
+  * [Entity management](#Entitymanagement)
+  * [History management](#Historymanagement)
+* [🚩 App Routes](#AppRoutes)
+  * [Session](#SessionRoutes)
+  * [Turn](#TurnRoutes)
+  * [Attack](#AttackRoutes)
+  * [Entity](#EntityRoutes)
+  * [History](#HistoryRoutes)
+* [⏱ Sequence diagram](#Sequencediagram)
+  * [Create Session](#CreatSession)
+  * [Start Session](#StartSession)
+  * [Enable Reaction](#EnableReaction)
+  * [Connect To Session](#ConnectToSession)
+* [📐 Class diagram](#Classdiagram)
 
+
+<a name="Usecasediagram"></a>
+## 📄 Use case diagram
+
+<a name="Actors"></a>
 ### Actors
 The player roles can be mapped as follows. Note that although the client must be authenticated via JWT to participate in the combat session, there is still a route that does not require authentication, namely the `diceRoll/` route.
 
 <img src="png/Actors.png" width="450rem">
 
+<a name="Actors"></a>
 ### Session management
 <img src="png/Session Management.png" width="550rem">
 
+<a name="Turnmanagement"></a>
 ### Turn management
 <img src="png/Turn Management.png" width="550rem">
 
+<a name="Attackmanagement"></a>
 ### Attack management
 <img src="png/Attack Management.png" width="550rem">
 
+<a name="Entitymanagement"></a>
 ### Entity management
 <img src="png/Entity State Management.png" width="550rem">
 
+<a name="Historymanagement"></a>
 ### History management
 <img src="png/History Management.png" width="550rem">
 
-## App Routes
+<a name="AppRoutes"></a>
+## 🚩 App Routes
 
 The API server endpoints are listed in the following table. Blank lines separate the routes following the semantic division of the previous use cases.
 
+<a name="SessionRoutes"></a>
 ### Session Routes
 
 | Type | Route | Parameters | Description |
@@ -54,6 +85,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `PATCH` |`/sessions/{sessionId}/continue` | - | Resumes `sessionId`. Its current status must be `paused`. |
 | `PATCH` |`/sessions/{sessionId}/stop` | - | Ends `sessionId`. Its current status must be `ongoing` or `paused`. |
 
+<a name="TurnRoutes"></a>
 ### Turn Routes
 
 | Type | Route | Parameters | Description |
@@ -62,6 +94,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `PATCH` |`/sessions/{sessionId}/turn/postpone` | entityId, predecessorEntityId | Postpones the turn of the `entityId` after the turn of the `predecessorEntityId`. |
 | `PATCH` |`/sessions/{sessionId}/turn/end` | entityId | Ends the turn of the `entityId`. Notifies the next playing entity. |
 
+<a name="AttackRoutes"></a>
 ### Attack Routes
 
 | Type | Route | Parameters | Description |
@@ -72,6 +105,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `PATCH` |`/sessions/{sessionId}/effect` | entitiesId, effect | Assigns the `effect` to all the `entitiesId`. If `effect` is null, the effects of the entities are deleted. |
 | `PATCH` |`/sessions/{sessionId}/reaction` | entitiesId | Enables the reaction for all the `entitiesId`. Notifies them. |
 
+<a name="EntityRoutes"></a>
 ### Entity Routes
 
 | Type | Route | Parameters | Description |
@@ -82,6 +116,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `GET` |`/sessions/{sessionId}/entities/{entityId}` | - | Returns all the info from `entityId`. Fails if not found in `sessionId`.|
 | `PATCH` |`/sessions/{sessionId}/entities/{entityId}` | entityInfo | Updates the info of `entityId`. Fails if not found in `sessionId`. |
 
+<a name="HistoryRoutes"></a>
 ### History Routes
 
 | Type | Route | Parameters | Description |
@@ -90,23 +125,29 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `POST` |`/sessions/{sessionId}/history` | message | Adds a message to the `sessionId` history. Notifies all players except the one who posted the message. |
 
 
-## Sequence diagram
+<a name="Sequencediagram"></a>
+## ⏱ Sequence diagram
 
+<a name="CreateSession"></a>
 ### Create Session
 <img src="png/CreateSession.png" width="550rem">
 
+<a name="StartSession"></a>
 ### Start Session
 <img src="png/StartSession.png" width="550rem">
 
+<a name="Attack"></a>
 ### Attack
 <img src="png/attack.png" width="550rem">
 
+<a name="EnableReaction"></a>
 ### Enable Reaction
 <img src="png/EnableReaction.png" width="550rem">
 
+<a name="ConnectToSession"></a>
 ### Connect To Session
 <img src="png/ConnectToSession.png" width="550rem">
 
-## Class diagram
+<a name="Classdiagram"></a>
+## 📐 Class diagram
 <img src="png/Class Diagram.png" width="550rem">
-
