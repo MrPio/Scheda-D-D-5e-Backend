@@ -1,16 +1,21 @@
 import { MakeNullishOptional } from 'sequelize/types/utils';
-import { IRepository } from './repository';
+import { Repository } from './repository';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
-export class SequelizeRepository<T extends Model> implements IRepository<T> {
-  private model: ModelCtor<T>;
-
-  constructor(model: ModelCtor<T>) {
-    this.model = model;
+export class SequelizeRepository<T extends Model> extends Repository<T> {
+  constructor(private model: ModelCtor<T>, ttl: number) {
+    super(model.name, ttl);
   }
 
-  async getById(id: string): Promise<T | null> {
-    return this.model.findByPk(id);
+  override async getById(id: string): Promise<T | null> {
+    // Check if the object is in cache
+    let item = await super.getById(id);
+    if (item) return item;
+
+    // Otherwise retrieve it with Sequelize ORM
+    item = await this.model.findByPk(id);
+    await super.setCache(item, id);
+    return item;
   }
 
   async getAll(): Promise<T[]> {
@@ -18,7 +23,9 @@ export class SequelizeRepository<T extends Model> implements IRepository<T> {
   }
 
   async create(item: T): Promise<T> {
-    return this.model.create(item as MakeNullishOptional<T>);
+    const itemWithId = await this.model.create(item as MakeNullishOptional<T>);
+    await super.setCache(itemWithId, itemWithId.id);
+    return itemWithId;
   }
 
   async update(id: string, item: Partial<T>): Promise<void> {
@@ -29,8 +36,7 @@ export class SequelizeRepository<T extends Model> implements IRepository<T> {
 
   async delete(id: string): Promise<void> {
     const item = await this.getById(id);
-    if (item) {
+    if (item)
       await item.destroy();
-    }
   }
 }

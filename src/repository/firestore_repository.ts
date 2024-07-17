@@ -1,23 +1,23 @@
-import { IRepository } from './repository';
+import { Repository } from './repository';
 import { FirestoreManager, JSONSerializable } from '../db/firestore';
 import { DocumentData } from 'firebase-admin/firestore';
 
-export class FirestoreRepository<T extends JSONSerializable> implements IRepository<T> {
-  private collectionName: string;
+export class FirestoreRepository<T extends JSONSerializable> extends Repository<T> {
+  private firestoreManager = FirestoreManager.getInstance();
 
-  private firestoreManager: FirestoreManager;
-
-  private factory: (json: DocumentData) => T;
-
-  constructor(collectionName: string, factory: (json: DocumentData) => T) {
-    this.collectionName = collectionName;
-    this.firestoreManager = FirestoreManager.getInstance();
-    this.factory = factory;
+  constructor(private collectionName: string, private factory: (json: DocumentData) => T, ttl: number) {
+    super(collectionName, ttl);
   }
 
   async getById(id: string): Promise<T> {
-    const obj = await this.firestoreManager.get<T>(this.collectionName, id, this.factory);
-    return obj;
+    // Check if the object is in cache
+    let item = await super.getById(id);
+    if (item) return item;
+
+    // Otherwise retrieve it with Sequelize ORM
+    item = await this.firestoreManager.get<T>(this.collectionName, id, this.factory);
+    await super.setCache(item, id);
+    return item;
   }
 
   async getAll(): Promise<T[]> {
@@ -25,9 +25,10 @@ export class FirestoreRepository<T extends JSONSerializable> implements IReposit
   }
 
   async create(item: T): Promise<T> {
-    const id = await this.firestoreManager.post(this.collectionName, item.toJSON());
+    const uid = await this.firestoreManager.post(this.collectionName, item.toJSON());
     if ('uid' in item)
-      item.uid = id;
+      item.uid = uid;
+    await super.setCache(item, uid);
     return item;
   }
 

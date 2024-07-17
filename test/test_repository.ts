@@ -1,13 +1,11 @@
-import { SequelizeRepository } from '../src/repository/sequelize_repository';
 import sequelize, { initializeSequelize } from '../src/db/sequelize';
 import { Session, SessionStatus } from '../src/model/session';
-import Character from '../src/model/character';
-import { FirestoreRepository } from '../src/repository/firestore_repository';
 import { assert } from 'console';
+import { RepositoryFactory } from '../src/repository/repository_factory';
 
 async function testSequelizeRepository() {
   await initializeSequelize();
-  const sessionRepository = new SequelizeRepository(Session);
+  const sessionRepository = new RepositoryFactory().sessionRepository();
   const newSessionStatus = SessionStatus.ongoing;
 
   // Create a new session inside the 'sessions' table
@@ -30,27 +28,25 @@ async function testSequelizeRepository() {
 }
 
 async function testFirestoreRepository() {
-  const characterRepository = new FirestoreRepository<Character>(
-    'characters',
-    Character.fromJSON,
-  );
+  const characterRepository = new RepositoryFactory().characterRepository();
   const existingCharacterUID = 'y3XoTWriYvkNgQMNLSPF';
   const newAC = 99;
 
   // Look for an existing character
   const character = await characterRepository.getById(existingCharacterUID);
-  console.log('Character found, UID =', character.uid);
+  assert(character);
+  console.log('Character found, UID =', character!.uid);
 
   // Update the character AC value
-  await characterRepository.update(character.uid!, { armorClass: newAC });
+  await characterRepository.update(character!.uid!, { armorClass: newAC });
 
   // Check the new AC value
   const newCharacter = await characterRepository.getById(existingCharacterUID);
-  console.log('Character updated, new AC =', newCharacter.armorClass);
-  assert(newCharacter.armorClass === newAC);
+  console.log('Character updated, new AC =', newCharacter!.armorClass);
+  assert(newCharacter!.armorClass === newAC);
 
   // Restore the character old AC value
-  await characterRepository.update(character.uid!, { armorClass: character.armorClass });
+  await characterRepository.update(character!.uid!, { armorClass: character!.armorClass });
 }
 
 (async () => {

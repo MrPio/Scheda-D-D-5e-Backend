@@ -3,10 +3,12 @@ import * as admin from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import * as fs from 'fs';
 import { signInAndGetIdToken } from './request_token';
-import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from "./controller/session_controller";
-import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getMonsterInfo, getSavingThrow, makeAttack, updateEntityInfo } from "./controller/entity_controller";
+import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from './controller/session_controller';
+import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getMonsterInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
 import { initializeSequelize } from './db/sequelize';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const serviceAccount = JSON.parse(fs.readFileSync('src/firebase_configs/service_account_key.json', 'utf8'));
 
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });

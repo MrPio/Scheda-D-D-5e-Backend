@@ -1,4 +1,4 @@
-import { Model, Column, Table, HasMany } from 'sequelize-typescript';
+import { Model, Column, Table, HasMany, DataType } from 'sequelize-typescript';
 import { EntityTurn } from './entity_turn';
 import { Monster } from './monster';
 
@@ -27,7 +27,7 @@ export class Session extends Model<Session> {
 
   @Column declare sessionStatus?: SessionStatus;
 
-  @Column declare history?: string[];
+  @Column(DataType.ARRAY(DataType.STRING)) declare history?: string[];
 
   @HasMany(() => Monster)
   declare monsters: Monster[];
