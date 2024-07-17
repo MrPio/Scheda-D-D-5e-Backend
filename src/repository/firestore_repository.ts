@@ -9,14 +9,14 @@ export class FirestoreRepository<T extends JSONSerializable> extends Repository<
     super(collectionName, ttl);
   }
 
-  async getById(id: string): Promise<T> {
+  override async getById(id: string): Promise<T> {
     // Check if the object is in cache
     let item = await super.getById(id);
     if (item) return item;
 
     // Otherwise retrieve it with Sequelize ORM
     item = await this.firestoreManager.get<T>(this.collectionName, id, this.factory);
-    await super.setCache(item, id);
+    await super.setCache(id, item);
     return item;
   }
 
@@ -28,15 +28,17 @@ export class FirestoreRepository<T extends JSONSerializable> extends Repository<
     const uid = await this.firestoreManager.post(this.collectionName, item.toJSON());
     if ('uid' in item)
       item.uid = uid;
-    await super.setCache(item, uid);
+    await super.setCache(uid, item);
     return item;
   }
 
   async update(id: string, item: Partial<T>): Promise<void> {
+    super.invalidateCache(id);
     await this.firestoreManager.patch(`${this.collectionName}/${id}`, item);
   }
 
   async delete(id: string): Promise<void> {
+    super.invalidateCache(id);
     await this.firestoreManager.delete(`${this.collectionName}/${id}`);
   }
 }

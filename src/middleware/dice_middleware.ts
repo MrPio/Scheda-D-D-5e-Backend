@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Dice } from '../model/dice';
+import { Error400Factory } from '../error/error_factory';
 
 // Middleware function to validate the dice roll parameters
 const diceRollMiddleware = (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +26,7 @@ const diceRollMiddleware = (req: Request, res: Response, next: NextFunction) => 
     return res.status(400).json({ error: 'diceList must be a list.' });
   }
 
-  //check if the die is a valid value based on the enum Dice. 
+  // Check if the dice is a valid value based on the enum Dice. 
   for (const die of diceList as string[]) {
     if (!validDice.includes(die)) {
       return res.status(400).json({ error: `Invalid dice in the list: ${die}. The dice must be one of the following values: ${validDice.join(', ')}.` });

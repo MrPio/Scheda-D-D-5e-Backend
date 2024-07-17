@@ -2,6 +2,7 @@ import sequelize, { initializeSequelize } from '../src/db/sequelize';
 import { Session, SessionStatus } from '../src/model/session';
 import { assert } from 'console';
 import { RepositoryFactory } from '../src/repository/repository_factory';
+import { redis } from '../src/db/redis';
 
 async function testSequelizeRepository() {
   await initializeSequelize();
@@ -54,4 +55,5 @@ async function testFirestoreRepository() {
   await testSequelizeRepository();
   console.log('Launching Firestore repository test ...');
   await testFirestoreRepository();
+  redis?.disconnect();
 })();

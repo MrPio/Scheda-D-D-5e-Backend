@@ -2,7 +2,7 @@ import express, { Request as Req, Response as Res, NextFunction, json } from 'ex
 import * as admin from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import * as fs from 'fs';
-import { signInAndGetIdToken } from './request_token';
+import { signInAndGetIdToken } from './db/auth';
 import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from './controller/session_controller';
 import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
 import { initializeSequelize } from './db/sequelize';
@@ -90,7 +90,10 @@ app.get('/user', requestTime, checkHeader, checkToken, verifyToken, (req: Augmen
 });
 // This endpoint retrieves a 1 hour JWT from Firebase Auth.
 app.get('/token', requestTime, async (req: AugmentedRequest, res: Res) => {
-  const token = await signInAndGetIdToken('valeriomorelli50@gmail.com', 'aaaaaa');
+  const token = await signInAndGetIdToken({
+    email: process.env.FIREBASE_AUTH_TEST_EMAIL ?? '',
+    password: process.env.FIREBASE_AUTH_TEST_PASSWORD ?? '',
+  });
   res.send(`Your JWT is ${token}`);
 });
 
