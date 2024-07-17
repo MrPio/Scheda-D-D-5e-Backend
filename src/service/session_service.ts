@@ -7,59 +7,53 @@ const sessionRepository = new RepositoryFactory().sessionRepository();
 
 export async function getAllSessionsService(req: AugmentedRequest, res: Res) {
   const sessions = await sessionRepository.getAll();
-  res.status(200).json(sessions);
-  return;
+  return res.status(200).json(sessions);  
 }
   
 export async function createSessionService(req: AugmentedRequest, res: Res) {
-  const body = req.body;
+  const { name, masterUID, campaignName, currentEntityUID, mapSize } = req.body;
 
   const newSession = await sessionRepository.create({
-    name: body.name,
-    masterUID: body.masterUID,
-    entityUIDs: body.entityUIDs,
-    campaignName: body.campaignName,
-    currentEntityUID: body.currentEntityUID,
+    name,
+    masterUID,
+    campaignName,
+    currentEntityUID,
     sessionStatus: SessionStatus.created,
+    mapSize,
   } as Session);
 
-  res.status(200).json(newSession);
+  return res.status(200).json(newSession);
 }
 
 export async function getSessionInfoService(req: AugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
-  res.status(200).json(session);
-  return;
+  return res.status(200).json(session);
 }
 
 export async function deleteSessionService(req: AugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   await sessionRepository.delete(sessionId);
-  res.status(200).send(`Session ${sessionId} deleted succesfully!`);
-  return;
+  return res.status(200).send(`Session ${sessionId} deleted succesfully!`);
 }
 
 export async function startSessionService(req: AugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   await sessionRepository.update(session?.id, { sessionStatus: SessionStatus.ongoing });
-  res.status(200).send(`Session ${sessionId} started succesfully!`);
-  return;
+  return res.status(200).send(`Session ${sessionId} started succesfully!`);
 }
 
 export async function pauseSessionService(req: AugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   await sessionRepository.update(session?.id, { sessionStatus: SessionStatus.paused });
-  res.status(200).send(`Session ${sessionId} paused succesfully!`);
-  return;
+  return res.status(200).send(`Session ${sessionId} paused succesfully!`);
 }
 
 export async function stopSessionService(req: AugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   await sessionRepository.update(session?.id, { sessionStatus: SessionStatus.ended });
-  res.status(200).send(`Session ${sessionId} ended succesfully!`);
-  return;
+  return res.status(200).send(`Session ${sessionId} ended succesfully!`);
 }

@@ -13,8 +13,7 @@ export async function getTurnService(req: AugmentedRequest, res: Res) {
   const currentTurn = session?.entityTurn[0];
 
   // Respond with JSON containing the current turn
-  res.status(200).json({ currentTurn });
-  return;
+  return res.status(200).json({ currentTurn });
 }
 
 // TODO: rimuovere controlli e usare middleware
@@ -51,7 +50,7 @@ export async function postponeTurnService(req: AugmentedRequest, res: Res) {
   // Update session in the database
   await sessionRepository.update(session.id, { entityTurn: session.entityTurn });
     
-  res.status(200).json({ message: `Turn of entity ${entityId} postponed after entity ${predecessorEntityId}` });
+  return res.status(200).json({ message: `Turn of entity ${entityId} postponed after entity ${predecessorEntityId}` });
 }
 
 export async function endTurnService(req: AugmentedRequest, res: Res) {
