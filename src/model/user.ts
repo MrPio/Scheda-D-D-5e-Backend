@@ -1,7 +1,7 @@
 import { DocumentData } from 'firebase-admin/firestore';
-import { JSONSerializable, WithUID } from '../db/firestore';
+import { JSONSerializable, IWithUID } from '../db/firestore';
 
-export default class User extends JSONSerializable implements WithUID {
+export default class User extends JSONSerializable implements IWithUID {
 
   constructor(
     public regDateTimestamp: number,

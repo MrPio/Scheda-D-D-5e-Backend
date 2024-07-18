@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { AugmentedRequest } from '../api';
+import { IAugmentedRequest } from '../api';
 import { Error400Factory, Error500Factory } from '../error/error_factory';
 import { decodeToken } from '../db/auth';
 import { CachedToken } from '../model/cached_token';
@@ -11,7 +11,7 @@ const error500Factory: Error500Factory = new Error500Factory();
  * Check that the request header contains a token.
  * This middleware does not check the validity of such a token.
  */
-export const checkHasToken = async (req: AugmentedRequest, res: Response, next: NextFunction) => {
+export const checkHasToken = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   // Check if JWT authorization is disabled for testing purposes.
   if ((process.env.USE_JWT ?? 'true')  != 'true') {
     next();
@@ -32,7 +32,7 @@ export const checkHasToken = async (req: AugmentedRequest, res: Response, next: 
  * To avoid multiple requests to Firebase Auth with the same token,
  * the JWT is stored in the Redis cache with a short TTL. 
  */
-export const checkTokenIsValid = async (req: AugmentedRequest, res: Response, next: NextFunction) => {
+export const checkTokenIsValid = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   // Check if JWT authorization is disabled for testing purposes.
   if ((process.env.USE_JWT ?? 'true') != 'true') {
     req.decoded_token = new CachedToken('k9vc0kojNcO9JB9qVdf33F6h3eD2', 'debug_token');

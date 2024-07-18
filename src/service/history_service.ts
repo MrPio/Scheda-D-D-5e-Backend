@@ -1,4 +1,4 @@
-import { AugmentedRequest } from '../api';
+import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { HistoryMessage } from '../model/history_message';
@@ -6,7 +6,7 @@ import { HistoryMessage } from '../model/history_message';
 const sessionRepository = new RepositoryFactory().sessionRepository();
 const historyRepository = new RepositoryFactory().historyRepository();
 
-export async function getHistoryService(req: AugmentedRequest, res: Res) {
+export async function getHistoryService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
 
   // Retrieve the session with history relationship
@@ -16,7 +16,7 @@ export async function getHistoryService(req: AugmentedRequest, res: Res) {
   return res.status(200).json(session?.history);
 }
 
-export async function updateHistoryService(req: AugmentedRequest, res: Res) {
+export async function updateHistoryService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { msg, actionType } = req.body;
 

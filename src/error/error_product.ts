@@ -1,6 +1,5 @@
 import { Response } from 'express';
-import * as fs from 'fs';
-import path from 'path';
+import { StatusCodes } from 'http-status-codes';
 
 export default abstract class ErrorProduct {
   constructor(
@@ -8,23 +7,9 @@ export default abstract class ErrorProduct {
     protected message: string,
   ) { }
 
-  public setStatus(res: Response, useGIF: boolean = false): void {
+  public setStatus(res: Response): void {
     res.status(this.statusCode);
-    if (useGIF)
-      this.setGIF(res);
-    else
-      res.json({ error: this.constructor.name, ...this });
-  }
-
-  private setGIF(res: Response): void {
-    fs.readFile(path.join(__dirname, 'error.html'), 'utf8', (err, htmlContent) => {
-      if (!err) {
-        const replacedContent = htmlContent.replaceAll('$statusCode', this.statusCode.toString()).replaceAll('$message', this.message);
-        res.setHeader('Content-Type', 'text/html');
-        res.send(replacedContent);
-        res.sendFile(path.join(__dirname, `/gif/${this.statusCode}.gif`));
-      }
-    });
+    res.json({ error: this.constructor.name, ...this });
   }
 }
 
@@ -32,21 +17,21 @@ export class ModelNotFound extends ErrorProduct {
   constructor(
     public className: string,
     public id: string,
-  ) { super(404, `id "${id}" not found for model "${className}"!`); }
+  ) { super(StatusCodes.NOT_FOUND, `id "${id}" not found for model "${className}"!`); }
 }
 
 export class AuthError extends ErrorProduct {
-  constructor(message: string) { super(403, message); }
+  constructor(message: string) { super(StatusCodes.UNAUTHORIZED, message); }
 }
 
 export class MissingMandatoryParamError extends ErrorProduct {
-  constructor(param: string) { super(400, `Missing mandatory parameter: "${param}"!`); }
+  constructor(param: string) { super(StatusCodes.BAD_REQUEST, `Missing mandatory parameter: "${param}"!`); }
 }
 
 export class WrongParamTypeError extends ErrorProduct {
-  constructor(param: string, type:string) { super(400, `Parameter "${param}" must be of type "${type}"!`); }
+  constructor(param: string, type: string) { super(StatusCodes.BAD_REQUEST, `Parameter "${param}" must be of type "${type}"!`); }
 }
 
 export class GenericServerError extends ErrorProduct {
-  constructor(message: string) { super(500, message); }
+  constructor(message: string) { super(StatusCodes.INTERNAL_SERVER_ERROR, message); }
 }

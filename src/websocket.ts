@@ -9,7 +9,7 @@ import { SessionStatus } from './model/session';
 import { initializeSequelize } from './db/sequelize';
 
 
-interface MessageEvent {
+interface IMessageEvent {
   ws: WebSocket;
   message: string;
 }
@@ -21,7 +21,7 @@ const serverOptions = {
 
 const server = new https.Server(serverOptions);
 const wss = new WebSocket.Server({ server });
-const messageSubject = new Subject<MessageEvent>();
+const messageSubject = new Subject<IMessageEvent>();
 
 /**
  *  Start websocket server. The url is expected to be formatted as `/sessions/{sessionId}`

@@ -1,14 +1,14 @@
 import { Response, NextFunction } from 'express';
 import { Dice } from '../model/dice';
 import { Error400Factory } from '../error/error_factory';
-import { AugmentedRequest } from '../api';
+import { IAugmentedRequest } from '../api';
 
 const error400Factory: Error400Factory = new Error400Factory();
 
 /**
  * Check the validity of a dice roll request.
  */
-export const checkDiceRoll = (req: AugmentedRequest, res: Response, next: NextFunction) => {
+export const checkDiceRoll = (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   const diceList: string[] = req.body.diceList;
   const modifier = (req.body.modifier ?? 0) as number;
 

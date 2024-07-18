@@ -1,6 +1,6 @@
-import { WithUID } from '../db/firestore';
+import { IWithUID } from '../db/firestore';
 
-export class CachedToken implements WithUID {
+export class CachedToken implements IWithUID {
   public uid?: string;
 
   constructor(

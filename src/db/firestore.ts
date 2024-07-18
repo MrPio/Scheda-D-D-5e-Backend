@@ -8,7 +8,7 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 export const db = admin.firestore();
 
 // Interface representing an object with a unique identifier
-export interface WithUID {
+export interface IWithUID {
   uid?: string;
 }
 
@@ -49,7 +49,7 @@ export class FirestoreManager {
   }
 
   // Get a document from a collection by its UID
-  async get<T extends WithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
+  async get<T extends IWithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
     const docRef = this._database.collection(collectionName).doc(uid);
     const docSnap = await docRef.get();
     if (!docSnap.exists) {
@@ -57,7 +57,7 @@ export class FirestoreManager {
     }
     const data = docSnap.data()!;
     const model = factory(data);
-    (model as WithUID).uid = uid;
+    (model as IWithUID).uid = uid;
     return model;
   }
 
@@ -76,7 +76,7 @@ export class FirestoreManager {
   }
 
   // Get a list of documents by their UIDs from a collection
-  async getListFromUIDs<T extends WithUID & JSONSerializable>(collectionName: string, uids: string[], factory: (json: DocumentData) => T): Promise<T[]> {
+  async getListFromUIDs<T extends IWithUID & JSONSerializable>(collectionName: string, uids: string[], factory: (json: DocumentData) => T): Promise<T[]> {
     const querySnapshot = await this._database.collection(collectionName).where('id', 'in', uids).get();
     return querySnapshot.docs.map(docSnap => {
       const data = docSnap.data()!;
