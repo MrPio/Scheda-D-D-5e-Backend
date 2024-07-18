@@ -59,46 +59,46 @@ export async function addEffectService(req: IAugmentedRequest, res: Res) {
   const updatedCharacters: Character[] = [];
 
   // Loop through entitiesId to update effects
-  for (const entityId of entitiesIdArray) {
-    let updatedEntity: Monster | NPC | Character | null = null;
+  // for (const entityId of entitiesIdArray) {
+  //   let updatedEntity: Monster | NPC | Character | null = null;
 
-    // Check if entityId corresponds to a Monster
-    const monsterUID = session.monsterUIDs?.find(m => m == entityId);
-    if (monsterUID) {
-      const monster = session.monsters.find(m => m.id == monsterUID);
-      // TODO...
-      updatedEntity = await monsterRepository.update(monster.id, { effects: monster.effects }) as Monster;
-      updatedMonsters.push(updatedEntity);
-      continue;
-    }
+  //   // Check if entityId corresponds to a Monster
+  //   const monsterUID = session.monsterUIDs?.find(m => m == entityId);
+  //   if (monsterUID) {
+  //     const monster = session.monsters.find(m => m.id == monsterUID);
+  //     // TODO...
+  //     updatedEntity = await monsterRepository.update(monster.id, { effects: monster.effects }) as Monster;
+  //     updatedMonsters.push(updatedEntity);
+  //     continue;
+  //   }
 
-    // Check if entityId corresponds to an NPC
-    const npc = session.npcUIDs?.find(n => n.id === entityId);
-    if (npc) {
-      npc.effects = effect !== null ? [effect] : [];
-      updatedEntity = await npcRepository.update(npc.id, { effects: npc.effects }) as NPC;
-      updatedNPCs.push(updatedEntity);
-      continue;
-    }
+  //   // Check if entityId corresponds to an NPC
+  //   const npc = session.npcUIDs?.find(n => n.id === entityId);
+  //   if (npc) {
+  //     npc.effects = effect !== null ? [effect] : [];
+  //     updatedEntity = await npcRepository.update(npc.id, { effects: npc.effects }) as NPC;
+  //     updatedNPCs.push(updatedEntity);
+  //     continue;
+  //   }
 
-    // Check if entityId corresponds to a Character
-    const character = session.characterUIDs?.find(c => c.id === entityId);
-    if (character) {
-      character.effects = effect !== null ? [effect] : [];
-      updatedEntity = await characterRepository.update(character.id, { effects: character.effects }) as Character;
-      updatedCharacters.push(updatedEntity);
-      continue;
-    }
+  //   // Check if entityId corresponds to a Character
+  //   const character = session.characterUIDs?.find(c => c.id === entityId);
+  //   if (character) {
+  //     character.effects = effect !== null ? [effect] : [];
+  //     updatedEntity = await characterRepository.update(character.id, { effects: character.effects }) as Character;
+  //     updatedCharacters.push(updatedEntity);
+  //     continue;
+  //   }
 
-    return res.status(404).json({ error: `Entity with id ${entityId} not found in session` });
-  }
+  //   return res.status(404).json({ error: `Entity with id ${entityId} not found in session` });
+  // }
 
-  return res.status(200).json({
-    message: `Effect ${effect !== null ? effect : 'cleared'} updated for entities`,
-    updatedMonsters,
-    updatedNPCs,
-    updatedCharacters,
-  });
+  // return res.status(200).json({
+  //   message: `Effect ${effect !== null ? effect : 'cleared'} updated for entities`,
+  //   updatedMonsters,
+  //   updatedNPCs,
+  //   updatedCharacters,
+  // });
 }
 
 export async function enableReactionService(req: IAugmentedRequest, res: Res) {

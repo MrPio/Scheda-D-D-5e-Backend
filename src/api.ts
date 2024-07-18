@@ -1,21 +1,22 @@
-import express, { Request as Req, Response as Res, NextFunction, json } from 'express';
-import { signInAndGetIdToken } from './db/auth';
-import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from './controller/session_controller';
-import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
-import { initializeSequelize } from './db/sequelize';
 import dotenv from 'dotenv';
-import { CachedToken } from './model/cached_token';
-import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
-import { checkDiceRoll } from './middleware/dice_middleware';
-import { Error400Factory } from './error/error_factory';
-
 dotenv.config();
-
 // If not in production, load the development .env file
 if ((process.env.NODE_ENV ?? 'prod') === 'dev') {
   console.warn('Development enviroment active ---> load .dev.env');
   dotenv.config({ path: '.dev.env' });
 }
+
+import express, { Request as Req, Response as Res, NextFunction, json } from 'express';
+import { signInAndGetIdToken } from './db/auth';
+import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from './controller/session_controller';
+import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
+import { initializeSequelize } from './db/sequelize';
+import { CachedToken } from './model/cached_token';
+import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
+import { checkDiceRoll } from './middleware/dice_middleware';
+import { Error400Factory } from './error/error_factory';
+
+
 
 const app = express();
 
