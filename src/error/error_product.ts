@@ -32,6 +32,10 @@ export class WrongParamTypeError extends ErrorProduct {
   constructor(param: string, type: string) { super(StatusCodes.BAD_REQUEST, `Parameter "${param}" must be of type "${type}"!`); }
 }
 
+export class GenericClientError extends ErrorProduct {
+  constructor(message: string) { super(StatusCodes.BAD_REQUEST, message); }
+}
+
 export class GenericServerError extends ErrorProduct {
   constructor(message: string) { super(StatusCodes.INTERNAL_SERVER_ERROR, message); }
 }

@@ -24,8 +24,6 @@ export class Session extends Model<Session> {
 
   @Column(DataType.ARRAY(DataType.STRING)) declare npcUIDs?: string[];
 
-  @Column(DataType.ARRAY(DataType.STRING)) declare monsterUIDs?: string[];
-
   @Column(DataType.ARRAY(DataType.STRING)) declare userUIDs?: string[];
 
   @Column(DataType.ARRAY(DataType.STRING)) declare connectedUserUIDs?: string[];
@@ -45,5 +43,9 @@ export class Session extends Model<Session> {
   declare monsters: Monster[];
 
   @HasMany(() => EntityTurn)
-  declare entityTurn: EntityTurn[];
+  declare entityTurns: EntityTurn[];
+
+  get monsterUIDs(): string[] {
+    return this.monsters.map(it => it.id);
+  }
 }

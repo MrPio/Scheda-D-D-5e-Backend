@@ -34,26 +34,26 @@ export async function getSessionInfoService(req: IAugmentedRequest, res: Res) {
 export async function deleteSessionService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   await sessionRepository.delete(sessionId);
-  return res.status(200).send(`Session ${sessionId} deleted succesfully!`);
+  return res.status(200).send(`Session ${sessionId} deleted successfully!`);
 }
 
 export async function startSessionService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   await sessionRepository.update(session?.id, { sessionStatus: SessionStatus.ongoing });
-  return res.status(200).send(`Session ${sessionId} started succesfully!`);
+  return res.status(200).send(`Session ${sessionId} started successfully!`);
 }
 
 export async function pauseSessionService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   await sessionRepository.update(session?.id, { sessionStatus: SessionStatus.paused });
-  return res.status(200).send(`Session ${sessionId} paused succesfully!`);
+  return res.status(200).send(`Session ${sessionId} paused successfully!`);
 }
 
 export async function stopSessionService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   await sessionRepository.update(session?.id, { sessionStatus: SessionStatus.ended });
-  return res.status(200).send(`Session ${sessionId} ended succesfully!`);
+  return res.status(200).send(`Session ${sessionId} ended successfully!`);
 }

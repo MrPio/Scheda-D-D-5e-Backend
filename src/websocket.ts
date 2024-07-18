@@ -1,3 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config();
+// If not in production, load the development .env file
+if ((process.env.NODE_ENV ?? 'prod') === 'dev') {
+  console.warn('Development enviroment active ---> load .dev.env');
+  dotenv.config({ path: '.dev.env' });
+}
+
 import WebSocket from 'ws';
 import { Subject } from 'rxjs';
 import * as https from 'https';
@@ -7,7 +15,6 @@ import { decodeToken } from './db/auth';
 import { RepositoryFactory } from './repository/repository_factory';
 import { SessionStatus } from './model/session';
 import { initializeSequelize } from './db/sequelize';
-
 
 interface IMessageEvent {
   ws: WebSocket;

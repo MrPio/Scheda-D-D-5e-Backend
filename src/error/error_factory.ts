@@ -1,5 +1,5 @@
 import { Session } from '../model/session';
-import ErrorProduct, { AuthError, GenericServerError, MissingMandatoryParamError, ModelNotFound, WrongParamTypeError } from './error_product';
+import ErrorProduct, { AuthError, GenericClientError, GenericServerError, MissingMandatoryParamError, ModelNotFound, WrongParamTypeError } from './error_product';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
@@ -11,6 +11,8 @@ import User from '../model/user';
  * These errors are thrown for errors on the client side.
  */
 export class Error400Factory {
+  genericError = (message: string): ErrorProduct => new GenericClientError(message);
+
   sessionNotFound = (id: string): ErrorProduct => new ModelNotFound(Session.name, id);
 
   monsterNotFound = (id: string): ErrorProduct => new ModelNotFound(Monster.name, id);
@@ -35,7 +37,7 @@ export class Error400Factory {
 
   missingMandatoryParam = (param: string): MissingMandatoryParamError => new MissingMandatoryParamError(param);
 
-  wrongParameterType = (param: string, type:string): WrongParamTypeError => new WrongParamTypeError(param, type);
+  wrongParameterType = (param: string, type: string): WrongParamTypeError => new WrongParamTypeError(param, type);
 }
 
 /**

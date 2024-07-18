@@ -26,14 +26,14 @@ export async function diceRollService(req: IAugmentedRequest, res: Res) {
 
 
 export async function makeAttackService(req: IAugmentedRequest, res: Res) {
-  // TODO mrPio
+  // TODO MrPio
 }
 
 export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
   // TODO
 }
 
-// TODO mrPio
+// TODO MrPio
 export async function addEffectService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { entitiesId, effect } = req.body;

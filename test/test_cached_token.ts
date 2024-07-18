@@ -19,7 +19,7 @@ dotenv.config();
   // Decode the JWT and cache it with Redis
   const cachedToken = await decodeToken(token!, true);
   tokenRepository.create(cachedToken);
-  console.log('JWT succesfully cached!');
+  console.log('JWT successfully cached!');
 
   // Retrieve the token from the cache
   const newCachedToken = await tokenRepository.getById(token!);

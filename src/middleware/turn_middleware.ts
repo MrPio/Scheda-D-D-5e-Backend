@@ -33,7 +33,7 @@ export const endTurn = async (req: Request, res: Response, next: NextFunction) =
   }
 
   // Extract the entityUIDs from the entityTurn objects
-  const entityUIDsInTurn = session.entityTurn.map((turn: EntityTurn) => turn.entityUID);
+  const entityUIDsInTurn = session.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
   if (!entityUIDsInTurn.includes(entityID)) {
     return res.status(400).json({ error: `the entity ${entityID} is not found in the turn of the session` });
@@ -64,7 +64,7 @@ export const postponeTurn = async (req: Request, res: Response, next: NextFuncti
   }
 
   // Extract the entityUIDs from the entityTurn objects
-  const entityUIDsInTurn = session.entityTurn.map((turn: EntityTurn) => turn.entityUID);
+  const entityUIDsInTurn = session.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
   if (!entityUIDsInTurn.includes(entityID)) {
     return res.status(400).json({ error: `the entity ${entityID} is not found in the turn of the session` });

@@ -22,7 +22,7 @@ async function testSequelizeRepository() {
   // Eager Loading session
   await EntityTurn.create({ entityUID: 'abc', posX: 0, posY: 3, sessionId: session.id } as EntityTurn);
   session = (await sessionRepository.getById(session.id))!;
-  assert(session.entityTurn.length === 1);
+  assert(session.entityTurns.length === 1);
 
   // Update the session status value
   await sessionRepository.update(session.id, { sessionStatus: newSessionStatus });

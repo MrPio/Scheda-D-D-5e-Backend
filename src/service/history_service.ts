@@ -2,6 +2,7 @@ import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { HistoryMessage } from '../model/history_message';
+import { StatusCodes } from 'http-status-codes';
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
 const historyRepository = new RepositoryFactory().historyRepository();
@@ -30,5 +31,5 @@ export async function updateHistoryService(req: IAugmentedRequest, res: Res) {
     sessionId: session?.id,
   } as HistoryMessage);
 
-  return res.status(201).json(historyMessage);
+  return res.status(StatusCodes.CREATED).json(historyMessage);
 }

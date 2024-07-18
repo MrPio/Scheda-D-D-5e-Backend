@@ -1,7 +1,9 @@
 import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
+import { Error400Factory } from '../error/error_factory';
 
+const errorFactory = new Error400Factory();
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
 const monsterRepository = repositoryFactory.monsterRepository();
@@ -14,11 +16,11 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
 
   let entity;
   if (entityType === 'monster') {
-    entity = await monsterRepository.create(entityInfo);
-    session!.monsterUIDs = session!.monsterUIDs ? `${session!.monsterUIDs},${entity.id}` : entity.id.toString();
+    entity = await monsterRepository.create({ ...entityInfo, sessionId: sessionId });
+    session?.monsters.push(entity);
   } else if (entityType === 'npc') {
     entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
-    session!.characterUIDs = session!.characterUIDs ? `${session!.characterUIDs},${entity.uid}` : entity.uid.toString();
+    session!.npcUIDs = session!.npcUIDs ? `${session!.npcUIDs},${entity.uid}` : entity.uid.toString();
   } else {
     entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
     session!.characterUIDs = session!.characterUIDs ? `${session!.characterUIDs},${entity.uid}` : entity.uid.toString();
@@ -60,11 +62,12 @@ export async function deleteEntityService(req: IAugmentedRequest, res: Res) {
   const session = await sessionRepository.getById(sessionId);
 
   // Try to find the entity in entityTurn
-  const entityTurnIndex = session!.entityTurn.findIndex(e => e.entityUID === entityId);
-  session!.entityTurn.splice(entityTurnIndex, 1);
+  const entityTurnIndex = session!.entityTurns.findIndex(e => e.entityUID === entityId);
+  session!.entityTurns.splice(entityTurnIndex, 1);
 
   // Remove the entity from the appropriate UID list
-  session!.monsterUIDs = session!.monsterUIDs?.filter(uid => uid !== entityId);
+  await monsterRepository.delete(entityId);
+  session!.monsters = session!.monsters?.filter(monster => monster.id !== entityId);
   session!.characterUIDs = session!.characterUIDs?.filter(uid => uid !== entityId);
   session!.npcUIDs = session!.npcUIDs?.filter(uid => uid !== entityId);
 
@@ -93,12 +96,14 @@ export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
     return res.status(200).json(monster);
   }
 
-  const entityTurn = session!.entityTurn.find(e => e.entityUID === entityId);
+  const entityTurn = session!.entityTurns.find(e => e.entityUID === entityId);
   if (entityTurn) {
     return res.status(200).json(entityTurn);
   }
-
+  errorFactory.genericError(`Entity "${entityId}" not found in session "${sessionId}"`).setStatus(res);
 }
+
+// TODO: rivedere alla luce di una nuova gestione dell'ordine dei turni
 
 export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) {
   const { sessionId, entityId } = req.params;
@@ -106,10 +111,11 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
 
   const session = await sessionRepository.getById(sessionId);
 
+  // If posX or posY
   // Try to find the entity in entityTurn
-  const entityTurnIndex = session!.entityTurn.findIndex(e => e.entityUID === entityId);
+  const entityTurnIndex = session!.entityTurns.findIndex(e => e.entityUID === entityId);
   if (entityTurnIndex !== -1) {
-    const entityTurn = session!.entityTurn[entityTurnIndex];
+    const entityTurn = session!.entityTurns[entityTurnIndex];
 
     // Update entity turn information
     Object.assign(entityTurn, entityInfo);
@@ -117,6 +123,8 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     return res.status(200).json({ message: 'Entity info updated successfully' });
   }
 
+
+  // Assuming monster skill are not part of the request body
   // Try to find the entity in monsters
   const monsterIndex = session!.monsters.findIndex(m => m.id === parseInt(entityId));
   if (monsterIndex !== -1) {
@@ -128,8 +136,9 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     return res.status(200).json({ message: 'Monster info updated successfully' });
   }
 
+  // TODO: check
   // Try to find the entity in characterUIDs or npcUIDs
-  const entityTurnEntity = session!.entityTurn.find(e => e.entityUID === entityId);
+  const entityTurnEntity = session!.entityTurns.find(e => e.entityUID === entityId);
   if (entityTurnEntity) {
     // Update character or npc entity information
     Object.assign(entityTurnEntity, entityInfo);

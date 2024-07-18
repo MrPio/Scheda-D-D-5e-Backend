@@ -1,16 +1,17 @@
 import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
-import { Session } from '../model/session';
-import { EntityTurn } from '../model/entity_turn';
+import { findEntityTurn } from './utility/model_queries';
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
+
+// TODO: rivedere alla luce di una nuova gestione dell'ordine dei turni
 
 export async function getTurnService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   // Assume the current turn is the first in the sorted list
-  const currentTurn = session?.entityTurn[0];
+  const currentTurn = session?.entityTurns[0];
 
   // Respond with JSON containing the current turn
   return res.status(200).json({ currentTurn });
@@ -19,42 +20,32 @@ export async function getTurnService(req: IAugmentedRequest, res: Res) {
 export async function postponeTurnService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { entityId, predecessorEntityId } = req.body;
-  
+
   // Retrieve the session with entityTurn relationship
   const session = await sessionRepository.getById(sessionId);
-  
+
   // Find the entityTurn objects for entityId and predecessorEntityId
   const entityTurnEntity = findEntityTurn(session!, entityId);
   const predecessorEntityTurnEntity = findEntityTurn(session!, predecessorEntityId);
-    
+
   // Get the positions of entityId and predecessorEntityId in the array
-  const indexEntity = session!.entityTurn.indexOf(entityTurnEntity!);
-  const indexPredecessor = session!.entityTurn.indexOf(predecessorEntityTurnEntity!);
-    
+  const indexEntity = session!.entityTurns.indexOf(entityTurnEntity!);
+  const indexPredecessor = session!.entityTurns.indexOf(predecessorEntityTurnEntity!);
+
   // Remove entityId's turn from its current position
-  session!.entityTurn.splice(indexEntity, 1);
-    
+  session!.entityTurns.splice(indexEntity, 1);
+
   // Insert entityId's turn after predecessorEntityId's turn
   const newPosition = indexPredecessor + 1;
-  session!.entityTurn.splice(newPosition, 0, entityTurnEntity!);
-    
+  session!.entityTurns.splice(newPosition, 0, entityTurnEntity!);
+
   // Update session in the database
-  await sessionRepository.update(session!.id, { entityTurn: session!.entityTurn });
-    
+  await sessionRepository.update(session!.id, { entityTurns: session!.entityTurns });
+
   return res.status(200).json({ message: `Turn of entity ${entityId} postponed after entity ${predecessorEntityId}` });
 }
 
 export async function endTurnService(req: IAugmentedRequest, res: Res) {
   // TODO: impostare currentUid e ordinare lista, in entityTurn[0]=newCurrentUid
   // impostare anche reazione da false a true
-}
-  
-/**
-   * Helper function to find an EntityTurn by entityUID in the session.
-   * @param session The Session object containing entityTurns.
-   * @param entityUID The entityUID to search for.
-   * @returns The EntityTurn object if found, otherwise undefined.
-   */
-function findEntityTurn(session: Session, entityUID: string): EntityTurn | undefined {
-  return session.entityTurn.find(turn => turn.entityUID === entityUID);
 }
