@@ -1,10 +1,10 @@
 import { DocumentData } from 'firebase-admin/firestore';
-import { JSONSerializable, WithUID } from '../db/firestore';
-import Entity from './entity';
+import { JSONSerializable, IWithUID } from '../db/firestore';
+import IEntity from './entity';
 import { Effect } from './effect';
 import { Skill } from './monster_skill';
 
-export default class NPC extends JSONSerializable implements WithUID, Entity {
+export default class NPC extends JSONSerializable implements IWithUID, IEntity {
 
   constructor(
     public authorUID: string,

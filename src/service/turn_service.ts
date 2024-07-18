@@ -1,4 +1,4 @@
-import { AugmentedRequest } from '../api';
+import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { Session } from '../model/session';
@@ -6,7 +6,7 @@ import { EntityTurn } from '../model/entity_turn';
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
 
-export async function getTurnService(req: AugmentedRequest, res: Res) {
+export async function getTurnService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const session = await sessionRepository.getById(sessionId);
   // Assume the current turn is the first in the sorted list
@@ -17,7 +17,7 @@ export async function getTurnService(req: AugmentedRequest, res: Res) {
 }
 
 // TODO: rimuovere controlli e usare middleware
-export async function postponeTurnService(req: AugmentedRequest, res: Res) {
+export async function postponeTurnService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { entityId, predecessorEntityId } = req.body;
   
@@ -53,7 +53,7 @@ export async function postponeTurnService(req: AugmentedRequest, res: Res) {
   return res.status(200).json({ message: `Turn of entity ${entityId} postponed after entity ${predecessorEntityId}` });
 }
 
-export async function endTurnService(req: AugmentedRequest, res: Res) {
+export async function endTurnService(req: IAugmentedRequest, res: Res) {
   // TODO
 }
   

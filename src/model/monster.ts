@@ -2,7 +2,7 @@ import { Model, Column, Table, BelongsTo, ForeignKey, HasMany, DataType } from '
 import { Effect } from './effect';
 import { Session } from './session';
 import { MonsterSkill } from './monster_skill';
-import Entity from './entity';
+import IEntity from './entity';
 
 /**
  * A monster is a disposable `Entity` that the master may add at the beginning of each combat `Session`.
@@ -11,7 +11,7 @@ import Entity from './entity';
   tableName: 'monsters',
   timestamps: true,
 })
-export class Monster extends Model<Monster> implements Entity {
+export class Monster extends Model<Monster> implements IEntity {
   @Column declare _name: string;
 
   @Column declare authorUID: string;

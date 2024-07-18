@@ -1,7 +1,7 @@
 import { Repository } from './repository';
-import { WithUID } from '../db/firestore';
+import { IWithUID } from '../db/firestore';
 
-export class RedisRepository<T extends WithUID> extends Repository<T> {
+export class RedisRepository<T extends IWithUID> extends Repository<T> {
 
   override async getById(id: string): Promise<T | null> {
     return super.getById(id, false);

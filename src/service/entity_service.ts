@@ -1,4 +1,4 @@
-import { AugmentedRequest } from '../api';
+import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 
@@ -6,7 +6,7 @@ const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
 const monsterRepository = repositoryFactory.monsterRepository();
 
-export async function addEntityService(req: AugmentedRequest, res: Res) {
+export async function addEntityService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { entityType, entityInfo } = req.body;
 
@@ -51,7 +51,7 @@ In body:
   }
 */
 
-export async function deleteEntityService(req: AugmentedRequest, res: Res) {
+export async function deleteEntityService(req: IAugmentedRequest, res: Res) {
   const { sessionId, entityId } = req.params;
 
   const session = await sessionRepository.getById(sessionId);
@@ -80,7 +80,7 @@ export async function deleteEntityService(req: AugmentedRequest, res: Res) {
 // TODO
 //}
 
-export async function getEntityInfoService(req: AugmentedRequest, res: Res) {
+export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
   const { sessionId, entityId } = req.params;
 
   const session = await sessionRepository.getById(sessionId);
@@ -98,7 +98,7 @@ export async function getEntityInfoService(req: AugmentedRequest, res: Res) {
   return res.status(404).json({ error: 'Entity not found in session' });
 }
 
-export async function updateEntityInfoService(req: AugmentedRequest, res: Res) {
+export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) {
   const { sessionId, entityId } = req.params;
   const entityInfo = req.body;
 

@@ -1,9 +1,9 @@
-import { AugmentedRequest } from '../api';
+import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { Dice } from '../model/dice';
 import { randomInt } from 'crypto';
 
-export async function diceRollService(req: AugmentedRequest, res: Res) {
+export async function diceRollService(req: IAugmentedRequest, res: Res) {
   const { diceList, modifier } = req.body;
 
   // Parse diceList
@@ -15,18 +15,18 @@ export async function diceRollService(req: AugmentedRequest, res: Res) {
 }
 
 
-export async function makeAttackService(req: AugmentedRequest, res: Res) {
+export async function makeAttackService(req: IAugmentedRequest, res: Res) {
   // TODO
 }
 
-export async function getSavingThrowService(req: AugmentedRequest, res: Res) {
+export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
   // TODO
 }
 
-export async function addEffectService(req: AugmentedRequest, res: Res) {
+export async function addEffectService(req: IAugmentedRequest, res: Res) {
   // TODO
 }
 
-export async function enableReactionService(req: AugmentedRequest, res: Res) {
+export async function enableReactionService(req: IAugmentedRequest, res: Res) {
   // TODO
 }
