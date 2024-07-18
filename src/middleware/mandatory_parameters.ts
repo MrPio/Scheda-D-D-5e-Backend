@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 // Check mandatory parameter for GET/diceRoll
 export const diceRollParameter = (req: Request, res: Response, next: NextFunction) => {
-  const { diceList } = req.query;
+  const { diceList } = req.body;
 
   // Check if diceList is provided
   if (!diceList) 
@@ -14,7 +14,7 @@ export const diceRollParameter = (req: Request, res: Response, next: NextFunctio
 // Check mandatory parameter for many routes
 export const sessionIdParametr = (req: Request, res: Response, next: NextFunction) => {
 
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
 
   // Check if sessionId is provided
   if (!sessionId) 
@@ -26,7 +26,7 @@ export const sessionIdParametr = (req: Request, res: Response, next: NextFunctio
 // Check mandatory parameter GET/sessions/{sessionId}/monsters/{monsterId}
 export const monsterIdParametr = (req: Request, res: Response, next: NextFunction) => {
 
-  const { monsterId } = req.query;
+  const { monsterId } = req.params;
 
   // Check if sessionId is provided
   if (!monsterId) 
@@ -38,7 +38,7 @@ export const monsterIdParametr = (req: Request, res: Response, next: NextFunctio
 // Check mandatory parameter 
 export const entityIdParametr = (req: Request, res: Response, next: NextFunction) => {
 
-  const { entityId } = req.query;
+  const { entityId } = req.params;
 
   // Check if entityId is provided
   if (!entityId) 
@@ -50,7 +50,7 @@ export const entityIdParametr = (req: Request, res: Response, next: NextFunction
 // Check mandatory parameter for POST/sessions/{sessionId}/history
 export const historyParametr = (req: Request, res: Response, next: NextFunction) => {
 
-  const { message } = req.query;
+  const { message } = req.body;
 
   // Check if message is provided
   if (!message) 
@@ -62,7 +62,7 @@ export const historyParametr = (req: Request, res: Response, next: NextFunction)
 // Check mandatory parameter for PATCH/sessions/{sessionId}/entity
 export const EntityParametr = (req: Request, res: Response, next: NextFunction) => {
 
-  const { entityType } = req.query;
+  const { entityType } = req.body;
 
   // Check if entity is provided
   if (!entityType) {
@@ -71,7 +71,7 @@ export const EntityParametr = (req: Request, res: Response, next: NextFunction) 
     // Check if the parametr name is provided for a Npc or a Character
   } else if (entityType === 'Npc' || entityType === 'Character') {
 
-    const { name } = req.query;
+    const { name } = req.body;
 
     if (!name) 
       return res.status(400).json({ error: 'name is a required parameter.' });
@@ -79,7 +79,7 @@ export const EntityParametr = (req: Request, res: Response, next: NextFunction) 
     // Check if the parameters for Monster are provided
   } else {
 
-    const { name, maxHp, armorClass, speed, valueStrength, valueDexterity, valueIntelligence, valueWisdom, valueCharisma, valueConstitution } = req.query;
+    const { name, maxHp, armorClass, speed, valueStrength, valueDexterity, valueIntelligence, valueWisdom, valueCharisma, valueConstitution } = req.body;
 
     if (!name) 
       return res.status(400).json({ error: 'name is a required parameter.' });
@@ -119,7 +119,7 @@ export const EntityParametr = (req: Request, res: Response, next: NextFunction) 
 // Check mandatory parameter for GET/sessions/{sessionId}/savingThrow
 export const savingThrowParameter = (req: Request, res: Response, next: NextFunction) => {
 
-  const { entitiesId, difficultyClass, skill } = req.query;
+  const { entitiesId, difficultyClass, skill } = req.body;
 
   const isNonEmptyArrayOfStrings = (input: unknown): input is string[] => {
     return Array.isArray(input) && input.length > 0 && input.every(item => typeof item === 'string');
@@ -141,7 +141,7 @@ export const savingThrowParameter = (req: Request, res: Response, next: NextFunc
 
 export const attackParameter = (req: Request, res: Response, next: NextFunction) => {
 
-  const { attackType, attackerId } = req.query;
+  const { attackType, attackerId } = req.body;
 
   if (!attackType)
     return res.status(400).json({ error: 'attackType is a required parameter.' });
@@ -151,7 +151,7 @@ export const attackParameter = (req: Request, res: Response, next: NextFunction)
 
   if (attackType === 'attack') {
 
-    const { targetId, attackRoll, weapon } = req.query;
+    const { targetId, attackRoll, weapon } = req.body;
 
     if (!targetId)
       return res.status(400).json({ error: 'targetId is a required parameter.' });
@@ -166,7 +166,7 @@ export const attackParameter = (req: Request, res: Response, next: NextFunction)
 
   if (attackType === 'damageEnchantment') {
 
-    const { enchantment, targetId, attackRoll, slotLevel } = req.query;
+    const { enchantment, targetId, attackRoll, slotLevel } = req.body;
 
     if (!enchantment)
       return res.status(400).json({ error: 'enchantment is a required parameter.' });
@@ -183,7 +183,7 @@ export const attackParameter = (req: Request, res: Response, next: NextFunction)
 
   if (attackType === 'savingThrowEnchantment') {
 
-    const { enchantment, targetsId, difficultyClass, skill, slotLevel } = req.query;
+    const { enchantment, targetsId, difficultyClass, skill, slotLevel } = req.body;
 
     if (!enchantment)
       return res.status(400).json({ error: 'enchantment is a required parameter.' });
@@ -208,7 +208,7 @@ export const attackParameter = (req: Request, res: Response, next: NextFunction)
 
   if (attackType === 'descriptiveEnchantment') {
 
-    const { enchantment, slotLevel } = req.query;
+    const { enchantment, slotLevel } = req.body;
 
     if (!enchantment)
       return res.status(400).json({ error: 'enchantment is a required parameter.' });

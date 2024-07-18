@@ -6,7 +6,7 @@ import { SessionStatus } from '../model/session';
 // Check if the entities exist before the creation of a session
 export const createSession = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { characters, npcs, monsters /*,mapSize*/ } = req.query;
+  const { characters, npcs, monsters /*,mapSize*/ } = req.body;
 
   // Helper function to check if the input is a non-empty array of strings
   const isNonEmptyArrayOfStrings = (input: unknown): input is string[] => {
@@ -69,7 +69,7 @@ export const createSession = async (req: Request, res: Response, next: NextFunct
 // Check if the sessionId is valid
 export const getSession = async (req: Request, res: Response, next: NextFunction) => {    
 
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
   const sessionID = String(sessionId);
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
     
@@ -83,7 +83,7 @@ export const getSession = async (req: Request, res: Response, next: NextFunction
 // Check if the session is already started
 export const startSession = async (req: Request, res: Response, next: NextFunction) => {    
 
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
   const sessionID = String(sessionId);
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
       
@@ -101,7 +101,7 @@ export const startSession = async (req: Request, res: Response, next: NextFuncti
 // Check if the session is paused
 export const continueSession = async (req: Request, res: Response, next: NextFunction) => {    
 
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
   const sessionID = String(sessionId);
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
         
@@ -119,7 +119,7 @@ export const continueSession = async (req: Request, res: Response, next: NextFun
 // Check if the session is already started
 export const pauseSession = async (req: Request, res: Response, next: NextFunction) => {    
 
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
   const sessionID = String(sessionId);
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
         
@@ -137,7 +137,7 @@ export const pauseSession = async (req: Request, res: Response, next: NextFuncti
 // Check if the session is already started
 export const stopSession = async (req: Request, res: Response, next: NextFunction) => {    
 
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
   const sessionID = String(sessionId);
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
           

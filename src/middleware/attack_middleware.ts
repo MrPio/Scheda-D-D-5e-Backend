@@ -96,7 +96,7 @@ export const tryAttack = async (req: Request, res: Response, next: NextFunction)
     return res.status(400).json({ error: `the session ${sessionID} is not found` });
   }
 
-  const entityUIDsInTurn = session.entityTurn.map((turn: EntityTurn) => turn.entityUID);
+  const entityUIDsInTurn = session.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
   if (AttackType !== 'attack' && AttackType !== 'damageEnchantment' && AttackType !== 'savingThrowEnchantment' && AttackType !== 'descriptiveEnchantment' ) {
     return res.status(400).json({ error: 'the attackType is invalid. The attackType must be one of the following values: Attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment' });
@@ -333,7 +333,7 @@ export const requestSavingThrow = async (req: Request, res: Response, next: Next
   }
 
   // Check if all the entities are in the battle.
-  const entityUIDsInTurn = session.entityTurn.map((turn: EntityTurn) => turn.entityUID);
+  const entityUIDsInTurn = session.entityTurns.map((turn: EntityTurn) => turn.entityUID);
   for (const id of entitiesId) {
     if (!entityUIDsInTurn.includes(id)) {
       return res.status(400).json({ error: `the entity ${id} is not in the battle` });

@@ -6,7 +6,7 @@ import { EntityTurn } from '../model/entity_turn';
 // Check if the session id valid
 export const getTurn = async (req: Request, res: Response, next: NextFunction) => {    
 
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
   const sessionID = String(sessionId);
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
         
@@ -20,7 +20,7 @@ export const getTurn = async (req: Request, res: Response, next: NextFunction) =
 // Check if the the entity can end the own turn
 export const endTurn = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { sessionId, entityId } = req.query;
+  const { sessionId, entityId } = req.params;
   const sessionID = String(sessionId);
   const entityID = String(entityId);
   
@@ -51,7 +51,7 @@ export const endTurn = async (req: Request, res: Response, next: NextFunction) =
 // Check if the the entity can start the turn after another entity
 export const postponeTurn = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { sessionId, entityId, predecessorEntityId } = req.query;
+  const { sessionId, entityId, predecessorEntityId } = req.body;
   const sessionID = String(sessionId);
   const entityID = String(entityId);
   const preEntityID = String(predecessorEntityId);

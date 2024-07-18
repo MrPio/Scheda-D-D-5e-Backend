@@ -3,7 +3,7 @@ import { RepositoryFactory } from '../repository/repository_factory';
   
 export const getHistory = async (req: Request, res: Response, next: NextFunction) => {
   
-  const { sessionId } = req.query;
+  const { sessionId } = req.params;
   const sessionID = String(sessionId);
   const session = await new RepositoryFactory().sessionRepository().getById( sessionID );
   if (!session) {
