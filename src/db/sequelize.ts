@@ -24,4 +24,4 @@ const sequelize = new Sequelize({
 sequelize.addModels([Session, EntityTurn, Monster, MonsterSkill, HistoryMessage]);
 export default sequelize;
 
-export const initializeSequelize = async () => sequelize.sync({ force: true });
+export const initializeSequelize = async (force: boolean = false) => sequelize.sync({ force: force });

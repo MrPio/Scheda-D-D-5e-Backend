@@ -36,8 +36,7 @@ export const checkTokenIsValid = async (req: AugmentedRequest, res: Response, ne
   // Check if JWT authorization is disabled for testing purposes.
   if ((process.env.USE_JWT ?? 'true') != 'true') {
     req.decoded_token = new CachedToken('k9vc0kojNcO9JB9qVdf33F6h3eD2', 'debug_token');
-    next();
-    return;
+    return next();
   }
   try {
     req.decoded_token = await decodeToken(req.token!);

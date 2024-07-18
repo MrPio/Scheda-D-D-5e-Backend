@@ -6,7 +6,7 @@ import { redis } from '../src/db/redis';
 import { EntityTurn } from '../src/model/entity_turn';
 
 async function testSequelizeRepository() {
-  await initializeSequelize();
+  await initializeSequelize(true);
   const sessionRepository = new RepositoryFactory().sessionRepository();
   const newSessionStatus = SessionStatus.ongoing;
 
@@ -14,6 +14,7 @@ async function testSequelizeRepository() {
   let session = await sessionRepository.create({
     name: 'Session1',
     masterUID: 'master123',
+    userUIDs:['k9vc0kojNcO9JB9qVdf33F6h3eD2'],
     sessionStatus: SessionStatus.created,
   } as Session);
   console.log('Session created, status =', session.sessionStatus);

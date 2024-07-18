@@ -20,7 +20,7 @@ export class RepositoryFactory {
 
   entityTurnRepository = (): Repository<EntityTurn> => new SequelizeRepository(EntityTurn, [Session], 300);
 
-  MonsterSkillRepository = (): Repository<MonsterSkill> => new SequelizeRepository(MonsterSkill, [Monster], 300);
+  monsterSkillRepository = (): Repository<MonsterSkill> => new SequelizeRepository(MonsterSkill, [Monster], 300);
 
   historyRepository = (): Repository<HistoryMessage> => new SequelizeRepository(HistoryMessage, [Session], 300);
 

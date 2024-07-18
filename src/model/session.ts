@@ -20,11 +20,15 @@ export class Session extends Model<Session> {
 
   @Column declare masterUID: string;
 
-  @Column declare characterUIDs?: string;
+  @Column(DataType.ARRAY(DataType.STRING)) declare characterUIDs?: string[];
 
-  @Column declare npcUIDs?: string;
+  @Column(DataType.ARRAY(DataType.STRING)) declare npcUIDs?: string[];
 
-  @Column declare monsterUIDs?: string;
+  @Column(DataType.ARRAY(DataType.STRING)) declare monsterUIDs?: string[];
+
+  @Column(DataType.ARRAY(DataType.STRING)) declare userUIDs?: string[];
+
+  @Column(DataType.ARRAY(DataType.STRING)) declare connectedUserUIDs?: string[];
 
   @Column declare campaignName?: string;
 
