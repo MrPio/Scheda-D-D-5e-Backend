@@ -16,7 +16,6 @@ export async function getTurnService(req: IAugmentedRequest, res: Res) {
   return res.status(200).json({ currentTurn });
 }
 
-// TODO: rimuovere controlli e usare middleware
 export async function postponeTurnService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { entityId, predecessorEntityId } = req.body;
