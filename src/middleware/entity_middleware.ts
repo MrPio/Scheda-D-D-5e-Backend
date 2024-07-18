@@ -104,7 +104,7 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
     // Check if the element is a valid value based on the enum Effect. 
     for (const element of effectImmunities as string[]) {
       if (!validEffect.includes(element)) {
-        return res.status(400).json({ error: `Invalid dice in the list: ${element}. The dice must be one of the following values: ${validEffect.join(', ')}.` });
+        return res.status(400).json({ error: `Invalid effect in the list: ${element}. The effect must be one of the following values: ${validEffect.join(', ')}.` });
       }
     }
 
@@ -119,7 +119,8 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
     
       // Verify the name of the enchantments
       for (const enchantmentId of enchantments) {
-        const enchantment = await enchantmentRepository.getById(enchantmentId);
+        const enchantmentIdStr = String(enchantmentId); // Ensure enchantmentId is a string
+        const enchantment = await enchantmentRepository.getById(enchantmentIdStr);
         if (!enchantment) {
           return res.status(400).json({ error: `enchantment not found: ${enchantmentId}` });
         }
@@ -147,7 +148,7 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
       return res.status(400).json({ error: 'The character is not found' }); 
     }
 
-    if (session.entityUIDs?.includes(Uid)) {
+    if (session.characterUIDs?.includes(Uid)) {
       return res.status(400).json({ error: 'The character is already in the battle' }); 
     }
     //const character = await new RepositoryFactory().npcRepository().getById(uid);
@@ -165,7 +166,7 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
       return res.status(400).json({ error: 'The npc is not found' }); 
     }
 
-    if (session.entityUIDs?.includes(Uid)) {
+    if (session.npcUIDs?.includes(Uid)) {
       return res.status(400).json({ error: 'Npc is already in the battle' });
     }
   }
@@ -175,7 +176,7 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
   next();
 };
 
-// Middleware function to validate the get of monster info & the elimination of an entity & before modifying an entity
+// Checks if the entity is present in the session
 export const getEntity = async (req: Request, res: Response, next: NextFunction) => {
 
   const { uid, sessionId } = req.query;
@@ -187,8 +188,8 @@ export const getEntity = async (req: Request, res: Response, next: NextFunction)
     return res.status(400).json({ error: 'session not found' });
   }
 
-  if (!session.entityUIDs?.includes(Uid)) {
-    return res.status(400).json({ error: 'entity not found' });
+  if (!session.characterUIDs?.includes(Uid) && !session.npcUIDs?.includes(Uid) && !session.monsterUIDs?.includes(Uid) ) {
+    return res.status(400).json({ error: `the entity ${Uid} is not found` }); 
   }
 
   next();
@@ -206,9 +207,8 @@ export const modifyEntity = async (req: Request, res: Response, next: NextFuncti
     return res.status(400).json({ error: 'session not found' });
   }
 
-  const entity = session.entityUIDs?.includes(Uid);
-  if (!entity) {
-    return res.status(400).json({ error: 'entity not found' });
+  if (!session.characterUIDs?.includes(Uid) && !session.npcUIDs?.includes(Uid) && !session.monsterUIDs?.includes(Uid) ) {
+    return res.status(400).json({ error: `the entity ${Uid} is not found` }); 
   }
 
   // Convert enum values to an array of strings

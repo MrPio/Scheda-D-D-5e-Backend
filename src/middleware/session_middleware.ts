@@ -8,16 +8,23 @@ export const createSession = async (req: Request, res: Response, next: NextFunct
 
   const { characters, npcs, monsters /*,mapSize*/ } = req.query;
 
+  // Helper function to check if the input is a non-empty array of strings
+  const isNonEmptyArrayOfStrings = (input: unknown): input is string[] => {
+    return Array.isArray(input) && input.length > 0 && input.every(item => typeof item === 'string');
+  };
+
   // Check the number of the entities
-  if (!characters && !npcs && !monsters) {
+  if (!isNonEmptyArrayOfStrings(characters) &&
+      !isNonEmptyArrayOfStrings(npcs) &&
+      !isNonEmptyArrayOfStrings(monsters)) {
     return res.status(400).json({ error: 'you need to add at least 1 entity' });
   }
 
-  // Check if exist characters, npcs and monsters with that Id/name & there are not duplicates
-  if (!characters) {
+  // Check if exist characters, npcs and monsters with that Id/name & there are no duplicates
+  if (isNonEmptyArrayOfStrings(characters)) {
     for (const id of characters) {
-      const allCharacters = await new RepositoryFactory().characterRepository().getById(id);
-      if (!allCharacters) {
+      const character = await new RepositoryFactory().characterRepository().getById(id);
+      if (!character) {
         return res.status(400).json({ error: `the character ${id} is not valid` });
       }
     }
@@ -28,10 +35,10 @@ export const createSession = async (req: Request, res: Response, next: NextFunct
     }
   }
 
-  if (!npcs) {
+  if (isNonEmptyArrayOfStrings(npcs)) {
     for (const id of npcs) {
-      const allNpcs = await new RepositoryFactory().npcRepository().getById(id);
-      if (!allNpcs) {
+      const npc = await new RepositoryFactory().npcRepository().getById(id);
+      if (!npc) {
         return res.status(400).json({ error: `the npc ${id} is not valid` });
       }
     }
@@ -42,14 +49,14 @@ export const createSession = async (req: Request, res: Response, next: NextFunct
     }
   }
 
-  if (!monsters) {
+  if (isNonEmptyArrayOfStrings(monsters)) {
     for (const name of monsters) {
-      const allMonsters = await new RepositoryFactory().monsterRepository().getById(name);
-      if (!allMonsters) {
+      const monster = await new RepositoryFactory().monsterRepository().getById(name);
+      if (!monster) {
         return res.status(400).json({ error: `the monster ${name} has not yet been created` });
       }
     }
-    
+
     const monsterSet = new Set(monsters);
     if (monsterSet.size !== monsters.length) {
       return res.status(400).json({ error: 'there is a repetition of the same monster' });

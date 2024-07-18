@@ -107,8 +107,8 @@ The API server endpoints are listed in the following table. Blank lines separate
 | `GET` |`/diceRoll` | diceList, modifier | Rolls the dice in the `diceList` and adds up any `modifier`. The `diceList` must be non empty.  |
 | `PATCH` |`/sessions/{sessionId}/attack` | attackInfo, attackerId, targetId | Causes `attackerId` to attack `targetId`. The attack may be melee or enchantment. The `attackInfo` must contain the attempt dice roll. If this is greater than the target's AC, the attacker is asked to roll the damage dice. |
 | `GET` |`/sessions/{sessionId}/savingThrow` | entitiesId, difficultyClass, skill | Requests all the `entitiesId` to make a save roll on `skill`. The result is positive if greater than `difficultyClass`.|
-| `PATCH` |`/sessions/{sessionId}/effect` | entitiesId, effect | Assigns the `effect` to all the `entitiesId`. If `effect` is null, the effects of the entities are deleted. |
-| `PATCH` |`/sessions/{sessionId}/reaction` | entitiesId | Enables the reaction for all the `entitiesId`. Notifies them. |
+| `PATCH` |`/sessions/{sessionId}/effect` | entityId, effect | Assigns the `effect` to the `entityId`. If `effect` is null, the effects of the entities are deleted. |
+| `PATCH` |`/sessions/{sessionId}/reaction` | entityId | Enables the reaction for the `entityId`. Notifies it. |
 
 <a name="EntityRoutes"></a>
 ### Entity Routes

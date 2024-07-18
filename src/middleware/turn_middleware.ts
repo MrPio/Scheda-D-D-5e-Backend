@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
-//import { SessionStatus } from '../model/session';
+import { EntityTurn } from '../model/entity_turn';
+
 
 // Check if the session id valid
 export const getTurn = async (req: Request, res: Response, next: NextFunction) => {    
@@ -22,6 +23,7 @@ export const endTurn = async (req: Request, res: Response, next: NextFunction) =
   const { sessionId, entityId } = req.query;
   const sessionID = String(sessionId);
   const entityID = String(entityId);
+  
 
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
           
@@ -30,8 +32,11 @@ export const endTurn = async (req: Request, res: Response, next: NextFunction) =
     return res.status(400).json({ error: `the session ${sessionID} is not found` });
   }
 
-  if (!session.characterUIDs?.includes(entityID)) {
-    return res.status(400).json({ error: `the entity ${entityID} is not found in the session` });
+  // Extract the entityUIDs from the entityTurn objects
+  const entityUIDsInTurn = session.entityTurn.map((turn: EntityTurn) => turn.entityUID);
+
+  if (!entityUIDsInTurn.includes(entityID)) {
+    return res.status(400).json({ error: `the entity ${entityID} is not found in the turn of the session` });
   }
 
   if (session.currentEntityUID !== entityId) { 
@@ -49,7 +54,7 @@ export const postponeTurn = async (req: Request, res: Response, next: NextFuncti
   const { sessionId, entityId, predecessorEntityId } = req.query;
   const sessionID = String(sessionId);
   const entityID = String(entityId);
-  const preEntityid = String(predecessorEntityId);
+  const preEntityID = String(predecessorEntityId);
 
   const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
        
@@ -58,21 +63,24 @@ export const postponeTurn = async (req: Request, res: Response, next: NextFuncti
     return res.status(400).json({ error: `the session ${sessionID} is not found` });
   }
 
-  if (!session.characterUIDs?.includes(entityID)) {
-    return res.status(400).json({ error: `the entity ${entityID} is not found in the session` });
+  // Extract the entityUIDs from the entityTurn objects
+  const entityUIDsInTurn = session.entityTurn.map((turn: EntityTurn) => turn.entityUID);
+
+  if (!entityUIDsInTurn.includes(entityID)) {
+    return res.status(400).json({ error: `the entity ${entityID} is not found in the turn of the session` });
   }
 
-  if (!session.characterUIDs?.includes(preEntityid)) {
-    return res.status(400).json({ error: `the entity ${preEntityid} is not found in the session` });
+  if (!entityUIDsInTurn.includes(preEntityID)) {
+    return res.status(400).json({ error: `the entity ${preEntityID} is not found in the turn of the session` });
   }
-  
+
   if (session.currentEntityUID !== entityId) { 
     return res.status(400).json({ error: `it is not the turn of ${entityId}` });
   }
   
   // Check if the two ids are not the same and if it is possible to postpone the shift 
-  const indexEntity = session.characterUIDs.indexOf(entityID); 
-  const indexPredecessor = session.characterUIDs.indexOf(preEntityid);
+  const indexEntity = entityUIDsInTurn.indexOf(entityID); 
+  const indexPredecessor = entityUIDsInTurn.indexOf(preEntityID);
 
   if (indexEntity === indexPredecessor) {
     return res.status(400).json({ error: 'the two ids are the same' });
