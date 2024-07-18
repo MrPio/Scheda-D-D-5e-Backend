@@ -1,15 +1,15 @@
 import { AugmentedRequest } from '../api';
 import { Response as Res } from 'express';
-import { addEffectService, addEntityService, deleteEntityService, enableReactionService, getEntityInfoService, getMonsterInfoService, updateEntityInfoService } from '../service/entity_service';
-import { getSavingThrowService, makeAttackService } from '../service/dice_service';
+import { addEntityService, deleteEntityService, getEntityInfoService, updateEntityInfoService } from '../service/entity_service';
+import { getSavingThrowService, makeAttackService, addEffectService, enableReactionService } from '../service/attack_service';
 
 export const addEntity = (req: AugmentedRequest, res: Res) => {
   return addEntityService(req, res);
 };
 
-export const getMonsterInfo = (req: AugmentedRequest, res: Res) => {
-  return getMonsterInfoService(req, res);
-};
+//export const getMonsterInfo = (req: AugmentedRequest, res: Res) => {
+//  return getMonsterInfoService(req, res);
+//};
 
 export const deleteEntity = (req: AugmentedRequest, res: Res) => {
   return deleteEntityService(req, res);

@@ -3,7 +3,7 @@ import { Response as Res } from 'express';
 import { createSessionService, deleteSessionService, getAllSessionsService, getSessionInfoService, pauseSessionService, startSessionService, stopSessionService } from '../service/session_service';
 import { getTurnService, postponeTurnService, endTurnService } from '../service/turn_service';
 import { getHistoryService, updateHistoryService } from '../service/history_service';
-import { diceRollService } from '../service/dice_service';
+import { diceRollService } from '../service/attack_service';
 
 
 export const getSessions = (req: AugmentedRequest, res: Res) => {

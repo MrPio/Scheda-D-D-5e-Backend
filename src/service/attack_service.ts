@@ -22,3 +22,11 @@ export async function makeAttackService(req: AugmentedRequest, res: Res) {
 export async function getSavingThrowService(req: AugmentedRequest, res: Res) {
   // TODO
 }
+
+export async function addEffectService(req: AugmentedRequest, res: Res) {
+  // TODO
+}
+
+export async function enableReactionService(req: AugmentedRequest, res: Res) {
+  // TODO
+}
