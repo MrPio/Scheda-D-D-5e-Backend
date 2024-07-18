@@ -16,6 +16,9 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
   if (entityType === 'monster') {
     entity = await monsterRepository.create(entityInfo);
     session!.monsterUIDs = session!.monsterUIDs ? `${session!.monsterUIDs},${entity.id}` : entity.id.toString();
+  } else if (entityType === 'npc') {
+    entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
+    session!.characterUIDs = session!.characterUIDs ? `${session!.characterUIDs},${entity.uid}` : entity.uid.toString();
   } else {
     entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
     session!.characterUIDs = session!.characterUIDs ? `${session!.characterUIDs},${entity.uid}` : entity.uid.toString();
@@ -95,7 +98,6 @@ export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
     return res.status(200).json(entityTurn);
   }
 
-  return res.status(404).json({ error: 'Entity not found in session' });
 }
 
 export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) {

@@ -45,7 +45,8 @@ export async function postponeTurnService(req: IAugmentedRequest, res: Res) {
 }
 
 export async function endTurnService(req: IAugmentedRequest, res: Res) {
-  // TODO
+  // TODO: impostare currentUid e ordinare lista, in entityTurn[0]=newCurrentUid
+  // impostare anche reazione da false a true
 }
   
 /**
