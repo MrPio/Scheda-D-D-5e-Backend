@@ -8,6 +8,7 @@ import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
 import { findEntityTurn } from './utility/model_queries';
+import { MonsterSkill } from '../model/monster_skill';
 
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
@@ -32,7 +33,65 @@ export async function makeAttackService(req: IAugmentedRequest, res: Res) {
 }
 
 export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
-  // TODO
+  const { sessionId } = req.params;
+  const { entitiesId, difficultyClass, skill } = req.body;
+
+  // Retrieve the session
+  const session = await sessionRepository.getById(sessionId);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  // Initialize result array
+  const results = [];
+
+  for (const entityId of entitiesId) {
+    let entity: Monster | Character | NPC | null = await monsterRepository.getById(entityId);
+
+    if (!entity) {
+      entity = await characterRepository.getById(entityId);
+    }
+
+    if (!entity) {
+      entity = await npcRepository.getById(entityId);
+    }
+
+    if (entity) {
+      // Roll a d20 using crypto for randomness
+      const rollResult = randomInt(1, 20);
+
+      let saveRoll: number;
+      if (entity instanceof Monster) {
+        // Get the skill value from the Monster's skills
+        const monsterSkill = entity.skills.find((s: MonsterSkill) => s.skill === skill);
+        saveRoll = rollResult + (monsterSkill ? monsterSkill.value : 0);
+      } else if (entity instanceof Character) {
+        // Get the skill modifier from the Character's skillsModifier
+        saveRoll = rollResult + (entity.skillsModifier[skill] || 0);
+      } else if (entity instanceof NPC) {
+        // Get the skill modifier from the NPC's skillsModifier
+        saveRoll = rollResult + (entity.skillsModifier[skill] || 0);
+      } else {
+        continue; // Skip if entity type is unexpected
+      }
+
+      // Determine if the save roll is successful
+      const isSuccess = saveRoll >= difficultyClass;
+
+      // Add the result to the results array
+      results.push({
+        entityId,
+        rollResult,
+        saveRoll,
+        isSuccess,
+      });
+
+      return res.json({ results });
+    }
+  }
+
+  return res.status(404).json({ error: 'Entity not found' });
 }
 
 // TODO MrPio
