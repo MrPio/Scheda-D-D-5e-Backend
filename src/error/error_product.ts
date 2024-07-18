@@ -32,11 +32,19 @@ export class ModelNotFound extends ErrorProduct {
   constructor(
     public className: string,
     public id: string,
-  ) { super(404, `id ${id} not found for model ${className}`); }
+  ) { super(404, `id "${id}" not found for model "${className}"!`); }
 }
 
 export class AuthError extends ErrorProduct {
   constructor(message: string) { super(403, message); }
+}
+
+export class MissingMandatoryParamError extends ErrorProduct {
+  constructor(param: string) { super(400, `Missing mandatory parameter: "${param}"!`); }
+}
+
+export class WrongParamTypeError extends ErrorProduct {
+  constructor(param: string, type:string) { super(400, `Parameter "${param}" must be of type "${type}"!`); }
 }
 
 export class GenericServerError extends ErrorProduct {

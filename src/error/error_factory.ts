@@ -1,5 +1,5 @@
 import { Session } from '../model/session';
-import ErrorProduct, { AuthError, GenericServerError, ModelNotFound } from './error_product';
+import ErrorProduct, { AuthError, GenericServerError, MissingMandatoryParamError, ModelNotFound, WrongParamTypeError } from './error_product';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
@@ -23,7 +23,7 @@ export class Error400Factory {
 
   enchantmentNotFound = (id: string): ErrorProduct => new ModelNotFound(Enchantment.name, id);
 
-  // diceNotFound = (id: string): ErrorProduct => new ModelNotFound('Dice', id);
+  diceNotFound = (id: string): ErrorProduct => new ModelNotFound('Dice', id);
 
   noJWT = (): ErrorProduct => new AuthError('No JWT provided!');
 
@@ -32,6 +32,10 @@ export class Error400Factory {
   wrongFormatJWT = (): ErrorProduct => new AuthError('The JWT provided has an invalid format!');
 
   expiredJWT = (): ErrorProduct => new AuthError('The JWT provided has expired!');
+
+  missingMandatoryParam = (param: string): MissingMandatoryParamError => new MissingMandatoryParamError(param);
+
+  wrongParameterType = (param: string, type:string): WrongParamTypeError => new WrongParamTypeError(param, type);
 }
 
 /**

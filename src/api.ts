@@ -6,6 +6,8 @@ import { initializeSequelize } from './db/sequelize';
 import dotenv from 'dotenv';
 import { CachedToken } from './model/cached_token';
 import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
+import { checkDiceRoll } from './middleware/dice_middleware';
+import { Error400Factory } from './error/error_factory';
 
 dotenv.config();
 
@@ -26,6 +28,16 @@ const requestTime = (req: AugmentedRequest, res: Res, next: NextFunction) => {
   req.requestTime = Date.now();
   next();
 };
+
+function checkMandadoryParams(mandatoryParams: string[]) {
+  return (req: AugmentedRequest, res: Res, next: NextFunction) => {
+    for (const param of mandatoryParams)
+      if (!(param in req.body))
+        return new Error400Factory().missingMandatoryParam(param).setStatus(res);
+    next();
+  };
+}
+
 app.use(json());
 app.use(requestTime);
 
@@ -81,8 +93,10 @@ app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, (re
   endTurn(req, res);
 });
 
+
+
 // Attack Routes ===============================================================================
-app.get('/diceRoll', (req: AugmentedRequest, res: Res) => {
+app.get('/diceRoll', checkMandadoryParams(['diceList']), checkDiceRoll, (req: AugmentedRequest, res: Res) => {
   diceRoll(req, res);
 });
 app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, (req: AugmentedRequest, res: Res) => {

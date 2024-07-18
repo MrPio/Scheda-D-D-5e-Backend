@@ -1,40 +1,30 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { Dice } from '../model/dice';
 import { Error400Factory } from '../error/error_factory';
+import { AugmentedRequest } from '../api';
 
-// Middleware function to validate the dice roll parameters
-const diceRollMiddleware = (req: Request, res: Response, next: NextFunction) => {
+const error400Factory: Error400Factory = new Error400Factory();
 
-  // Convert enum values to an array of strings
-  const validDice = Object.values(Dice) as string[];
-  let { modifier } = req.query;
-  const { diceList } = req.query;
-
-  // If modifier is empty, set it to 0
-  if (!modifier) {
-    modifier = '0';
-  }
-
-  // Check if modifier is an integer
-  if (isNaN(Number(modifier)) || !Number.isInteger(Number(modifier))) {
-    // If not, respond with a 400 status and an error message
-    return res.status(400).json({ error: 'Modifier must be an integer.' });
-  }
+/**
+ * Check the validity of a dice roll request.
+ */
+export const checkDiceRoll = (req: AugmentedRequest, res: Response, next: NextFunction) => {
+  const diceList: string[] = req.body.diceList;
+  const modifier = (req.body.modifier ?? 0) as number;
 
   // Check if diceList is an array
-  if (!Array.isArray(diceList)) {
-    return res.status(400).json({ error: 'diceList must be a list.' });
-  }
+  if (!Array.isArray(diceList))
+    return error400Factory.wrongParameterType('diceList', 'string[]').setStatus(res);
 
-  // Check if the dice is a valid value based on the enum Dice. 
-  for (const die of diceList as string[]) {
-    if (!validDice.includes(die)) {
-      return res.status(400).json({ error: `Invalid dice in the list: ${die}. The dice must be one of the following values: ${validDice.join(', ')}.` });
-    }
-  }
-  
+  // Check if diceList contains existing dice
+  for (const dice of diceList)
+    if (!(dice in Dice))
+      return error400Factory.diceNotFound(dice).setStatus(res);
+
+  // Check if modifier is an integer
+  if (!Number.isInteger(modifier))
+    return error400Factory.wrongParameterType('modifier', 'number').setStatus(res);
+
   // If all checks pass, proceed to the next middleware or route handler
   next();
 };
-
-export default diceRollMiddleware;
