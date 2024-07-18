@@ -31,7 +31,7 @@ export default class NPC extends JSONSerializable implements IWithUID, IEntity {
       json._hp,
       json.armorClass,
       json.enchantments ?? [],
-      json.isReactionActivable ?? false,
+      json.isReactionActivable ?? true,
       json.speed,
       (json._inventory as string[]).filter(it => it.includes('Weapon.')).map(it => it.split('Weapon.')[1]) ?? [],
       json.skills ?? Object.values(Skill).reduce((acc, key) => ({ ...acc, [key]: 0 }), {}),

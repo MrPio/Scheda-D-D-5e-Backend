@@ -33,7 +33,7 @@ export default class Character extends JSONSerializable implements IWithUID, IEn
       json._hp,
       json.armorClass,
       json.enchantments ?? [],
-      json.isReactionActivable ?? false,
+      json.isReactionActivable ?? true,
       json.speed,
       Object.keys(json._inventory).filter(it => it.includes('Weapon.')).map(it => it.split('Weapon.')[1]) ?? [],
       json.skills ?? Object.values(Skill).reduce((acc, key) => ({ ...acc, [key]: 0 }), {}),

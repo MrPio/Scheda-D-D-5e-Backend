@@ -17,13 +17,12 @@ import { checkDiceRoll } from './middleware/dice_middleware';
 import { Error400Factory } from './error/error_factory';
 
 
-
 const app = express();
 
 export interface IAugmentedRequest extends Req {
   requestTime?: number;
   token?: string;
-  decoded_token?: CachedToken;
+  decodedToken?: CachedToken;
 }
 const requestTime = (req: IAugmentedRequest, res: Res, next: NextFunction) => {
   req.requestTime = Date.now();
@@ -141,8 +140,10 @@ app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req:
 
 // Starts the express server
 (async () => {
-  await initializeSequelize();
-  app.listen(3000, () => {
-    console.log('Servers is running on port 3000');
+  // Initialize sequelize ORM. If in dev environment, clear the database and run the seeders.
+  await initializeSequelize({
+    force: (process.env.NODE_ENV ?? 'prod') === 'dev',
+    seed: (process.env.NODE_ENV ?? 'prod') === 'dev',
   });
+  app.listen(3000, () => console.log('Server API is running on port 3000'));
 })();

@@ -1,4 +1,4 @@
-import { Model, Column, Table, ForeignKey, BelongsTo, Unique } from 'sequelize-typescript';
+import { Model, Column, Table, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Session } from './session';
 
 @Table({
@@ -8,7 +8,6 @@ import { Session } from './session';
 export class EntityTurn extends Model<EntityTurn> {
   @Column declare entityUID: string;
 
-  // @Unique()
   @Column declare turnIndex: number;
 
   @Column declare posX: number;

@@ -26,7 +26,7 @@ export class Session extends Model<Session> {
 
   @Column(DataType.ARRAY(DataType.STRING)) declare userUIDs?: string[];
 
-  @Column(DataType.ARRAY(DataType.STRING)) declare connectedUserUIDs?: string[];
+  @Column(DataType.ARRAY(DataType.STRING)) declare onlineUserUIDs?: string[];
 
   @Column declare campaignName?: string;
 

@@ -35,11 +35,11 @@ export const checkHasToken = async (req: IAugmentedRequest, res: Response, next:
 export const checkTokenIsValid = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   // Check if JWT authorization is disabled for testing purposes.
   if ((process.env.USE_JWT ?? 'true') != 'true') {
-    req.decoded_token = new CachedToken('k9vc0kojNcO9JB9qVdf33F6h3eD2', 'debug_token');
+    req.decodedToken = new CachedToken('k9vc0kojNcO9JB9qVdf33F6h3eD2', 'debug_token', 0, 0, 'Developer');
     return next();
   }
   try {
-    req.decoded_token = await decodeToken(req.token!);
+    req.decodedToken = await decodeToken(req.token!);
     next();
   } catch (error) {
     if (error instanceof Object && 'code' in error) {

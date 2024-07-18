@@ -26,7 +26,7 @@ export class Monster extends Model<Monster> implements IEntity {
 
   @Column declare isReactionActivable: boolean;
 
-  @Column declare speed: number;
+  @Column(DataType.FLOAT) declare speed: number;
 
   @Column(DataType.ARRAY(DataType.STRING)) declare weapons: string[];
 
