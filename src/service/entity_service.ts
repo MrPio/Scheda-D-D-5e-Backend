@@ -27,7 +27,7 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
   }
 
   await sessionRepository.update(session!.id, session!);
-  return res.status(200).json({ message: `${entityType} added to session` });
+  return res.status(200).json({ message: `${entityType} added successfully!` });
 }
 
 /*
@@ -79,7 +79,7 @@ export async function deleteEntityService(req: IAugmentedRequest, res: Res) {
   }
 
   await sessionRepository.update(session!.id, session!);
-  return res.status(200).json({ message: 'Entity removed from session' });
+  return res.status(200).json({ message: 'Entity removed successfully from session!' });
 }
 
 //export async function getMonsterInfoService(req: AugmentedRequest, res: Res) {
@@ -120,7 +120,7 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     // Update entity turn information
     Object.assign(entityTurn, entityInfo);
     await sessionRepository.update(session!.id, session!);
-    return res.status(200).json({ message: 'Entity info updated successfully' });
+    return res.status(200).json({ message: 'Entity info updated successfully!' });
   }
 
 
@@ -133,7 +133,7 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     // Update monster information
     Object.assign(monster, entityInfo);
     await monsterRepository.update(monster.id, monster);
-    return res.status(200).json({ message: 'Monster info updated successfully' });
+    return res.status(200).json({ message: 'Monster info updated successfully!' });
   }
 
   // TODO: check
@@ -143,7 +143,7 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     // Update character or npc entity information
     Object.assign(entityTurnEntity, entityInfo);
     await sessionRepository.update(session!.id, session!);
-    return res.status(200).json({ message: 'Character/NPC info updated successfully' });
+    return res.status(200).json({ message: 'Character/NPC info updated successfully!' });
   }
 }
 /* sample body for update:

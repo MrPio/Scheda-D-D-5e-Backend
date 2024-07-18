@@ -7,11 +7,13 @@ import { RepositoryFactory } from '../repository/repository_factory';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
+import { findEntityTurn } from './utility/model_queries';
 
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
 const monsterRepository = repositoryFactory.monsterRepository();
-
+const characterRepository = repositoryFactory.characterRepository();
+const npcRepository = repositoryFactory.npcRepository();
 
 export async function diceRollService(req: IAugmentedRequest, res: Res) {
   const { diceList, modifier } = req.body;
@@ -102,5 +104,43 @@ export async function addEffectService(req: IAugmentedRequest, res: Res) {
 }
 
 export async function enableReactionService(req: IAugmentedRequest, res: Res) {
-  // TODO: da true a false
+  const { sessionId } = req.params;
+  const { entityId } = req.body;
+
+  const session = await sessionRepository.getById(sessionId);
+
+  // Try to find the entity in entityTurn
+  //const entityTurn = session!.entityTurns.find(e => e.entityUID === entityId);
+  const entityTurn = findEntityTurn(session!, entityId);
+  if (entityTurn) {
+    let entity;
+    // Check if the entity is a monster/character/npc
+    if (session!.monsterUIDs.includes(entityId)) {
+      entity = await monsterRepository.getById(entityId);
+    } else if (session!.characterUIDs!.includes(entityId)) {
+      entity = await characterRepository.getById(entityId);
+    } else if (session!.npcUIDs!.includes(entityId)) {
+      entity = await npcRepository.getById(entityId);
+    }
+
+    if (entity) {
+      // Update the entity's isReactionActivable property
+      entity.isReactionActivable = false;
+
+      // Save the updated entity back to the repository
+      if (entity instanceof Monster) {
+        await monsterRepository.update(entity.id, entity);
+      } else if (entity instanceof Character) {
+        await characterRepository.update(entity.uid!, entity);
+      } else if (entity instanceof NPC) {
+        await npcRepository.update(entity.uid!, entity);
+      }
+      // Save the session
+      await sessionRepository.update(session!.id, session!);
+
+      return res.status(200).json({ message: `Reaction enabled for entity ${entityId}!`, entity });
+    }
+  }
+
+  return res.status(404).json({ error: `Entity not found in session ${sessionId}!` });
 }

@@ -25,11 +25,11 @@ export async function updateHistoryService(req: IAugmentedRequest, res: Res) {
   const session = await sessionRepository.getById(sessionId);
 
   // Create and save the new history message
-  const historyMessage = await historyRepository.create({
+  await historyRepository.create({
     msg,
     actionType,
     sessionId: session?.id,
   } as HistoryMessage);
 
-  return res.status(StatusCodes.CREATED).json(historyMessage);
+  return res.status(StatusCodes.CREATED).json({ message: 'Message created successfully!' });
 }
