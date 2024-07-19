@@ -11,13 +11,12 @@ export async function getAllSessionsService(req: IAugmentedRequest, res: Res) {
 }
   
 export async function createSessionService(req: IAugmentedRequest, res: Res) {
-  const { name, masterUID, campaignName, currentEntityUID, mapSize } = req.body;
+  const { name, masterUID, campaignName, mapSize } = req.body;
 
   sessionRepository.create({
     name,
     masterUID,
     campaignName,
-    currentEntityUID,
     sessionStatus: SessionStatus.created,
     mapSize,
   } as Session);

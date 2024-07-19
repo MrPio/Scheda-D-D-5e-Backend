@@ -17,7 +17,7 @@ export class ModelNotFound extends ErrorProduct {
   constructor(
     public className: string,
     public id: string,
-  ) { super(StatusCodes.NOT_FOUND, `id "${id}" not found for model "${className}"!`); }
+  ) { super(StatusCodes.NOT_FOUND, `Id "${id}" not found for model "${className}"!`); }
 }
 
 export class AuthError extends ErrorProduct {

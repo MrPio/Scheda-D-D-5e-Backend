@@ -13,60 +13,49 @@ function isPositiveInteger(value: number): boolean {
   return Number.isInteger(number) && number > 0;
 }
 
+/**
+ * Checks if the entity can perform the reaction
+ */
+export const checkEnableReaction = async (req: Request, res: Response, next: NextFunction) => {
 
-// Checks if the entity can perform the reaction
-export const enableReaction = async (req: Request, res: Response, next: NextFunction) => {
-
-  const { sessionId, entityId } = req.query;
-  const sessionID = String(sessionId);
-  const entityID = String(entityId);
+  const { sessionId } = req.params;
+  const { entityId } = req.body;
   
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-            
-  // Check if the session exist and the entityId appears in the session 
-  if (!session) {
-    return res.status(400).json({ error: `the session ${sessionID} is not found` });
-  }
-
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+  
   let player;
   
-  if (session.characterUIDs?.includes(entityID)) {
-    player = await new RepositoryFactory().characterRepository().getById(sessionID);
-  } else if (session.npcUIDs?.includes(entityID)) {
-    player = await new RepositoryFactory().npcRepository().getById(sessionID);
-  } else if (session.monsterUIDs?.includes(entityID)) {
-    player = await new RepositoryFactory().monsterRepository().getById(sessionID);  
+  if (session!.characterUIDs?.includes(entityId)) {
+    player = await new RepositoryFactory().characterRepository().getById(sessionId);
+  } else if (session!.npcUIDs?.includes(entityId)) {
+    player = await new RepositoryFactory().npcRepository().getById(sessionId);
+  } else if (session!.monsterUIDs?.includes(entityId)) {
+    player = await new RepositoryFactory().monsterRepository().getById(sessionId);  
   } else {
-    return res.status(400).json({ error: `the entity ${entityID} is not found` }); 
+    return res.status(400).json({ error: `Entity ${entityId} not found!` }); 
   }
 
   // Check if the reaction is activable for the entity
   if (!player?.isReactionActivable) {
-    return res.status(400).json({ error: `the entity ${entityID} has already used its reaction.` }); 
+    return res.status(400).json({ error: `Entity ${entityId} has already used its reaction!` }); 
   }
 
-  
   next();
 };
 
-// checks if these effects can be assigned to the entity
-export const giveEffects = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Checks if these effects can be assigned to the entity
+ */
+export const checkGiveEffects = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { sessionId, entityId, effect } = req.query;
+  const { sessionId } = req.params;
+  const { entityId, effect } = req.body;
 
   const validEffect = Object.values(Effect) as string[];
-  const sessionID = String(sessionId);
-  const entityID = String(entityId);
-  
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-            
-  // Check if the session exist and the entityId appears in the session 
-  if (!session) {
-    return res.status(400).json({ error: `the session ${sessionID} is not found` });
-  }
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
 
-  if (!session.characterUIDs?.includes(entityID) && !session.npcUIDs?.includes(entityID) && !session.monsterUIDs?.includes(entityID) ) {
-    return res.status(400).json({ error: `the entity ${entityID} is not found` }); 
+  if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId) ) {
+    return res.status(400).json({ error: `Entity ${entityId} not found in${sessionId}!` }); 
   }
 
   // Check if the element is a valid value based on the enum Effect and the effect list is not null. 
@@ -81,262 +70,225 @@ export const giveEffects = async (req: Request, res: Response, next: NextFunctio
   next();
 };
 
-// Check if the attack can be performed
-export const tryAttack = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Check if the attack can be performed
+ */
+export const checkTryAttack = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { sessionId, attackType, attackerId } = req.query;
-  const sessionID = String(sessionId);
-  const AttackType = String(attackType);
-  const attackerID = String(attackerId);
+  const { sessionId } = req.params;
+  const { attackerId, attackType, targetId, attackRoll, weapon, enchantment, targetsId, difficultyClass, skill, slotLevel } = req.body;
 
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-            
-  // Check if the session exist & the attackType is valid
-  if (!session) {
-    return res.status(400).json({ error: `the session ${sessionID} is not found` });
-  }
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+  const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
-  const entityUIDsInTurn = session.entityTurns.map((turn: EntityTurn) => turn.entityUID);
-
-  if (AttackType !== 'attack' && AttackType !== 'damageEnchantment' && AttackType !== 'savingThrowEnchantment' && AttackType !== 'descriptiveEnchantment' ) {
-    return res.status(400).json({ error: 'the attackType is invalid. The attackType must be one of the following values: Attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment' });
+  if (attackType !== 'attack' && attackType !== 'damageEnchantment' && attackType !== 'savingThrowEnchantment' && attackType !== 'descriptiveEnchantment' ) {
+    return res.status(400).json({ error: 'Invalid attackType. It must be one of the following values: Attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment!' });
   }
 
   // Check if the attackerId is valid and save is type.
   let attacker;
   let attackerType;
-  if (session.characterUIDs?.includes(attackerID)) {
-    attacker = await new RepositoryFactory().characterRepository().getById(attackerID);
+  if (session!.characterUIDs?.includes(attackerId)) {
+    attacker = await new RepositoryFactory().characterRepository().getById(attackerId);
     attackerType = 'player';
-  } else if (session.npcUIDs?.includes(attackerID)) {
-    attacker = await new RepositoryFactory().npcRepository().getById(attackerID);
+  } else if (session!.npcUIDs?.includes(attackerId)) {
+    attacker = await new RepositoryFactory().npcRepository().getById(attackerId);
     attackerType = 'non_player';
-  } else if (session.monsterUIDs?.includes(attackerID)) {
-    attacker = await new RepositoryFactory().monsterRepository().getById(attackerID);
+  } else if (session!.monsterUIDs?.includes(attackerId)) {
+    attacker = await new RepositoryFactory().monsterRepository().getById(attackerId);
     attackerType = 'non_player';
   } else {
-    return res.status(400).json({ error: `the entity: ${attackerId} is not in the battle` });
+    return res.status(400).json({ error: `Entity: ${attackerId} is not in the battle!` });
   }
 
-  if (AttackType === 'attack') {
-
-    const { targetId, attackRoll, weapon } = req.query;
-
-    const targetID = String(targetId);
-    const AttackRoll = Number(attackRoll);
-    const Weapon = String(weapon);
-
+  if (attackType === 'attack') {
     // Check if the attack is valid
-    if (!isPositiveInteger(AttackRoll))
-      return res.status(400).json({ error: 'the attack must be an integer' });
+    if (!isPositiveInteger(attackRoll))
+      return res.status(400).json({ error: 'Attack value must be an integer number!' });
 
     // Check if the target entity is in the battle.
-    if (!entityUIDsInTurn.includes(targetID))
-      return res.status(400).json({ error: `the entity ${targetID} is not in the battle` });
+    if (!entityUIDsInTurn.includes(targetId))
+      return res.status(400).json({ error: `Entity ${targetId} is not in the battle!` });
 
     // Check if the entity possess the weapon
-    if (!attacker?.weapons.includes(Weapon))
-      return res.status(400).json({ error: `the entity does not possess the weapon ${Weapon}` });
+    if (!attacker?.weapons.includes(weapon))
+      return res.status(400).json({ error: `Entity ${attackerId} does not possess the weapon ${weapon}!` });
   }
 
-  if (AttackType === 'damageEnchantment') {
+  if (attackType === 'damageEnchantment') {
 
-    const { enchantment, targetId, attackRoll } = req.query;
-    const Enchantment = String(enchantment);
-    const targetID = String(targetId);
-    const AttackRoll = Number(attackRoll);
-
-    const allEnchantment = await new RepositoryFactory().enchantmentRepository().getById(Enchantment);
+    const allEnchantment = await new RepositoryFactory().enchantmentRepository().getById(enchantment);
     
     // Check if the attack is valid
-    if (!isPositiveInteger(AttackRoll))
-      return res.status(400).json({ error: 'the attack must be an integer' });
+    if (!isPositiveInteger(attackRoll))
+      return res.status(400).json({ error: 'Attack value must be an integer number!' });
 
     // Check if the target entity is in the battle.
-    if (!entityUIDsInTurn.includes(targetID))
-      return res.status(400).json({ error: `the entity ${targetID} is not in the battle` });
+    if (!entityUIDsInTurn.includes(targetId))
+      return res.status(400).json({ error: `Entity ${targetId} is not in the battle!` });
 
     // Check if the enchantment exists
     if (!allEnchantment)
-      return res.status(400).json({ error: `the spell: ${enchantment} is not found` });
+      return res.status(400).json({ error: `Spell ${enchantment} not found!` });
 
     // Check if the category of the enchantment is correct
     if (allEnchantment?.category !== EnchantmentCategory.damage)
-      return res.status(400).json({ error: `the spell: ${enchantment} belongs to the category of spells: ${allEnchantment?.category}` });
+      return res.status(400).json({ error: `Spell: ${enchantment} does not belong to category of spells ${allEnchantment?.category}!` });
 
     // Check if the attacker knows this enchantment
-    if (!attacker?.enchantments.includes(Enchantment)) 
-      return res.status(400).json({ error: `the entity: ${attackerId} does not know the spell: ${enchantment}` });
+    if (!attacker?.enchantments.includes(enchantment)) 
+      return res.status(400).json({ error: `Entity ${attackerId} does not know the spell ${enchantment}!` });
 
     // Check if it is the turn of the attacker
-    if (session.currentEntityUID !== attackerID && !allEnchantment.isReaction) 
-      return res.status(400).json({ error: `it is not the turn of ${attackerID}, therefore he cannot cast an enchantment with a casting time other than reaction.` });
+    if (session!.currentEntityUID !== attackerId && !allEnchantment.isReaction) 
+      return res.status(400).json({ error: `It's not the turn of ${attackerId}: he cannot cast an enchantment with a casting time other than reaction!` });
     
     // Check if the character has an enchantment level slot to be able to cast it
     if (attackerType === 'player' && allEnchantment.level !== 0) {
 
-      const { slotLevel } = req.query;
-      const slot = Number(slotLevel);
       const level = allEnchantment.level;
-      const player = await new RepositoryFactory().characterRepository().getById(attackerID);
+      const player = await new RepositoryFactory().characterRepository().getById(attackerId);
 
-      if (!Number.isInteger(slot) || slot < 1 || slot > 9)
-        return res.status(400).json({ error: 'the slot must be an integer from 1 to 9, inclusive' });
+      if (!Number.isInteger(slotLevel) || slotLevel < 1 || slotLevel > 9)
+        return res.status(400).json({ error: 'Slot must be an integer from 1 to 9, inclusive!' });
       
-      if (slot < level)
-        return res.status(400).json({ error: `you can't cast a level ${level} enchantment with a level ${slot} slot` });
+      if (slotLevel < level)
+        return res.status(400).json({ error: `You can't cast a level ${level} enchantment with a level ${slotLevel} slot!` });
 
-      if (player?.slots[slot - 1] === 0)
-        return res.status(400).json({ error: `you don't have a level ${slot} slot available` });
+      if (player?.slots[slotLevel - 1] === 0)
+        return res.status(400).json({ error: `You don't have a level ${slotLevel} slot available!` });
     }
 
   }
 
-  if (AttackType === 'savingThrowEnchantment') {
-    
-    const { enchantment, targetsId, difficultyClass, skill } = req.query;
-    const Enchantment = String(enchantment);
-    const validSkill = Object.values(Skill) as string[];
-    const sKill = String(skill);
-    const DC = Number(difficultyClass);
+  if (attackType === 'savingThrowEnchantment') {
 
-    const allEnchantment = await new RepositoryFactory().enchantmentRepository().getById(Enchantment);
+    const allEnchantment = await new RepositoryFactory().enchantmentRepository().getById(enchantment);
+    const validSkill = Object.values(Skill) as string[];
 
     // Check if the enchantment exists
     if (!allEnchantment) 
-      return res.status(400).json({ error: `the spell: ${enchantment} is not found` });
+      return res.status(400).json({ error: `Spell ${enchantment} not found` });
     
     // Check if the category of the enchantment is correct
     if (allEnchantment?.category !== EnchantmentCategory.savingThrow) 
-      return res.status(400).json({ error: `the spell: ${enchantment} belongs to the category of spells: ${allEnchantment?.category}` });
+      return res.status(400).json({ error: `Spell ${enchantment} belongs to the category of spells ${allEnchantment?.category}!` });
     
     // Check if the attacker knows this enchantment
-    if (!attacker?.enchantments.includes(Enchantment))
-      return res.status(400).json({ error: `the entity: ${attackerId} does not know the enchantment: ${enchantment}` });
+    if (!attacker?.enchantments.includes(enchantment))
+      return res.status(400).json({ error: `Entity ${attackerId} does not know the enchantment ${enchantment}!` });
 
     // Check if it is the turn of the attacker
-    if (session.currentEntityUID !== attackerID && !allEnchantment.isReaction) 
-      return res.status(400).json({ error: `it is not the turn of ${attackerID}, therefore he cannot cast an enchantment with a casting time other than reaction.` });
+    if (session!.currentEntityUID !== attackerId && !allEnchantment.isReaction) 
+      return res.status(400).json({ error: `It's not the turn of ${attackerId}: he cannot cast an enchantment with a casting time other than reaction!` });
 
     // Check if DC is a positive integer
-    if (!isPositiveInteger(DC))
-      return res.status(400).json({ error: `the number: ${sessionID} is not a positive integer` });
+    if (!isPositiveInteger(difficultyClass))
+      return res.status(400).json({ error: `Number ${difficultyClass} is not a positive integer!` });
   
     // Check if the skill is one of the 6 known
-    if (!validSkill.includes(sKill))
-      return res.status(400).json({ error: `Invalid skill. The skill must be one of the following values: ${validSkill.join(', ')}.` });
+    if (!validSkill.includes(skill))
+      return res.status(400).json({ error: `Invalid skill. It must be one of the following values: ${validSkill.join(', ')}!` });
   
     // Check if entitiesId is defined and is an array of strings (optional to remove an error)
     if (!targetsId || !Array.isArray(targetsId) || targetsId.length === 0 || !targetsId.every(item => typeof item === 'string'))
-      return res.status(400).json({ error: 'entitiesId must be a non-empty list of strings.' });
+      return res.status(400).json({ error: '"entitiesId" must be a non-empty list of strings!' });
   
     // Check if all the entities are in the battle.
     for (const id of targetsId) {
       if (!entityUIDsInTurn.includes(id))
-        return res.status(400).json({ error: `the entity ${id} is not in the battle` });
+        return res.status(400).json({ error: `Entity ${id} is not in the battle!` });
     }
 
     // Check if the character has an enchantment level slot to be able to cast it
     if (attackerType === 'player' && allEnchantment.level !== 0) {
 
-      const { slotLevel } = req.query;
-      const slot = Number(slotLevel);
       const level = allEnchantment.level;
-      const player = await new RepositoryFactory().characterRepository().getById(attackerID);
+      const player = await new RepositoryFactory().characterRepository().getById(attackerId);
 
-      if (!Number.isInteger(slot) || slot < 1 || slot > 9)
-        return res.status(400).json({ error: 'the slot must be an integer from 1 to 9, inclusive' });
+      if (!Number.isInteger(slotLevel) || slotLevel < 1 || slotLevel > 9)
+        return res.status(400).json({ error: 'Slot must be an integer from 1 to 9!' });
       
-      if (slot < level)
-        return res.status(400).json({ error: `you can't cast a level ${level} enchantment with a level ${slot} slot` });
+      if (slotLevel < level)
+        return res.status(400).json({ error: `You can't cast a level ${level} enchantment with a level ${slotLevel} slot!` });
 
-      if (player?.slots[slot - 1] === 0)
-        return res.status(400).json({ error: `you don't have a level ${slot} slot available` });
+      if (player?.slots[slotLevel - 1] === 0)
+        return res.status(400).json({ error: `You don't have a level ${slotLevel} slot available!` });
     }
   }
 
-  if (AttackType === 'descriptiveEnchantment') {
+  if (attackType === 'descriptiveEnchantment') {
 
-    const { enchantment } = req.query;
-    const Enchantment = String(enchantment);
 
-    const allEnchantment = await new RepositoryFactory().enchantmentRepository().getById(Enchantment);
+    const allEnchantment = await new RepositoryFactory().enchantmentRepository().getById(enchantment);
 
     // Check if the enchantment exists
     if (!allEnchantment)
-      return res.status(400).json({ error: `the spell: ${enchantment} is not found` });
+      return res.status(400).json({ error: `Spell ${enchantment} not found!` });
 
     // Check if the category of the enchantment is correct
     if (allEnchantment?.category !== EnchantmentCategory.descriptive)
-      return res.status(400).json({ error: `the spell: ${enchantment} belongs to the category of spells: ${allEnchantment?.category}` });
+      return res.status(400).json({ error: `Spell ${enchantment} belongs to the category of spells: ${allEnchantment?.category}!` });
 
     // Check if the attacker knows this enchantment
-    if (!attacker?.enchantments.includes(Enchantment)) 
-      return res.status(400).json({ error: `the entity: ${attackerId} does not know the spell: ${enchantment}` });
+    if (!attacker?.enchantments.includes(enchantment)) 
+      return res.status(400).json({ error: `Entity: ${attackerId} does not know the spell: ${enchantment}!` });
 
     // Check if it is the turn of the attacker
-    if (session.currentEntityUID !== attackerID && !allEnchantment.isReaction) 
-      return res.status(400).json({ error: `it is not the turn of ${attackerID}, therefore he cannot cast an enchantment with a casting time other than reaction.` });
+    if (session!.currentEntityUID !== attackerId && !allEnchantment.isReaction) 
+      return res.status(400).json({ error: `It's not the turn of ${attackerId}: he cannot cast an enchantment with a casting time other than reaction.` });
     
     // Check if the character has an enchantment level slot to be able to cast it
     if (attackerType === 'player' && allEnchantment.level !== 0) {
 
-      const { slotLevel } = req.query;
-      const slot = Number(slotLevel);
       const level = allEnchantment.level;
-      const player = await new RepositoryFactory().characterRepository().getById(attackerID);
+      const player = await new RepositoryFactory().characterRepository().getById(attackerId);
 
-      if (!Number.isInteger(slot) || slot < 1 || slot > 9)
-        return res.status(400).json({ error: 'the slot must be an integer from 1 to 9, inclusive' });
+      if (!Number.isInteger(slotLevel) || slotLevel < 1 || slotLevel > 9)
+        return res.status(400).json({ error: 'Slot must be an integer from 1 to 9!' });
       
-      if (slot < level)
-        return res.status(400).json({ error: `you can't cast a level ${level} enchantment with a level ${slot} slot` });
+      if (slotLevel < level)
+        return res.status(400).json({ error: `You can't cast a level ${level} enchantment with a level ${slotLevel} slot!` });
 
-      if (player?.slots[slot - 1] === 0)
-        return res.status(400).json({ error: `you don't have a level ${slot} slot available` });
+      if (player?.slots[slotLevel - 1] === 0)
+        return res.status(400).json({ error: `You don't have a level ${slotLevel} slot available!` });
     }
   }
 
   next();
 };
 
-// Check if the saving throw can be thrown
-export const requestSavingThrow = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Check if the saving throw can be thrown
+ */
+export const checkRequestSavingThrow = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { sessionId, entitiesId, difficultyClass, skill } = req.query;
+  const { sessionId } = req.params;
+  const { entitiesId, difficultyClass, skill } = req.body;
 
   const validSkill = Object.values(Skill) as string[];
-  const sKill = String(skill);
-  const sessionID = String(sessionId);
-  const DC = Number(difficultyClass);
-
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-            
-  // Check if the session exist
-  if (!session) {
-    return res.status(400).json({ error: `the session ${sessionID} is not found` });
-  }
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
 
   // Check if DC is a positive integer
-  if (!isPositiveInteger(DC)) {
-    return res.status(400).json({ error: `the number: ${sessionID} is not a positive integer` });
+  if (!isPositiveInteger(difficultyClass)) {
+    return res.status(400).json({ error: `Number ${sessionId} is not a positive integer!` });
   }
 
   // Check if the skill is one of the 6 known
-  if (!validSkill.includes(sKill)) {
-    return res.status(400).json({ error: `Invalid skill. The skill must be one of the following values: ${validSkill.join(', ')}.` });
+  if (!validSkill.includes(skill)) {
+    return res.status(400).json({ error: `Invalid skill. It must be one of the following values: ${validSkill.join(', ')}!` });
   }
 
   // Check if entitiesId is defined and is an array of strings (optional to remove an error)
   if (!entitiesId || !Array.isArray(entitiesId) || entitiesId.length === 0 || !entitiesId.every(item => typeof item === 'string')) {
-    return res.status(400).json({ error: 'entitiesId must be a non-empty list of strings.' });
+    return res.status(400).json({ error: 'entitiesId must be a non-empty list of strings!' });
   }
 
   // Check if all the entities are in the battle.
-  const entityUIDsInTurn = session.entityTurns.map((turn: EntityTurn) => turn.entityUID);
+  const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
   for (const id of entitiesId) {
     if (!entityUIDsInTurn.includes(id)) {
-      return res.status(400).json({ error: `the entity ${id} is not in the battle` });
+      return res.status(400).json({ error: `Entity ${id} is not in the battle!` });
     }
   }
 

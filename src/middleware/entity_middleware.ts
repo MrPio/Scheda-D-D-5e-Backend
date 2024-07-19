@@ -1,256 +1,237 @@
 import { Request, Response, NextFunction } from 'express';
 import { Effect } from '../model/effect';
 import { RepositoryFactory } from '../repository/repository_factory';
+import { Error400Factory } from '../error/error_factory';
+import { EntityTurn } from '../model/entity_turn';
 
-// Utility function to check if a value is a positive integer
+const error400Factory: Error400Factory = new Error400Factory();
+
+/**
+ * Utility function to check if a value is a positive integer
+ */
 function isPositiveInteger(value: number): boolean {
   const number = Number(value);
   return Number.isInteger(number) && number > 0;
 }
 
-// Utility function to check if a value is an integer
+/**
+ * Utility function to check if a value is an integer
+ */
 function isInteger(value: number): boolean {
   const number = Number(value);
   return Number.isInteger(number);
 }
 
-// Utility function to check if a value is positive and divisible by 1.5
+/**
+ * Utility function to check if a value is positive and divisible by 1.5
+ */
 function isValidSpeed(value: number): boolean {
   const number = Number(value);
   return number > 0 && number % 1.5 === 0;
 }
-  
-// Utility function to check if a value is an integer between 1 and 30
+
+/**
+ * Utility function to check if a value is an integer between 1 and 30
+ */
 function isValidAttributeValue(value: number): boolean {
   const number = Number(value);
   return Number.isInteger(number) && number >= 1 && number <= 30;
 }
 
-// Middleware function to validate the add of an entity
-export const addEntity = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Check the validity of adding a new entity to a session
+ */
+export const checkAddEntity = async (req: Request, res: Response, next: NextFunction) => {
   
-  const { sessionId } = req.query;
-  const sessionID = String(sessionId);
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-  if (!session) {
-    return res.status(400).json({ error: 'Session not found' });
-  }
-
-  const { entityType } = req.query;
+  const { sessionId } = req.params;
+  const { entityType } = req.body;
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
     
-  // Check if the message is of the intended type
-  if (entityType !== 'Npc' && entityType !== 'Monster' && entityType !== 'Character') {
-    return res.status(400).json({ error: 'Invalid entityType. It must be one of the following values: Npc, Monster, Characters' });
-  }
+  // Check if the entityType is correct
+  if (entityType !== 'npc' && entityType !== 'monster' && entityType !== 'character')
+    return error400Factory.wrongParameterType('entityType', 'character, npc, monster').setStatus(res);
 
   // Check if the entity is a Monster
-  if (entityType === 'Monster') {
-    const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.query;
-
-    // Convert values ​​to numbers
-    const parsedMaxHp = Number(maxHp);
-    const parsedArmorClass = Number(armorClass);
-    const parsedSpeed = Number(speed);
-    const valueStrength = Number(strength);
-    const valueDexterity = Number(dexterity);
-    const valueIntelligence = Number(intelligence);
-    const valueWisdom = Number(wisdom);
-    const valueCharisma = Number(charisma);
-    const valueConstitution = Number(constitution);
+  if (entityType === 'monster') {
+    const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.body;
 
     // Convert enum values to an array of strings
     const validEffect = Object.values(Effect) as string[];
 
     // Check maxHp
-    if (!isPositiveInteger(parsedMaxHp)) {
-      return res.status(400).json({ error: 'maxHp must be a positive integer.' });
-    }
+    if (!isPositiveInteger(maxHp))
+      return error400Factory.invalidPositiveInteger('maxHp').setStatus(res);
 
     // Check armorClass
-    if (!isPositiveInteger(parsedArmorClass)) {
-      return res.status(400).json({ error: 'armorClass must be a positive integer.' });
-    }
+    if (!isPositiveInteger(armorClass))
+      return error400Factory.invalidPositiveInteger('armorClass').setStatus(res);
 
     // Check speed
-    if (!isValidSpeed(parsedSpeed)) {
-      return res.status(400).json({ error: 'speed must be a positive number divisible by 1.5.' });
-    }
+    if (!isValidSpeed(speed))
+      return error400Factory.invalidSpeed().setStatus(res);
     
     // Check skillValues
-    if (!isValidAttributeValue(valueStrength)) {
-      return res.status(400).json({ error: 'valueStrength must be an integer between 1 and 30.' });
-    }
-    if (!isValidAttributeValue(valueDexterity)) {
-      return res.status(400).json({ error: 'valueDexterity must be an integer between 1 and 30.' });
-    }
-    if (!isValidAttributeValue(valueIntelligence)) {
-      return res.status(400).json({ error: 'valueIntelligence must be an integer between 1 and 30.' });
-    }
-    if (!isValidAttributeValue(valueWisdom)) {
-      return res.status(400).json({ error: 'valueWisdom must be an integer between 1 and 30.' });
-    }
-    if (!isValidAttributeValue(valueCharisma)) {
-      return res.status(400).json({ error: 'valueCharisma must be an integer between 1 and 30.' });
-    }
-    if (!isValidAttributeValue(valueConstitution)) {
-      return res.status(400).json({ error: 'valueConstitution must be an integer between 1 and 30.' });
-    }  
+    if (!isValidAttributeValue(strength))
+      return error400Factory.invalidSkillValue('strength').setStatus(res);
+
+    if (!isValidAttributeValue(dexterity))
+      return error400Factory.invalidSkillValue('dexterity').setStatus(res);
+    
+    if (!isValidAttributeValue(intelligence))
+      return error400Factory.invalidSkillValue('intelligence').setStatus(res);
+    
+    if (!isValidAttributeValue(wisdom))
+      return error400Factory.invalidSkillValue('wisdom').setStatus(res);
+    
+    if (!isValidAttributeValue(charisma))
+      return error400Factory.invalidSkillValue('charisma').setStatus(res);
+    
+    if (!isValidAttributeValue(constitution))
+      return error400Factory.invalidSkillValue('constitution').setStatus(res);
+    
 
     // Check effectImmunities
-    if (!Array.isArray(effectImmunities)) {
-      return res.status(400).json({ error: 'effectImmunities must be a list of effects.' });
-    }
-
-    // Check if the element is a valid value based on the enum Effect. 
-    for (const element of effectImmunities as string[]) {
-      if (!validEffect.includes(element)) {
-        return res.status(400).json({ error: `Invalid effect in the list: ${element}. The effect must be one of the following values: ${validEffect.join(', ')}.` });
+    if (!effectImmunities) {
+      if (!Array.isArray(effectImmunities))
+        return error400Factory.wrongParameterType('effectImmunities', 'list').setStatus(res);
+  
+      for (const element of effectImmunities as string[]) {
+        if (!validEffect.includes(element))
+          return error400Factory.invalidEffect(element, validEffect).setStatus(res);
       }
     }
+    
 
     // Check enchantments
     if (enchantments) {
 
-      if (!Array.isArray(enchantments)) {
-        return res.status(400).json({ error: 'enchantments must be a list of string.' });
-      }
+      if (!Array.isArray(enchantments))
+        return error400Factory.wrongParameterType('enchantments', 'list').setStatus(res);
 
       const enchantmentRepository = new RepositoryFactory().enchantmentRepository();
     
       // Verify the name of the enchantments
       for (const enchantmentId of enchantments) {
-        const enchantmentIdStr = String(enchantmentId); // Ensure enchantmentId is a string
-        const enchantment = await enchantmentRepository.getById(enchantmentIdStr);
-        if (!enchantment) {
-          return res.status(400).json({ error: `enchantment not found: ${enchantmentId}` });
-        }
+        const enchantment = await enchantmentRepository.getById(enchantmentId);
+        if (!enchantment)
+          return error400Factory.enchantmentNotFound(enchantmentId).setStatus(res);
       }
       
     }
 
     // Check weapons
     if (weapons) {
-      if (!Array.isArray(weapons)) {
-        return res.status(400).json({ error: 'weapons must be a list.' });
-      }
+      if (!Array.isArray(weapons))
+        return error400Factory.wrongParameterType('weapons', 'list').setStatus(res);
 
     }
   }
 
   // Check if the entity is a Character
-  if (entityType === 'Character') {
+  if (entityType === 'character') {
 
-    const { uid } = req.query;
-    const Uid = String(uid);
+    const { uid } = req.body;
 
-    const character = await new RepositoryFactory().characterRepository().getById(Uid);
-    if (!character) {
-      return res.status(400).json({ error: 'The character is not found' }); 
-    }
+    const character = await new RepositoryFactory().characterRepository().getById(uid);
+    
+    if (!character) 
+      return error400Factory.characterNotFound(uid).setStatus(res);
 
-    if (session.characterUIDs?.includes(Uid)) {
-      return res.status(400).json({ error: 'The character is already in the battle' }); 
-    }
-    //const character = await new RepositoryFactory().npcRepository().getById(uid);
+    if (session!.characterUIDs?.includes(uid))
+      return error400Factory.entityIsOnBattle('character', uid).setStatus(res);
     
   }
 
   // Check if the entity is a Npc
-  if (entityType === 'Npc') {
+  if (entityType === 'npc') {
 
-    const { uid } = req.query;
-    const Uid = String(uid);
+    const { uid } = req.body;
 
-    const npc = await new RepositoryFactory().npcRepository().getById(Uid);
-    if (!npc) {
-      return res.status(400).json({ error: 'The npc is not found' }); 
-    }
+    const npc = await new RepositoryFactory().npcRepository().getById(uid);
+    
+    if (!npc) 
+      return error400Factory.npcNotFound(uid).setStatus(res);
 
-    if (session.npcUIDs?.includes(Uid)) {
-      return res.status(400).json({ error: 'Npc is already in the battle' });
-    }
+    if (session!.characterUIDs?.includes(uid))
+      return error400Factory.entityIsOnBattle('npc', uid).setStatus(res);
   }
    
-  
-  
   next();
 };
 
-// Checks if the entity is present in the session
-export const getEntity = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Checks if the entity is in a session
+ */
+export const checkEntityInSession = async (req: Request, res: Response, next: NextFunction) => {
+  const { entityId, sessionId } = req.params;
 
-  const { uid, sessionId } = req.query;
-  const sessionID = String(sessionId);
-  const Uid = String(uid);
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
 
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-  if (!session) {
-    return res.status(400).json({ error: 'session not found' });
-  }
+  const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
-  if (!session.characterUIDs?.includes(Uid) && !session.npcUIDs?.includes(Uid) && !session.monsterUIDs?.includes(Uid) ) {
-    return res.status(400).json({ error: `the entity ${Uid} is not found` }); 
-  }
+  // Check if the entityId exists in the battle
+  if (!entityUIDsInTurn.includes(entityId))
+    return error400Factory.entityNotFound(entityId).setStatus(res);
 
   next();
 };
 
-// Middleware function to validate modifications of an entity
-export const modifyEntity = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { uid, sessionId } = req.query;
-  const sessionID = String(sessionId);
-  const Uid = String(uid);
 
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-  if (!session) {
-    return res.status(400).json({ error: 'session not found' });
-  }
+/**
+ * Checks if an entity update is valid
+ */
+//TODO: MrPio
+export const checkUpdateEntity = async (req: Request, res: Response, next: NextFunction) => {
 
-  if (!session.characterUIDs?.includes(Uid) && !session.npcUIDs?.includes(Uid) && !session.monsterUIDs?.includes(Uid) ) {
-    return res.status(400).json({ error: `the entity ${Uid} is not found` }); 
-  }
+  const { entityId, sessionId } = req.params;
+
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+
+  // Check if the entityId is in the session
+  if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId)) 
+    return error400Factory.entityNotFound(entityId).setStatus(res);
 
   // Convert enum values to an array of strings
   const validEffect = Object.values(Effect) as string[];
-  const { hp, armorClass, speed, effects } = req.query;
-
-  // Convert values ​​to numbers
-  const parsedHp = Number(hp);
-  const parsedArmorClass = Number(armorClass);
-  const parsedSpeed = Number(speed);
+  const { hp, armorClass, speed, effects, slots } = req.body;
 
   // Check effects
-  if (!Array.isArray(effects)) {
-    return res.status(400).json({ error: 'effects must be a list of effects.' });
-  }
+  if (!Array.isArray(effects))
+    return error400Factory.wrongParameterType('effect', 'list').setStatus(res);
 
   // Check for any modification
-  if (hp && !armorClass && !speed && !effects) {
-    return res.status(400).json({ error: 'you need to change at least one parameter.' });
-  }
+  if (hp && !armorClass && !speed && !effects)
+    return error400Factory.noModification().setStatus(res);
 
   // Check if the element is a valid value based on the enum Effect. 
-  for (const element of effects as string[]) {
-    if (!validEffect.includes(element)) {
-      return res.status(400).json({ error: `Invalid element in the list: ${element}. The list must contain at least one of the following values: ${validEffect.join(', ')}.` });
-    }
-  }
+  if (effects) {
 
-  // Check speed
-  if (!isValidSpeed(parsedSpeed)) {
-    return res.status(400).json({ error: 'speed must be a positive number divisible by 1.5.' });
+    if (!Array.isArray(effects))
+      return error400Factory.wrongParameterType('effects', 'list').setStatus(res);
+
+    for (const element of validEffect as string[]) {
+      if (!validEffect.includes(element))
+        return error400Factory.invalidEffect(element, validEffect).setStatus(res);
+    }
+
   }
+  
+  // Check speed
+  if (!isValidSpeed(speed))
+    return error400Factory.invalidSpeed().setStatus(res);
 
   // Check Hp
-  if (!isInteger(parsedHp)) {
-    return res.status(400).json({ error: 'hp must be a positive integer.' });
-  }
+  if (!isInteger(hp))
+    return error400Factory.invalidInteger('hp').setStatus(res);
 
   // Check armorClass
-  if (!isPositiveInteger(parsedArmorClass)) {
-    return res.status(400).json({ error: 'armorClass must be a positive integer.' });
-  }
+  if (!isPositiveInteger(armorClass))
+    return error400Factory.invalidPositiveInteger('armorClass').setStatus(res);
 
   next();
+
+  //TODO: Enrico
+  //if (session!.characterUIDs?.includes(entityId)) { }
+
 };

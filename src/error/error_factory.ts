@@ -50,6 +50,36 @@ export class Error400Factory {
   clientTimeout = (): ErrorProduct => new TimeoutError();
 
   clientDisconnected = (): ErrorProduct => new ClientDisconnected();
+
+  sessionNotInCreatedState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Created state at the moment!`);
+
+  sessionNotInPausedState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Paused state at the moment!`);
+
+  sessionNotInStopState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Paused or Ongoing state at the moment!`);
+  
+  invalidMapSize = (): WrongParamTypeError => new GenericClientError('Map size is invalid. Width must be between 10 and 100, and height must be between 10 and 100!');
+
+  entityDuplicated = (entityType:string): WrongParamTypeError => new GenericClientError(`There is a duplicate in the list ${entityType}!`);
+
+  entityIsOnBattle = (entityType: string, entityUid:string): WrongParamTypeError => new GenericClientError(`The ${entityType} ${entityUid} is already in the battle!!`);
+
+  invalidPositiveInteger = (value: string): WrongParamTypeError => new GenericClientError(`The ${value} must be a positive integer!`);
+
+  invalidInteger = (value: string): WrongParamTypeError => new GenericClientError(`The ${value} must be an integer!`);
+
+  invalidSpeed = (): WrongParamTypeError => new GenericClientError('Speed must be a positive number divisible by 1.5!');
+
+  invalidSkillValue = (value: string): WrongParamTypeError => new GenericClientError(`The ${value} must be an integer between 1 and 30!`);
+
+  invalidEffectImmunities = (): WrongParamTypeError => new GenericClientError('The effectImmunities must be a list of effects!');
+
+  invalidEffect = (value: string, list: string[]): WrongParamTypeError => new GenericClientError(`Invalid effect in the list: ${value}. The effect must be one of the following values: ${list.join(', ')}!`);
+
+  entityNotFound = (id: string): WrongParamTypeError => new GenericClientError(`The entity ${id} is not in the battle!`);
+
+  noModification = (): WrongParamTypeError => new GenericClientError('You need to change at least one parameter.!');
+
+
 }
 
 /**
