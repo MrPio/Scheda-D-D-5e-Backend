@@ -18,6 +18,7 @@ import { Error400Factory } from './error/error_factory';
 import { Session } from './model/session';
 import { checkContinueSession, checkNewSession, checkPauseSession, checkSessionId, checkStartSession, checkStopSession } from './middleware/session_middleware';
 import { checkAddEntity, checkEntityInSession } from './middleware/entity_middleware';
+import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
 
 
 const app = express();
@@ -92,10 +93,10 @@ app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, checkSe
 app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   getTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, checkSessionId, checkPostponeTurn, (req: IAugmentedRequest, res: Response) => {
   postponeTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, checkSessionId, checkEndTurn, (req: IAugmentedRequest, res: Response) => {
   endTurn(req, res);
 });
 
