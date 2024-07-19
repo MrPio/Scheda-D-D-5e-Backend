@@ -46,10 +46,6 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
   const { sessionId } = req.params;
   const { entityType } = req.body;
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
-
-  // Check if the sessionId exist
-  if (!session)
-    return error400Factory.sessionNotFound(sessionId).setStatus(res);
     
   // Check if the entityType is correct
   if (entityType !== 'npc' && entityType !== 'monster' && entityType !== 'character')
@@ -171,11 +167,7 @@ export const checkEntityInSession = async (req: Request, res: Response, next: Ne
 
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
 
-  // Check if the sessionId exists
-  if (!session)
-    return error400Factory.sessionNotFound(sessionId).setStatus(res);
-
-  const entityUIDsInTurn = session.entityTurns.map((turn: EntityTurn) => turn.entityUID);
+  const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
   // Check if the entityId exists in the battle
   if (!entityUIDsInTurn.includes(entityId))
@@ -189,19 +181,15 @@ export const checkEntityInSession = async (req: Request, res: Response, next: Ne
 /**
  * Checks if an entity update is valid
  */
-//TODO: Valerio
+//TODO: MrPio
 export const checkUpdateEntity = async (req: Request, res: Response, next: NextFunction) => {
 
   const { entityId, sessionId } = req.params;
 
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
 
-  // Check if the sessionId exists
-  if (!session)
-    return error400Factory.sessionNotFound(sessionId).setStatus(res);
-
   // Check if the entityId is in the session
-  if (!session.characterUIDs?.includes(entityId) && !session.npcUIDs?.includes(entityId) && !session.monsterUIDs?.includes(entityId)) 
+  if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId)) 
     return error400Factory.entityNotFound(entityId).setStatus(res);
 
   // Convert enum values to an array of strings
@@ -244,8 +232,6 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
   next();
 
   //TODO: Enrico
-  if (session.characterUIDs?.includes(entityId)) {
-
-  }
+  //if (session!.characterUIDs?.includes(entityId)) { }
 
 };
