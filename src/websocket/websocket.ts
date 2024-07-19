@@ -7,19 +7,21 @@ if ((process.env.NODE_ENV ?? 'prod') === 'dev') {
 }
 
 import WebSocket from 'ws';
-import { catchError, of, pipe, Subject, switchMap } from 'rxjs';
+import { catchError, of, Subject, switchMap } from 'rxjs';
 import * as https from 'https';
 import * as fs from 'fs';
 import { IncomingMessage } from 'webpack-dev-server';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { initializeSequelize } from '../db/sequelize';
 import { CachedToken } from '../model/cached_token';
-import express, { Request as Req, Response as Res, json } from 'express';
+import express, { Response, json } from 'express';
 import { Session } from '../model/session';
 import { checkJWT, checkSession, IConnectionFailError } from './middleware/websocket_middleware';
 import { checkHasToken } from '../middleware/jwt_middleware';
-import { checkIsAPIBackend } from './middleware/api_middleware';
+import { checkIsAPIBackend, checkSessionExists, checkUserOnline } from './middleware/api_middleware';
 import { generateJWT } from '../service/jwt_service';
+import { IAugmentedRequest } from '../api';
+import { Error500Factory } from '../error/error_factory';
 
 const serverOptions = {
   cert: fs.readFileSync('src/websocket_keys/server.cert'),
@@ -27,23 +29,25 @@ const serverOptions = {
 };
 const server = new https.Server(serverOptions);
 const wss = new WebSocket.Server({ server });
-const activeConnections: { [key: string]: WebSocket[] } = {};
+const activeConnections: { [sessionId: string]: { [userUID: string]: { webSocket: WebSocket, subject: Subject<{ message: string }> } } } = {};
 const onOpenSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string, username: string }>();
 const onMessageSubject = new Subject<{ ws: WebSocket, message: string, session: Session, userUID: string }>();
 const onCloseSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string }>();
 const sessionRepository = new RepositoryFactory().sessionRepository();
+const error500Factory: Error500Factory = new Error500Factory();
 
-export interface IAugmentedRequest extends IncomingMessage {
+export interface IAugmentedIncomingMessage extends IncomingMessage {
   token?: string;
   decodedToken?: CachedToken;
   sessionId?: string;
+  userUID?: string;
 }
 
 /**
  * Start websocket server.
  * The url is expected to be formatted as `/sessions/{sessionId}`
  */
-wss.on('connection', async (ws: WebSocket, req: IAugmentedRequest) => {
+wss.on('connection', async (ws: WebSocket, req: IAugmentedIncomingMessage) => {
 
   /**
    * Call Middleware to check the validity of the connection request.
@@ -74,10 +78,6 @@ wss.on('connection', async (ws: WebSocket, req: IAugmentedRequest) => {
 // Subscribe connection opened listener
 onOpenSubject.subscribe(async ({ ws, session, userUID, username }) => {
 
-  // Notify listners on this new websocket connection events.
-  ws.on('message', (message: string) => onMessageSubject.next({ ws, message, session, userUID }));
-  ws.on('close', () => onCloseSubject.next({ ws, session, userUID }));
-
   // Answer the client about the success of the operation
   ws.send(JSON.stringify({ message: `Welcome to session "${session.name}", ${username}!`, userUID: userUID }));
 
@@ -87,13 +87,17 @@ onOpenSubject.subscribe(async ({ ws, session, userUID, username }) => {
   await sessionRepository.update(session.id, { onlineUserUIDs: session.onlineUserUIDs });
 
   // Store the ws connection object
-  if (activeConnections[session.id])
-    activeConnections[session.id].push(ws);
-  else activeConnections[session.id] = [ws];
+  if (!(session.id in activeConnections))
+    activeConnections[session.id] = {};
+  activeConnections[session.id][userUID] = { webSocket: ws, subject: new Subject<{ message: string }>() };
+
+  // Notify listners on this new websocket connection events.
+  ws.on('message', (message: string) => activeConnections[session.id][userUID].subject.next({ message }));
+  ws.on('close', () => onCloseSubject.next({ ws, session, userUID }));
 });
 
 // Subscribe message handling listener
-onMessageSubject.subscribe(({ ws, message, session, userUID }) => {
+onMessageSubject.subscribe(({ ws, message }) => {
   wss.clients.forEach(client => {
     if (client !== ws && client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ message: message.toString() }));
@@ -102,27 +106,42 @@ onMessageSubject.subscribe(({ ws, message, session, userUID }) => {
 });
 
 // Subscribe connection closed listener
-onCloseSubject.subscribe(async ({ ws, session, userUID }) => {
+onCloseSubject.subscribe(async ({ session, userUID }) => {
 
   // Remove the client userUID from the list of online users for the session.
   session.onlineUserUIDs = session.onlineUserUIDs?.filter(item => item !== userUID);
   await sessionRepository.update(session.id, { onlineUserUIDs: session.onlineUserUIDs });
 
   // Remove the ws connection object from the list of active connections
-  activeConnections[session.id] = activeConnections[session.id].filter(it => it == ws);
+  delete activeConnections[session.id][userUID];
 });
 
 const app = express();
 app.use(json());
-app.get('/', checkHasToken, checkIsAPIBackend, (req: IAugmentedRequest, res: Res) => {
+
+// Test Routes =================================================================================
+app.get('/', checkHasToken, checkIsAPIBackend, (req: IAugmentedRequest, res: Response) => {
   res.send('Hello World!');
 });
-
-app.get('/token', (req: IAugmentedRequest, res: Res) => {
+// Retrieves a 15 min JWT representing the API backend. This is an endpoint used for testing since the API Backend generates the JWT by itself.
+app.get('/token', (req: IAugmentedRequest, res: Response) => {
   res.json({ token: generateJWT() });
 });
 
-// Start websocket server
+// Communication Routes ========================================================================
+app.get('/sessions/:sessionId/users/:userUID/requestDiceRoll', checkHasToken, checkIsAPIBackend, checkSessionExists, checkUserOnline, (req: IAugmentedRequest, res: Response) => {
+  // Check that the active connection stores the connection of interest
+  if (!(req.sessionId! in activeConnections) || !(req.userUID! in activeConnections[req.sessionId!]))
+    return error500Factory.genericError().setStatus(res);
+  activeConnections[req.sessionId!][req.userUID!].webSocket.send(JSON.stringify({ message: 'Ciao!' }));
+
+  activeConnections[req.sessionId!][req.userUID!].subject.subscribe(({ message }) => {
+    res.json({ rollResult: Number.parseInt(message) });
+    onMessageSubject.unsubscribe();
+  });
+});
+
+// Start websocket and API servers
 (async () => {
   // Initialize sequelize ORM. If in dev environment, clear the database and run the seeders.
   await initializeSequelize({

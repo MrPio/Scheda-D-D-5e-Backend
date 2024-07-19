@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import { CachedToken } from '../../model/cached_token';
-import { IAugmentedRequest } from '../websocket';
+import { IAugmentedIncomingMessage } from '../websocket';
 import { decodeToken } from '../../db/auth';
 import { RepositoryFactory } from '../../repository/repository_factory';
 import { SessionStatus } from '../../model/session';
@@ -24,7 +24,7 @@ const sessionRepository = new RepositoryFactory().sessionRepository();
  * To avoid multiple requests to Firebase Auth with the same token,
  * the JWT is stored in the Redis cache with a short TTL. 
  */
-export const checkJWT = async (ws: WebSocket, req: IAugmentedRequest): Promise<void> => {
+export const checkJWT = async (ws: WebSocket, req: IAugmentedIncomingMessage): Promise<void> => {
 
   // Check if JWT authorization is disabled for testing purposes.
   if ((process.env.USE_JWT ?? 'true') != 'true') {
@@ -50,7 +50,7 @@ export const checkJWT = async (ws: WebSocket, req: IAugmentedRequest): Promise<v
  * Check that the ID provided leads to an existing session and that the client has the role of Player or Master.
  * Check that the session is in an "Ongoing" status, otherwise the connection cannot be established.
  */
-export const checkSession = async (ws: WebSocket, req: IAugmentedRequest) => {
+export const checkSession = async (ws: WebSocket, req: IAugmentedIncomingMessage) => {
 
   // Retrieve session
   req.sessionId = req.url?.split('sessions/')[1];

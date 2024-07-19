@@ -13,10 +13,8 @@ const error500Factory: Error500Factory = new Error500Factory();
  */
 export const checkHasToken = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   // Check if JWT authorization is disabled for testing purposes.
-  if ((process.env.USE_JWT ?? 'true')  != 'true') {
-    next();
-    return;
-  }
+  if ((process.env.USE_JWT ?? 'true') != 'true')
+    return next();
   const authHeader = req.headers.authorization;
   if (typeof authHeader !== 'undefined') {
     req.token = authHeader.split(' ')[1];

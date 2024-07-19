@@ -38,6 +38,12 @@ export class Error400Factory {
   missingMandatoryParam = (param: string): MissingMandatoryParamError => new MissingMandatoryParamError(param);
 
   wrongParameterType = (param: string, type: string): WrongParamTypeError => new WrongParamTypeError(param, type);
+
+  userNotInSession = (sessionId:string, userUID:string): WrongParamTypeError => new GenericClientError(`User "${userUID}" is not a player nor the master of session "${sessionId}"!`);
+
+  userNotOnline = (sessionId:string, userUID:string): WrongParamTypeError => new GenericClientError(`User "${userUID}" is not online in "${sessionId}" at this moment!`);
+
+  sessionNotInOngoingState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Ongoing state at the moment!`);
 }
 
 /**

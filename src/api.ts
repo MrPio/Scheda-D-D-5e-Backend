@@ -6,7 +6,7 @@ if ((process.env.NODE_ENV ?? 'prod') === 'dev') {
   dotenv.config({ path: '.dev.env' });
 }
 
-import express, { Request as Req, Response as Res, NextFunction, json } from 'express';
+import express, { Request, Response, NextFunction, json } from 'express';
 import { signInAndGetIdToken } from './db/auth';
 import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from './controller/session_controller';
 import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
@@ -15,22 +15,26 @@ import { CachedToken } from './model/cached_token';
 import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 import { checkDiceRoll } from './middleware/dice_middleware';
 import { Error400Factory } from './error/error_factory';
+import { Session } from './model/session';
 
 
 const app = express();
 
-export interface IAugmentedRequest extends Req {
+export interface IAugmentedRequest extends Request {
   requestTime?: number;
   token?: string;
   decodedToken?: CachedToken;
+  sessionId?: string;
+  userUID?: string;
+  session?: Session;
 }
-const requestTime = (req: IAugmentedRequest, res: Res, next: NextFunction) => {
+const requestTime = (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   req.requestTime = Date.now();
   next();
 };
 
 function checkMandadoryParams(mandatoryParams: string[]) {
-  return (req: IAugmentedRequest, res: Res, next: NextFunction) => {
+  return (req: IAugmentedRequest, res: Response, next: NextFunction) => {
     for (const param of mandatoryParams)
       if (!(param in req.body))
         return new Error400Factory().missingMandatoryParam(param).setStatus(res);
@@ -43,11 +47,11 @@ app.use(requestTime);
 
 // Test Routes =================================================================================
 // An Hello World endpoint. It will succeed if the provided JWT is valid.
-app.get('/', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.get('/', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   res.send('Hello World!');
 });
 // Retrieves a 1 hour JWT from Firebase Auth. This is an endpoint used for testing.
-app.get('/token', async (req: IAugmentedRequest, res: Res) => {
+app.get('/token', async (req: IAugmentedRequest, res: Response) => {
   const token = await signInAndGetIdToken({
     email: process.env.FIREBASE_AUTH_TEST_EMAIL ?? '',
     password: process.env.FIREBASE_AUTH_TEST_PASSWORD ?? '',
@@ -57,84 +61,84 @@ app.get('/token', async (req: IAugmentedRequest, res: Res) => {
 
 
 // Session Routes ==============================================================================
-app.get('/sessions', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.get('/sessions', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   getSessions(req, res);
 });
-app.post('/sessions', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.post('/sessions', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   createSession(req, res);
 });
-app.get('/sessions/:sessionId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   getSessionInfo(req, res);
 });
-app.delete('/sessions/:sessionId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.delete('/sessions/:sessionId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   deleteSession(req, res);
 });
-app.patch('/sessions/:sessionId/start', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/start', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   startSession(req, res);
 });
-app.patch('/sessions/:sessionId/pause', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/pause', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   pauseSession(req, res);
 });
-app.patch('/sessions/:sessionId/continue', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/continue', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   continueSession(req, res);
 });
-app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   stopSession(req, res);
 });
 
 // Turn Routes =================================================================================
-app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   getTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   postponeTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   endTurn(req, res);
 });
 
 
 
 // Attack Routes ===============================================================================
-app.get('/diceRoll', checkMandadoryParams(['diceList']), checkDiceRoll, (req: IAugmentedRequest, res: Res) => {
+app.get('/diceRoll', checkMandadoryParams(['diceList']), checkDiceRoll, (req: IAugmentedRequest, res: Response) => {
   diceRoll(req, res);
 });
-app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   makeAttack(req, res);
 });
-app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   getSavingThrow(req, res);
 });
-app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   addEffect(req, res);
 });
-app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   enableReaction(req, res);
 });
 
 
 // Entity Routes ===============================================================================
-app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   addEntity(req, res);
 });
-// app.get('/sessions/:sessionId/monsters/:monsterId', checkHasToken, checkTokenIsValid, (req: RequestWithToken, res: Res) => {
+// app.get('/sessions/:sessionId/monsters/:monsterId', checkHasToken, checkTokenIsValid, (req: RequestWithToken, res: Response) => {
 // getMonsterInfo(req, res);
 // });
-app.delete('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.delete('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   deleteEntity(req, res);
 });
-app.get('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   getEntityInfo(req, res);
 });
-app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   updateEntityInfo(req, res);
 });
 
 // History Routes ==============================================================================
-app.get('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.get('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   getHistory(req, res);
 });
-app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Res) => {
+app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
   updateHistory(req, res);
 });
 

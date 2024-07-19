@@ -86,7 +86,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 
 | Type | Route | Parameters | Description |
 | --- | --- | --- | --- |
-| `GET` |`/sessions` | - | Provides the index of all sessions in which the authenticated user has the role of Player or Master. |
+| `GET` |`/sessions` | - | Provides the index of all sessions in which the authenticated user has the role of player or master. |
 | `POST` |`/sessions` | characters, npc, monsters, mapSize | Creates a new session. Returns the new session. |
 | `GET` |`/sessions/{sessionId}` | - | Returns all information from `sessionId`. |
 | `DELETE` |`/sessions/{sessionId}` | - | Deletes `sessionId`.|
