@@ -1,8 +1,14 @@
+import WebSocket from 'ws';
 import { CachedToken } from '../../model/cached_token';
 import { IAugmentedRequest } from '../websocket';
 import { decodeToken } from '../../db/auth';
 import { RepositoryFactory } from '../../repository/repository_factory';
 import { SessionStatus } from '../../model/session';
+
+export interface IConnectionFailError {
+  statusCode: number,
+  message: string,
+}
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
 
@@ -18,24 +24,25 @@ const sessionRepository = new RepositoryFactory().sessionRepository();
  * To avoid multiple requests to Firebase Auth with the same token,
  * the JWT is stored in the Redis cache with a short TTL. 
  */
-export const checkJWT = async (ws: WebSocket, req: IAugmentedRequest, next: () => void) => {
-  
+export const checkJWT = async (ws: WebSocket, req: IAugmentedRequest): Promise<void> => {
+
   // Check if JWT authorization is disabled for testing purposes.
   if ((process.env.USE_JWT ?? 'true') != 'true') {
     req.token = 'k9vc0kojNcO9JB9qVdf33F6h3eD2';
     req.decodedToken = new CachedToken(req.token, 'debug_token', 0, 0, 'Developer');
   } else {
+    
     // Retrieve and decode JWT
     req.token = req.headers.authorization;
     if (typeof req.token === 'undefined')
-      return ws.close(1008, 'Token not found');
+      return Promise.reject({ statusCode: 1008, message: 'Token not found' } as IConnectionFailError);
     try {
       req.decodedToken = await decodeToken(req.token.split(' ')[1]);
     } catch (error) {
-      return ws.close(1008, 'Invalid token');
+      return Promise.reject({ statusCode: 1008, message: 'Invalid token' } as IConnectionFailError);
     }
   }
-  next();
+  return Promise.resolve();
 };
 
 /**
@@ -43,22 +50,23 @@ export const checkJWT = async (ws: WebSocket, req: IAugmentedRequest, next: () =
  * Check that the ID provided leads to an existing session and that the client has the role of Player or Master.
  * Check that the session is in an "Ongoing" status, otherwise the connection cannot be established.
  */
-export const checkSession = async (ws: WebSocket, req: IAugmentedRequest, next: () => void) => {
-  
+export const checkSession = async (ws: WebSocket, req: IAugmentedRequest) => {
+
   // Retrieve session
   req.sessionId = req.url?.split('sessions/')[1];
   if (!req.sessionId)
-    return ws.close(1008, 'Session id not provided');
+    return Promise.reject({ statusCode: 1008, message: 'Session id not provided' } as IConnectionFailError);
+
   const session = await sessionRepository.getById(req.sessionId);
   if (!session)
-    return ws.close(1008, 'Session not found');
-  
+    return Promise.reject({ statusCode: 1008, message: 'Session not found' } as IConnectionFailError);
+
   // Check if the user is in the session
   if (!session.userUIDs?.includes(req.decodedToken!.userUID) && session.masterUID !== req.decodedToken!.userUID)
-    return ws.close(1008, `User "${req.decodedToken!.username}" is not part of the session "${session.name}"`);
+    return Promise.reject({ statusCode: 1008, message: `User "${req.decodedToken!.username}" is not part of the session "${session.name}"` } as IConnectionFailError);
 
   // Check if the session is ongoing
   if (session.sessionStatus !== SessionStatus.ongoing)
-    return ws.close(1008, `Session "${session.name}" is not in Ongoing state`);
-  next();
+    return Promise.reject({ statusCode: 1008, message: `Session "${session.name}" is not in Ongoing state` } as IConnectionFailError);
+  return Promise.resolve();
 };

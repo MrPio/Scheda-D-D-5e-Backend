@@ -7,7 +7,7 @@ if ((process.env.NODE_ENV ?? 'prod') === 'dev') {
 }
 
 import WebSocket from 'ws';
-import { pipe, Subject } from 'rxjs';
+import { catchError, of, pipe, Subject, switchMap } from 'rxjs';
 import * as https from 'https';
 import * as fs from 'fs';
 import { IncomingMessage } from 'webpack-dev-server';
@@ -16,6 +16,7 @@ import { initializeSequelize } from '../db/sequelize';
 import { CachedToken } from '../model/cached_token';
 import express, { Request as Req, Response as Res, json } from 'express';
 import { Session } from '../model/session';
+import { checkJWT, checkSession, IConnectionFailError } from './middleware/websocket_middleware';
 
 const serverOptions = {
   cert: fs.readFileSync('src/websocket_keys/server.cert'),
@@ -24,9 +25,9 @@ const serverOptions = {
 const server = new https.Server(serverOptions);
 const wss = new WebSocket.Server({ server });
 const activeConnections: { [key: string]: WebSocket[] } = {};
+const onOpenSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string, username: string }>();
 const onMessageSubject = new Subject<{ ws: WebSocket, message: string, session: Session, userUID: string }>();
 const onCloseSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string }>();
-const onOpenSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string }>();
 const sessionRepository = new RepositoryFactory().sessionRepository();
 
 export interface IAugmentedRequest extends IncomingMessage {
@@ -40,37 +41,39 @@ export interface IAugmentedRequest extends IncomingMessage {
  * The url is expected to be formatted as `/sessions/{sessionId}`
  */
 wss.on('connection', async (ws: WebSocket, req: IAugmentedRequest) => {
+
   // Call Middleware to check the validity of the connection request.
-  // TODO: pipe() here
+  // If all middleware is successful, the connection is saved.
+  of(null).pipe(
+    // Call the middleware
+    switchMap(() => checkJWT(ws, req)),
+    switchMap(() => checkSession(ws, req)),
 
-  const session = (await sessionRepository.getById(req.sessionId!))!;
+    // If all of them succedeed, notify onOpenSubject observer
+    switchMap(async () => {
+      const session = (await sessionRepository.getById(req.sessionId!))!;
+      onOpenSubject.next({ ws, session, userUID: req.decodedToken!.userUID, username: req.decodedToken!.username ?? 'User' });
+      return of(null);
+    }),
 
-  // Notify listners on this new websocket connection events.
-  ws.on('message', (message: string) => onMessageSubject.next({
-    ws: ws,
-    message: message,
-    session: session,
-    userUID: req.decodedToken!.userUID,
-  }));
-  ws.on('close', () => onCloseSubject.next({
-    ws: ws,
-    session: session,
-    userUID: req.decodedToken!.userUID,
-  }));
-  onOpenSubject.next({
-    ws: ws,
-    session: session,
-    userUID: req.decodedToken!.userUID,
-  });
-
-
-  // Answer the client about the success of the operation
-  ws.send(JSON.stringify({ message: `Welcome to session "${session.name}", ${req.decodedToken!.username}!`, userUID: req.decodedToken!.userUID }));
+    // If any of the middleware failed
+    catchError((error: IConnectionFailError) => {
+      ws.close(error.statusCode, error.message);
+      return of(null);
+    }),
+  ).subscribe();
 });
 
 
 // Subscribe connection opened listener
-onOpenSubject.subscribe(async ({ ws, session, userUID }) => {
+onOpenSubject.subscribe(async ({ ws, session, userUID, username }) => {
+
+  // Notify listners on this new websocket connection events.
+  ws.on('message', (message: string) => onMessageSubject.next({ ws, message, session, userUID }));
+  ws.on('close', () => onCloseSubject.next({ ws, session, userUID }));
+
+  // Answer the client about the success of the operation
+  ws.send(JSON.stringify({ message: `Welcome to session "${session.name}", ${username}!`, userUID: userUID }));
 
   // Add userUID to session onlineUserUIDs list
   session.onlineUserUIDs ??= [];
@@ -82,7 +85,6 @@ onOpenSubject.subscribe(async ({ ws, session, userUID }) => {
     activeConnections[session.id].push(ws);
   else activeConnections[session.id] = [ws];
 });
-
 
 // Subscribe message handling listener
 onMessageSubject.subscribe(({ ws, message, session, userUID }) => {
