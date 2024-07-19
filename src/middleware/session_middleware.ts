@@ -51,7 +51,7 @@ export const checkNewSession = async (req: Request, res: Response, next: NextFun
 
     const characterSet = new Set(characters);
     if (characterSet.size !== characters.length)
-      return error400Factory.entityInAlready('Character').setStatus(res);
+      return error400Factory.entityDuplicated('Character').setStatus(res);
   }
 
   if (isNonEmptyArrayOfStrings(npcs)) {
@@ -63,7 +63,7 @@ export const checkNewSession = async (req: Request, res: Response, next: NextFun
 
     const npcSet = new Set(npcs);
     if (npcSet.size !== npcs.length) 
-      return error400Factory.entityInAlready('Npc').setStatus(res);
+      return error400Factory.entityDuplicated('Npc').setStatus(res);
   }
 
   if (isNonEmptyArrayOfStrings(monsters)) {
@@ -75,7 +75,7 @@ export const checkNewSession = async (req: Request, res: Response, next: NextFun
 
     const monsterSet = new Set(monsters);
     if (monsterSet.size !== monsters.length)
-      return error400Factory.entityInAlready('Monster').setStatus(res);
+      return error400Factory.entityDuplicated('Monster').setStatus(res);
   }
   
   next();
