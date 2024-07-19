@@ -36,6 +36,18 @@ export class GenericClientError extends ErrorProduct {
   constructor(message: string) { super(StatusCodes.BAD_REQUEST, message); }
 }
 
+export class TooManyRequests extends ErrorProduct {
+  constructor(message: string) { super(StatusCodes.TOO_MANY_REQUESTS, message); }
+}
+
+export class TimeoutError extends ErrorProduct {
+  constructor() { super(StatusCodes.REQUEST_TIMEOUT, 'The client took too much time to answer!'); }
+}
+
+export class ClientDisconnected extends ErrorProduct {
+  constructor() { super(StatusCodes.BAD_REQUEST, 'The client disconnected!'); }
+}
+
 export class GenericServerError extends ErrorProduct {
   constructor(message: string) { super(StatusCodes.INTERNAL_SERVER_ERROR, message); }
 }

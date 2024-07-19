@@ -1,5 +1,5 @@
 import { Session } from '../model/session';
-import ErrorProduct, { AuthError, GenericClientError, GenericServerError, MissingMandatoryParamError, ModelNotFound, WrongParamTypeError } from './error_product';
+import ErrorProduct, { AuthError, ClientDisconnected, GenericClientError, GenericServerError, MissingMandatoryParamError, ModelNotFound, TimeoutError, WrongParamTypeError } from './error_product';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
@@ -35,15 +35,21 @@ export class Error400Factory {
 
   expiredJWT = (): ErrorProduct => new AuthError('The JWT provided has expired!');
 
-  missingMandatoryParam = (param: string): MissingMandatoryParamError => new MissingMandatoryParamError(param);
+  missingMandatoryParam = (param: string): ErrorProduct => new MissingMandatoryParamError(param);
 
-  wrongParameterType = (param: string, type: string): WrongParamTypeError => new WrongParamTypeError(param, type);
+  wrongParameterType = (param: string, type: string): ErrorProduct => new WrongParamTypeError(param, type);
 
-  userNotInSession = (sessionId:string, userUID:string): WrongParamTypeError => new GenericClientError(`User "${userUID}" is not a player nor the master of session "${sessionId}"!`);
+  userNotInSession = (sessionId: string, userUID: string): ErrorProduct => new GenericClientError(`User "${userUID}" is not a player nor the master of session "${sessionId}"!`);
 
-  userNotOnline = (sessionId:string, userUID:string): WrongParamTypeError => new GenericClientError(`User "${userUID}" is not online in "${sessionId}" at this moment!`);
+  userNotOnline = (sessionId: string, userUID: string): ErrorProduct => new GenericClientError(`User "${userUID}" is not online in "${sessionId}" at the moment!`);
 
-  sessionNotInOngoingState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Ongoing state at the moment!`);
+  sessionNotInOngoingState = (sessionId: string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Ongoing state at the moment!`);
+
+  websocketRequestAlreadyPending = (sessionId: string): ErrorProduct => new GenericClientError(`A websocket request is already pending for session "${sessionId}"!`);
+
+  clientTimeout = (): ErrorProduct => new TimeoutError();
+
+  clientDisconnected = (): ErrorProduct => new ClientDisconnected();
 
   sessionNotInCreatedState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Created state at the moment!`);
 

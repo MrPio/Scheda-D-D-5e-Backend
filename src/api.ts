@@ -6,46 +6,22 @@ if ((process.env.NODE_ENV ?? 'prod') === 'dev') {
   dotenv.config({ path: '.dev.env' });
 }
 
-import express, { Request, Response, NextFunction, json } from 'express';
+import express, { Response, NextFunction, json } from 'express';
 import { signInAndGetIdToken } from './db/auth';
 import { continueSession, createSession, deleteSession, diceRoll, endTurn, getHistory, getSessionInfo, getSessions, getTurn, pauseSession, postponeTurn, startSession, stopSession, updateHistory } from './controller/session_controller';
 import { addEffect, addEntity, deleteEntity, enableReaction, getEntityInfo, getSavingThrow, makeAttack, updateEntityInfo } from './controller/entity_controller';
 import { initializeSequelize } from './db/sequelize';
-import { CachedToken } from './model/cached_token';
 import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 import { checkDiceRoll } from './middleware/dice_middleware';
-import { Error400Factory } from './error/error_factory';
-import { Session } from './model/session';
-import { checkContinueSession, checkNewSession, checkPauseSession, checkSessionId, checkStartSession, checkStopSession } from './middleware/session_middleware';
-import { checkAddEntity, checkEntityInSession } from './middleware/entity_middleware';
-import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
-import { checkEnableReaction, checkGiveEffects, checkRequestSavingThrow, checkTryAttack } from './middleware/attack_middleware';
+import { IAugmentedRequest } from './interface/augmented_request';
+import { checkMandadoryParams } from './middleware/mandatory_parameters';
 
-
-const app = express();
-
-export interface IAugmentedRequest extends Request {
-  requestTime?: number;
-  token?: string;
-  decodedToken?: CachedToken;
-  sessionId?: string;
-  userUID?: string;
-  session?: Session;
-}
 const requestTime = (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   req.requestTime = Date.now();
   next();
 };
 
-function checkMandadoryParams(mandatoryParams: string[]) {
-  return (req: IAugmentedRequest, res: Response, next: NextFunction) => {
-    for (const param of mandatoryParams)
-      if (!(param in req.body))
-        return new Error400Factory().missingMandatoryParam(param).setStatus(res);
-    next();
-  };
-}
-
+const app = express();
 app.use(json());
 app.use(requestTime);
 
@@ -101,8 +77,6 @@ app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, che
   endTurn(req, res);
 });
 
-
-
 // Attack Routes ===============================================================================
 app.get('/diceRoll', checkMandadoryParams(['diceList']), checkDiceRoll, (req: IAugmentedRequest, res: Response) => {
   diceRoll(req, res);
@@ -119,7 +93,6 @@ app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, check
 app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, checkSessionId, checkEnableReaction, (req: IAugmentedRequest, res: Response) => {
   enableReaction(req, res);
 });
-
 
 // Entity Routes ===============================================================================
 app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, checkMandadoryParams(['entityType', 'entityInfo']), checkSessionId, checkAddEntity, (req: IAugmentedRequest, res: Response) => {

@@ -1,8 +1,8 @@
 import { NextFunction, Response } from 'express';
-import { IAugmentedRequest } from '../api';
 import { Error400Factory, Error500Factory } from '../error/error_factory';
 import { decodeToken } from '../db/auth';
 import { CachedToken } from '../model/cached_token';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
 const error400Factory: Error400Factory = new Error400Factory();
 const error500Factory: Error500Factory = new Error500Factory();

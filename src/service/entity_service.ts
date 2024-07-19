@@ -82,10 +82,6 @@ export async function deleteEntityService(req: IAugmentedRequest, res: Res) {
   return res.status(200).json({ message: 'Entity removed successfully from session!' });
 }
 
-//export async function getMonsterInfoService(req: AugmentedRequest, res: Res) {
-// TODO
-//}
-
 export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
   const { sessionId, entityId } = req.params;
 
@@ -104,7 +100,6 @@ export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
 }
 
 // TODO: rivedere alla luce di una nuova gestione dell'ordine dei turni
-
 export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) {
   const { sessionId, entityId } = req.params;
   const entityInfo = req.body;

@@ -3,9 +3,9 @@
 import { NextFunction, Response } from 'express';
 import { Error400Factory } from '../../error/error_factory';
 import { verifyJWT } from '../../service/jwt_service';
-import { IAugmentedRequest } from '../../api';
 import { RepositoryFactory } from '../../repository/repository_factory';
 import { SessionStatus } from '../../model/session';
+import { IAugmentedRequest } from '../../interface/augmented_request';
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
 const error400Factory: Error400Factory = new Error400Factory();
@@ -43,23 +43,26 @@ export const checkSessionExists = async (req: IAugmentedRequest, res: Response, 
 };
 
 /**
- * Check that the user is online in the session.
+ * Check that all the users are online in the session.
  * Otherwise no message can be sent to them through websocket.
  */
-export const checkUserOnline = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+export const checkUsersOnline = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
 
-  // Check that the `userUID` parameter has been provided.
-  if (!('userUID' in req.params))
-    return error400Factory.missingMandatoryParam('userUID').setStatus(res);
-  req.userUID = req.params.userUID;
+  // Check the validity of the `addresseeUIDs` body parameter.
+  if (!Array.isArray(req.body.addresseeUIDs))
+    return error400Factory.wrongParameterType('addresseeUIDs', 'string[]');
+  req.addresseeUIDs = req.body.addresseeUIDs;
+  
+  for (const userUID of req.addresseeUIDs!) {
 
-  // Check that the user is in the session
-  if (!req.session!.userUIDs?.includes(req.userUID) && req.session!.masterUID !== req.userUID)
-    return error400Factory.userNotInSession(req.sessionId!, req.userUID!).setStatus(res);
+    // Check that the user is in the session
+    if (!req.session!.userUIDs?.includes(userUID) && req.session!.masterUID !== userUID)
+      return error400Factory.userNotInSession(req.sessionId!, userUID!).setStatus(res);
 
-  // Check that the user is online in the session at the moment
-  if (!req.session!.onlineUserUIDs?.includes(req.userUID))
-    return error400Factory.userNotOnline(req.sessionId!, req.userUID!).setStatus(res);
+    // Check that the user is online in the session at the moment
+    if (!req.session!.onlineUserUIDs?.includes(userUID))
+      return error400Factory.userNotOnline(req.sessionId!, userUID!).setStatus(res);
+  }
 
   // All the checks succedeed.
   next();
