@@ -19,6 +19,7 @@ import { Session } from './model/session';
 import { checkContinueSession, checkNewSession, checkPauseSession, checkSessionId, checkStartSession, checkStopSession } from './middleware/session_middleware';
 import { checkAddEntity, checkEntityInSession } from './middleware/entity_middleware';
 import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
+import { checkEnableReaction, checkGiveEffects, checkRequestSavingThrow, checkTryAttack } from './middleware/attack_middleware';
 
 
 const app = express();
@@ -106,16 +107,16 @@ app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, che
 app.get('/diceRoll', checkMandadoryParams(['diceList']), checkDiceRoll, (req: IAugmentedRequest, res: Response) => {
   diceRoll(req, res);
 });
-app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, checkSessionId, checkTryAttack, (req: IAugmentedRequest, res: Response) => {
   makeAttack(req, res);
 });
-app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
+app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, checkSessionId, checkRequestSavingThrow, (req: IAugmentedRequest, res: Response) => {
   getSavingThrow(req, res);
 });
-app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionId, checkGiveEffects, (req: IAugmentedRequest, res: Response) => {
   addEffect(req, res);
 });
-app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, checkSessionId, checkEnableReaction, (req: IAugmentedRequest, res: Response) => {
   enableReaction(req, res);
 });
 
