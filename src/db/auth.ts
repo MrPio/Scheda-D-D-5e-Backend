@@ -32,6 +32,7 @@ export const signInAndGetIdToken = async (options: { email: string, password: st
  * Ask Firebase Auth to verify a given token.
  * The decoded token is cached using Redis with a TTL=5min. 
  * This will prevent the Firebase Auth API from being called too many times on the same tokens.
+ * Note: Firebase regularly rotates its public keys, thus, the library dynamically retrieves it.
  * @param token - The JWT token to validate.
  * @returns The decoded token encoded in a `CachedToken` instance.
  */

@@ -27,7 +27,7 @@ export const checkHasToken = async (req: IAugmentedRequest, res: Response, next:
 
 /**
  * Check the validity of the provided JWT.
- * The JWT is validated against the Firebase Auth private key and 
+ * The JWT is validated against the Firebase Auth public key and 
  * then decoded with the public key to check its expiration.
  * To avoid multiple requests to Firebase Auth with the same token,
  * the JWT is stored in the Redis cache with a short TTL. 

@@ -19,7 +19,7 @@ const sessionRepository = new RepositoryFactory().sessionRepository();
 
 /**
  * Check that the request header contains a token and that it is a valid JWT.
- * The JWT is validated against the Firebase Auth private key and 
+ * The JWT is validated against the Firebase Auth public key and 
  * then decoded with the public key to check its expiration.
  * To avoid multiple requests to Firebase Auth with the same token,
  * the JWT is stored in the Redis cache with a short TTL. 
@@ -31,7 +31,7 @@ export const checkJWT = async (ws: WebSocket, req: IAugmentedRequest): Promise<v
     req.token = 'k9vc0kojNcO9JB9qVdf33F6h3eD2';
     req.decodedToken = new CachedToken(req.token, 'debug_token', 0, 0, 'Developer');
   } else {
-    
+
     // Retrieve and decode JWT
     req.token = req.headers.authorization;
     if (typeof req.token === 'undefined')

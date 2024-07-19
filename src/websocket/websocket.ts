@@ -17,6 +17,9 @@ import { CachedToken } from '../model/cached_token';
 import express, { Request as Req, Response as Res, json } from 'express';
 import { Session } from '../model/session';
 import { checkJWT, checkSession, IConnectionFailError } from './middleware/websocket_middleware';
+import { checkHasToken } from '../middleware/jwt_middleware';
+import { checkIsAPIBackend } from './middleware/api_middleware';
+import { generateJWT } from '../service/jwt_service';
 
 const serverOptions = {
   cert: fs.readFileSync('src/websocket_keys/server.cert'),
@@ -42,8 +45,11 @@ export interface IAugmentedRequest extends IncomingMessage {
  */
 wss.on('connection', async (ws: WebSocket, req: IAugmentedRequest) => {
 
-  // Call Middleware to check the validity of the connection request.
-  // If all middleware is successful, the connection is saved.
+  /**
+   * Call Middleware to check the validity of the connection request.
+   * If all middleware is successful, the connection is saved.
+   * `switchMap()` replaces the emitted `null` value with the `Promise` returned by middleware functions.
+   */
   of(null).pipe(
     // Call the middleware
     switchMap(() => checkJWT(ws, req)),
@@ -108,8 +114,12 @@ onCloseSubject.subscribe(async ({ ws, session, userUID }) => {
 
 const app = express();
 app.use(json());
-app.get('/', (req: Req, res: Res) => {
+app.get('/', checkHasToken, checkIsAPIBackend, (req: IAugmentedRequest, res: Res) => {
   res.send('Hello World!');
+});
+
+app.get('/token', (req: IAugmentedRequest, res: Res) => {
+  res.json({ token: generateJWT() });
 });
 
 // Start websocket server
