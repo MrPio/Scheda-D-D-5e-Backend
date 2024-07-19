@@ -1,51 +1,56 @@
 import { Request, Response, NextFunction } from 'express';
 import { Effect } from '../model/effect';
 import { RepositoryFactory } from '../repository/repository_factory';
+import { Monster } from '../model/monster';
 
-// Utility function to check if a value is a positive integer
+/**
+ * Utility function to check if a value is a positive integer
+ */
 function isPositiveInteger(value: number): boolean {
   const number = Number(value);
   return Number.isInteger(number) && number > 0;
 }
-
-// Utility function to check if a value is an integer
+/**
+ * Utility function to check if a value is an integer
+ */
 function isInteger(value: number): boolean {
   const number = Number(value);
   return Number.isInteger(number);
 }
 
-// Utility function to check if a value is positive and divisible by 1.5
+/**
+ * Utility function to check if a value is positive and divisible by 1.5
+ */
 function isValidSpeed(value: number): boolean {
   const number = Number(value);
   return number > 0 && number % 1.5 === 0;
 }
-  
-// Utility function to check if a value is an integer between 1 and 30
+/**
+ * Utility function to check if a value is an integer between 1 and 30
+ */
 function isValidAttributeValue(value: number): boolean {
   const number = Number(value);
   return Number.isInteger(number) && number >= 1 && number <= 30;
 }
 
-// Middleware function to validate the add of an entity
-export const addEntity = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Check the validity of adding a new entity to a session
+ */
+export const checkAddEntity = async (req: Request, res: Response, next: NextFunction) => {
   
-  const { sessionId } = req.query;
-  const sessionID = String(sessionId);
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
-  if (!session) {
-    return res.status(400).json({ error: 'Session not found' });
-  }
-
-  const { entityType } = req.query;
+  const { sessionId } = req.params;
+  const { entityType } = req.body;
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+  
     
-  // Check if the message is of the intended type
-  if (entityType !== 'Npc' && entityType !== 'Monster' && entityType !== 'Character') {
-    return res.status(400).json({ error: 'Invalid entityType. It must be one of the following values: Npc, Monster, Characters' });
+  // Check if the entity type is correct
+  if (entityType !== 'npc' && entityType !== 'monster' && entityType !== 'character') {
+    return res.status(400).json({ error: 'EntityType must be one of the following values: "npc", "monster", "character"!' });
   }
 
   // Check if the entity is a Monster
-  if (entityType === 'Monster') {
-    const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.query;
+  if (entityType === 'monster') {
+    const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.body;
 
     // Convert values ​​to numbers
     const parsedMaxHp = Number(maxHp);
@@ -63,48 +68,48 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
 
     // Check maxHp
     if (!isPositiveInteger(parsedMaxHp)) {
-      return res.status(400).json({ error: 'maxHp must be a positive integer.' });
+      return res.status(400).json({ error: 'maxHp must be a positive integer!' });
     }
 
     // Check armorClass
     if (!isPositiveInteger(parsedArmorClass)) {
-      return res.status(400).json({ error: 'armorClass must be a positive integer.' });
+      return res.status(400).json({ error: 'armorClass must be a positive integer!' });
     }
 
     // Check speed
     if (!isValidSpeed(parsedSpeed)) {
-      return res.status(400).json({ error: 'speed must be a positive number divisible by 1.5.' });
+      return res.status(400).json({ error: 'speed must be a positive number divisible by 1.5!' });
     }
     
     // Check skillValues
     if (!isValidAttributeValue(valueStrength)) {
-      return res.status(400).json({ error: 'valueStrength must be an integer between 1 and 30.' });
+      return res.status(400).json({ error: 'valueStrength must be an integer between 1 and 30!' });
     }
     if (!isValidAttributeValue(valueDexterity)) {
-      return res.status(400).json({ error: 'valueDexterity must be an integer between 1 and 30.' });
+      return res.status(400).json({ error: 'valueDexterity must be an integer between 1 and 30!' });
     }
     if (!isValidAttributeValue(valueIntelligence)) {
-      return res.status(400).json({ error: 'valueIntelligence must be an integer between 1 and 30.' });
+      return res.status(400).json({ error: 'valueIntelligence must be an integer between 1 and 30!' });
     }
     if (!isValidAttributeValue(valueWisdom)) {
-      return res.status(400).json({ error: 'valueWisdom must be an integer between 1 and 30.' });
+      return res.status(400).json({ error: 'valueWisdom must be an integer between 1 and 30!' });
     }
     if (!isValidAttributeValue(valueCharisma)) {
-      return res.status(400).json({ error: 'valueCharisma must be an integer between 1 and 30.' });
+      return res.status(400).json({ error: 'valueCharisma must be an integer between 1 and 30!' });
     }
     if (!isValidAttributeValue(valueConstitution)) {
-      return res.status(400).json({ error: 'valueConstitution must be an integer between 1 and 30.' });
+      return res.status(400).json({ error: 'valueConstitution must be an integer between 1 and 30!' });
     }  
 
     // Check effectImmunities
     if (!Array.isArray(effectImmunities)) {
-      return res.status(400).json({ error: 'effectImmunities must be a list of effects.' });
+      return res.status(400).json({ error: 'effectImmunities must be a list of effects!' });
     }
 
     // Check if the element is a valid value based on the enum Effect. 
     for (const element of effectImmunities as string[]) {
       if (!validEffect.includes(element)) {
-        return res.status(400).json({ error: `Invalid effect in the list: ${element}. The effect must be one of the following values: ${validEffect.join(', ')}.` });
+        return res.status(400).json({ error: `Invalid effect in the list: ${element}. The effect must be one of the following values: ${validEffect.join(', ')}!` });
       }
     }
 
@@ -112,7 +117,7 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
     if (enchantments) {
 
       if (!Array.isArray(enchantments)) {
-        return res.status(400).json({ error: 'enchantments must be a list of string.' });
+        return res.status(400).json({ error: 'enchantments must be a list of string!' });
       }
 
       const enchantmentRepository = new RepositoryFactory().enchantmentRepository();
@@ -122,7 +127,7 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
         const enchantmentIdStr = String(enchantmentId); // Ensure enchantmentId is a string
         const enchantment = await enchantmentRepository.getById(enchantmentIdStr);
         if (!enchantment) {
-          return res.status(400).json({ error: `enchantment not found: ${enchantmentId}` });
+          return res.status(400).json({ error: `Enchantment ${enchantmentId} not found!` });
         }
       }
       
@@ -131,85 +136,86 @@ export const addEntity = async (req: Request, res: Response, next: NextFunction)
     // Check weapons
     if (weapons) {
       if (!Array.isArray(weapons)) {
-        return res.status(400).json({ error: 'weapons must be a list.' });
+        return res.status(400).json({ error: 'weapons must be a list!' });
       }
 
     }
   }
 
   // Check if the entity is a Character
-  if (entityType === 'Character') {
+  if (entityType === 'character') {
 
-    const { uid } = req.query;
-    const Uid = String(uid);
+    const { uid } = req.body;
 
-    const character = await new RepositoryFactory().characterRepository().getById(Uid);
+    const character = await new RepositoryFactory().characterRepository().getById(uid);
     if (!character) {
-      return res.status(400).json({ error: 'The character is not found' }); 
+      return res.status(400).json({ error: 'Character not found!' }); 
     }
 
-    if (session.characterUIDs?.includes(Uid)) {
-      return res.status(400).json({ error: 'The character is already in the battle' }); 
+    if (session!.characterUIDs?.includes(uid)) {
+      return res.status(400).json({ error: 'Character already in the battle!' }); 
     }
-    //const character = await new RepositoryFactory().npcRepository().getById(uid);
     
   }
 
   // Check if the entity is a Npc
-  if (entityType === 'Npc') {
+  if (entityType === 'npc') {
 
-    const { uid } = req.query;
-    const Uid = String(uid);
+    const { uid } = req.body;
 
-    const npc = await new RepositoryFactory().npcRepository().getById(Uid);
+    const npc = await new RepositoryFactory().npcRepository().getById(uid);
     if (!npc) {
-      return res.status(400).json({ error: 'The npc is not found' }); 
+      return res.status(400).json({ error: 'Npc not found!' }); 
     }
 
-    if (session.npcUIDs?.includes(Uid)) {
-      return res.status(400).json({ error: 'Npc is already in the battle' });
+    if (session!.npcUIDs?.includes(uid)) {
+      return res.status(400).json({ error: 'Npc already in the battle!' });
     }
   }
    
-  
-  
   next();
 };
 
-// Checks if the entity is present in the session
-export const getEntity = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Checks if the entity is in a session
+ */
+export const checkEntityInSession = async (req: Request, res: Response, next: NextFunction) => {
+  const { entityId, sessionId } = req.params;
 
-  const { uid, sessionId } = req.query;
-  const sessionID = String(sessionId);
-  const Uid = String(uid);
-
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
   if (!session) {
-    return res.status(400).json({ error: 'session not found' });
+    return res.status(400).json({ error: `Session ${sessionId} not found!` });
   }
 
-  if (!session.characterUIDs?.includes(Uid) && !session.npcUIDs?.includes(Uid) && !session.monsterUIDs?.includes(Uid) ) {
-    return res.status(400).json({ error: `the entity ${Uid} is not found` }); 
+  const isCharacter = session.characterUIDs?.includes(entityId);
+  const isNpc = session.npcUIDs?.includes(entityId);
+  const isMonster = session.monsters?.some((monster: Monster) => {
+    return monster.id === parseInt(entityId, 10);
+  });
+
+  if (!isCharacter && !isNpc && !isMonster) {
+    return res.status(400).json({ error: `Entity ${entityId} not found in session ${sessionId}!` });
   }
 
   next();
 };
 
-// Middleware function to validate modifications of an entity
-export const modifyEntity = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { uid, sessionId } = req.query;
-  const sessionID = String(sessionId);
-  const Uid = String(uid);
 
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionID);
+/**
+ * Checks if an entity update is valid
+ */
+// TODO MrPio
+export const checkUpdateEntity = async (req: Request, res: Response, next: NextFunction) => {
+
+  const { entityId, sessionId } = req.params;
+
+  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
   if (!session) {
-    return res.status(400).json({ error: 'session not found' });
+    return res.status(400).json({ error: `Session ${sessionId} not found!` });
   }
 
-  if (!session.characterUIDs?.includes(Uid) && !session.npcUIDs?.includes(Uid) && !session.monsterUIDs?.includes(Uid) ) {
-    return res.status(400).json({ error: `the entity ${Uid} is not found` }); 
-  }
+  const entityInfo = req.body;
 
   // Convert enum values to an array of strings
   const validEffect = Object.values(Effect) as string[];

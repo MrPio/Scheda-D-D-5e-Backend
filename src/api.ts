@@ -17,6 +17,7 @@ import { checkDiceRoll } from './middleware/dice_middleware';
 import { Error400Factory } from './error/error_factory';
 import { Session } from './model/session';
 import { checkContinueSession, checkNewSession, checkPauseSession, checkSessionId, checkStartSession, checkStopSession } from './middleware/session_middleware';
+import { checkAddEntity, checkEntityInSession } from './middleware/entity_middleware';
 
 
 const app = express();
@@ -88,13 +89,13 @@ app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, checkSe
 });
 
 // Turn Routes =================================================================================
-app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   getTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   postponeTurn(req, res);
 });
-app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   endTurn(req, res);
 });
 
@@ -104,42 +105,39 @@ app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, (re
 app.get('/diceRoll', checkMandadoryParams(['diceList']), checkDiceRoll, (req: IAugmentedRequest, res: Response) => {
   diceRoll(req, res);
 });
-app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   makeAttack(req, res);
 });
-app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   getSavingThrow(req, res);
 });
-app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   addEffect(req, res);
 });
-app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   enableReaction(req, res);
 });
 
 
 // Entity Routes ===============================================================================
-app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, checkMandadoryParams(['entityType', 'entityInfo']), (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, checkMandadoryParams(['entityType', 'entityInfo']), checkSessionId, checkAddEntity, (req: IAugmentedRequest, res: Response) => {
   addEntity(req, res);
 });
-// app.get('/sessions/:sessionId/monsters/:monsterId', checkHasToken, checkTokenIsValid, (req: RequestWithToken, res: Response) => {
-// getMonsterInfo(req, res);
-// });
-app.delete('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.delete('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionId, checkEntityInSession, (req: IAugmentedRequest, res: Response) => {
   deleteEntity(req, res);
 });
-app.get('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.get('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionId, checkEntityInSession, (req: IAugmentedRequest, res: Response) => {
   getEntityInfo(req, res);
 });
-app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkMandadoryParams(['entityInfo']), (req: IAugmentedRequest, res: Response) => {
+app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionId, checkMandadoryParams(['entityInfo']), checkEntityInSession, (req: IAugmentedRequest, res: Response) => {
   updateEntityInfo(req, res);
 });
 
 // History Routes ==============================================================================
-app.get('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => {
+app.get('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => {
   getHistory(req, res);
 });
-app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, checkMandadoryParams(['msg', 'actionType']), (req: IAugmentedRequest, res: Response) => {
+app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, checkMandadoryParams(['msg', 'actionType']), checkSessionId, (req: IAugmentedRequest, res: Response) => {
   updateHistory(req, res);
 });
 
