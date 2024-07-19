@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { SessionStatus } from '../model/session';
+import { Error400Factory } from '../error/error_factory';
+
+const error400Factory: Error400Factory = new Error400Factory();
 
 /**
  * Check the validity of creating a new session
@@ -30,10 +33,8 @@ export const checkNewSession = async (req: Request, res: Response, next: NextFun
   };
 
   // Check if mapSize is within the limits
-  if (!isValidMapSize()) {
-    return res.status(400).json({
-      error: `Map size is invalid. Width must be between ${minMapWidth} and ${maxMapWidth}, and height must be between ${minMapHeight} and ${maxMapHeight}.` });
-  }
+  if (!isValidMapSize())
+    return error400Factory.invalidMapSize().setStatus(res);
 
   // Helper function to check if the input is a non-empty array of strings
   const isNonEmptyArrayOfStrings = (input: unknown): input is string[] => {
@@ -44,43 +45,37 @@ export const checkNewSession = async (req: Request, res: Response, next: NextFun
   if (isNonEmptyArrayOfStrings(characters)) {
     for (const id of characters) {
       const character = await new RepositoryFactory().characterRepository().getById(id);
-      if (!character) {
-        return res.status(400).json({ error: `Character ${id} is not valid!` });
-      }
+      if (!character)
+        return error400Factory.characterNotFound(id).setStatus(res);
     }
 
     const characterSet = new Set(characters);
-    if (characterSet.size !== characters.length) {
-      return res.status(400).json({ error: 'Character is already in the session!' });
-    }
+    if (characterSet.size !== characters.length)
+      return error400Factory.entityInAlready('Character').setStatus(res);
   }
 
   if (isNonEmptyArrayOfStrings(npcs)) {
     for (const id of npcs) {
       const npc = await new RepositoryFactory().npcRepository().getById(id);
-      if (!npc) {
-        return res.status(400).json({ error: `Npc ${id} is not valid!` });
-      }
+      if (!npc)
+        return error400Factory.npcNotFound(id).setStatus(res);
     }
 
     const npcSet = new Set(npcs);
-    if (npcSet.size !== npcs.length) {
-      return res.status(400).json({ error: 'Npc is already in the session!' });
-    }
+    if (npcSet.size !== npcs.length) 
+      return error400Factory.entityInAlready('Npc').setStatus(res);
   }
 
   if (isNonEmptyArrayOfStrings(monsters)) {
     for (const monsterName of monsters) {
       const monster = await new RepositoryFactory().monsterRepository().getById(monsterName);
-      if (!monster) {
-        return res.status(400).json({ error: `Monster ${monsterName} has not yet been created` });
-      }
+      if (!monster)
+        return error400Factory.monsterNotFound(monsterName).setStatus(res);
     }
 
     const monsterSet = new Set(monsters);
-    if (monsterSet.size !== monsters.length) {
-      return res.status(400).json({ error: 'Same monster is already in the session!' });
-    }
+    if (monsterSet.size !== monsters.length)
+      return error400Factory.entityInAlready('Monster').setStatus(res);
   }
   
   next();
@@ -94,9 +89,8 @@ export const checkSessionId = async (req: Request, res: Response, next: NextFunc
   const { sessionId } = req.params;
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
     
-  if (!session) {
-    return res.status(400).json({ error: `Session ${sessionId} not found!` });
-  }
+  if (!session)
+    return error400Factory.sessionNotFound(sessionId).setStatus(res);
 
   next();
 };
@@ -109,13 +103,11 @@ export const checkStartSession = async (req: Request, res: Response, next: NextF
   const { sessionId } = req.params;
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
       
-  if (!session) {
-    return res.status(400).json({ error: `Session ${sessionId} not found!` });
-  }
+  if (!session)
+    return error400Factory.sessionNotFound(sessionId).setStatus(res);
    
-  if (session.sessionStatus !== SessionStatus.created) {
-    return res.status(400).json({ error: `Session ${sessionId} already started!` });
-  }
+  if (session.sessionStatus !== SessionStatus.created)
+    return error400Factory.sessionNotInCreatedState(sessionId).setStatus(res);
   
   next();
 };
@@ -128,13 +120,11 @@ export const checkContinueSession = async (req: Request, res: Response, next: Ne
   const { sessionId } = req.params;
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
         
-  if (!session) {
-    return res.status(400).json({ error: `Session ${sessionId} not found!` });
-  }
-     
-  if (session.sessionStatus !== SessionStatus.paused) {
-    return res.status(400).json({ error: `Session ${sessionId} is not paused!` });
-  }
+  if (!session)
+    return error400Factory.sessionNotFound(sessionId).setStatus(res);
+   
+  if (session.sessionStatus !== SessionStatus.paused)
+    return error400Factory.sessionNotInPausedState(sessionId).setStatus(res);
     
   next();
 };
@@ -147,13 +137,11 @@ export const checkPauseSession = async (req: Request, res: Response, next: NextF
   const { sessionId } = req.params;
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
         
-  if (!session) {
-    return res.status(400).json({ error: `Session ${sessionId} not found!` });
-  }
-     
-  if (session.sessionStatus !== SessionStatus.ongoing) {
-    return res.status(400).json({ error: `Session ${sessionId} is already stopped!` });
-  }
+  if (!session)
+    return error400Factory.sessionNotFound(sessionId).setStatus(res);
+   
+  if (session.sessionStatus !== SessionStatus.ongoing)
+    return error400Factory.sessionNotInOngoingState(sessionId).setStatus(res);
     
   next();
 };
@@ -165,14 +153,12 @@ export const checkStopSession = async (req: Request, res: Response, next: NextFu
 
   const { sessionId } = req.params;
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
-          
-  if (!session) {
-    return res.status(400).json({ error: `Session ${sessionId} not found!` });
-  }
-       
-  if (session.sessionStatus !== SessionStatus.ongoing && session.sessionStatus !== SessionStatus.paused) {
-    return res.status(400).json({ error: `Session ${sessionId} is already ended or has not yet been started!` });
-  }
+
+  if (!session)
+    return error400Factory.sessionNotFound(sessionId).setStatus(res);
+   
+  if (session.sessionStatus !== SessionStatus.ongoing && session.sessionStatus !== SessionStatus.paused)
+    return error400Factory.sessionNotInStopState(sessionId).setStatus(res);
       
   next();
 };

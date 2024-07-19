@@ -44,6 +44,17 @@ export class Error400Factory {
   userNotOnline = (sessionId:string, userUID:string): WrongParamTypeError => new GenericClientError(`User "${userUID}" is not online in "${sessionId}" at this moment!`);
 
   sessionNotInOngoingState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Ongoing state at the moment!`);
+
+  sessionNotInCreatedState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Created state at the moment!`);
+
+  sessionNotInPausedState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Paused state at the moment!`);
+
+  sessionNotInStopState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Paused or Ongoing state at the moment!`);
+  
+  invalidMapSize = (): WrongParamTypeError => new GenericClientError('Map size is invalid. Width must be between 10 and 100, and height must be between 10 and 100!');
+
+  entityInAlready = (entityList:string): WrongParamTypeError => new GenericClientError(`There is a duplicate in the list ${entityList}!`);
+
 }
 
 /**
