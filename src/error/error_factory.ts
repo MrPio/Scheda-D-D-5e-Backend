@@ -63,6 +63,8 @@ export class Error400Factory {
 
   invalidSpeed = (): WrongParamTypeError => new GenericClientError('Speed must be a positive number divisible by 1.5!');
 
+  invalidSkill = (value: string[]): WrongParamTypeError => new GenericClientError(`Invalid skill. It must be one of the following values: ${value.join(', ')}!`);
+
   invalidSkillValue = (value: string): WrongParamTypeError => new GenericClientError(`The ${value} must be an integer between 1 and 30!`);
 
   invalidEffectImmunities = (): WrongParamTypeError => new GenericClientError('The effectImmunities must be a list of effects!');
@@ -72,6 +74,32 @@ export class Error400Factory {
   entityNotFound = (id: string): WrongParamTypeError => new GenericClientError(`The entity ${id} is not in the battle!`);
 
   noModification = (): WrongParamTypeError => new GenericClientError('You need to change at least one parameter.!');
+
+  noNewSlot = (level: number): WrongParamTypeError => new GenericClientError(`The new value of level ${level} slots exceeds your maximum number of slots for that level!`);
+
+  notYourTurn = (id: string): WrongParamTypeError => new GenericClientError(`It's not the turn of ${id}!`);
+
+  notYourTurnEnchantment = (): WrongParamTypeError => new GenericClientError('It is not your turn. You cannot cast an enchantment with a casting time other than reaction!');
+
+  identicalId = (): WrongParamTypeError => new GenericClientError('The two ids are identical!');
+
+  postponeTurn = (): WrongParamTypeError => new GenericClientError('The turn can only be postponed with those who have not yet taken it!');
+
+  reactionNotActivable = (id: string): WrongParamTypeError => new GenericClientError(`The entity ${id} has already used its reaction!`);
+
+  attackTypeInvalid = (): WrongParamTypeError => new GenericClientError('The attackType is invalid. It must be one of the following values: attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment!');
+
+  weaponNotInInventory = (id: string, weapon: string): WrongParamTypeError => new GenericClientError(`The entity ${id} does not possess the weapon ${weapon}!`);
+
+  enchantmentNotInInventory = (id: string, enchantment: string): WrongParamTypeError => new GenericClientError(`The entity ${id} does not possess the enchantment ${enchantment}!`);
+
+  invalidEnchantmentCategory = (enchantment: string, category: string): WrongParamTypeError => new GenericClientError(`The enchantment: ${enchantment} does not belong to the category of spells ${category}!`);
+
+  invalidSlotLevel = (): WrongParamTypeError => new GenericClientError('Slot must be an integer from 1 to 9, inclusive!');
+
+  invalidSlotCasting = (level: number, slotLevel: number): WrongParamTypeError => new GenericClientError(`You can't cast a level ${level} enchantment with a level ${slotLevel} slot!`);
+
+  noSlotAvaible = (level: number): WrongParamTypeError => new GenericClientError(`You don't have a level ${level} slot available!`);
 
 
 }

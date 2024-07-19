@@ -231,7 +231,25 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
 
   next();
 
-  //TODO: Enrico
-  //if (session!.characterUIDs?.includes(entityId)) { }
+  // Check if the new value for the slot enchantment level does not exceed the maxSlots  
+  if (session!.characterUIDs?.includes(entityId)) { 
+    
+    const player = await new RepositoryFactory().characterRepository().getById(entityId);
+
+    for (let i = 0; i <= 8; i++) {
+
+      if (slots[i] !== 0) {
+        
+        const value = player?.slots[i] + slots[i];
+
+        if (value > player?.maxSlots[i])
+          return error400Factory.noNewSlot(i).setStatus(res);
+
+      }
+    
+    }
+  
+
+  }
 
 };
