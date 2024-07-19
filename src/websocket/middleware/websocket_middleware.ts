@@ -28,7 +28,7 @@ export const checkJWT = async (ws: WebSocket, req: IAugmentedIncomingMessage): P
 
   // Check if JWT authorization is disabled for testing purposes.
   if ((process.env.USE_JWT ?? 'true') != 'true') {
-    req.token = 'k9vc0kojNcO9JB9qVdf33F6h3eD2';
+    req.token = (req.headers.token as string) ?? 'k9vc0kojNcO9JB9qVdf33F6h3eD2';
     req.decodedToken = new CachedToken(req.token, 'debug_token', 0, 0, 'Developer');
   } else {
 

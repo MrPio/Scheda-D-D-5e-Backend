@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { Dice } from '../model/dice';
 import { Error400Factory } from '../error/error_factory';
-import { IAugmentedRequest } from '../api';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
 const error400Factory: Error400Factory = new Error400Factory();
 
