@@ -240,6 +240,22 @@ app.get('/token', (req: IAugmentedRequest, res: Response) => {
 const hasPendingRequest = (sessionId: string) => Object.values(activeConnections[sessionId].users).some(it => it.pendingRequest);
 
 /**
+ * Aborting the API backend request, either due to a timeout error or player disconnection.
+ * @param sessionId the session in which the request was sent.
+ * @param res the API backend response object
+ */
+const abortRequest = (sessionId: string, res: Response, isTimeout: boolean) => {
+  for (const user of Object.values(activeConnections[sessionId].users)) {
+    if (user.pendingRequest)
+      user.webSocket.send(JSON.stringify({ error: 'timeout', message: 'The players took too much time to answer. Operation aborted!' }));
+    user.pendingRequest = false;
+  }
+  (isTimeout ? error400Factory.clientTimeout() : error400Factory.clientDisconnected()).setStatus(res);
+  requestResponses = {};
+  activeConnections[sessionId].subscription?.unsubscribe();
+};
+
+/**
  * Communication Routes ========================================================================
  * These are the routes used by API backend to communicate with websocket server.
  */
@@ -304,20 +320,62 @@ app.get('/sessions/:sessionId/requestDiceRoll', checkHasToken, checkIsAPIBackend
 });
 
 /**
- * Aborting the API backend request, either due to a timeout error or player disconnection.
- * @param sessionId the session in which the request was sent.
- * @param res the API backend response object
+ * `requestReaction/` route.
+ * The request body is expected to be as follows.
+ * {
+ *   "addresseeUIDs": [ "k9vc0kojNcO9JB9qVdf33F6h3eD2" ]
+ * }
  */
-const abortRequest = (sessionId: string, res: Response, isTimeout: boolean) => {
-  for (const user of Object.values(activeConnections[sessionId].users)) {
-    if (user.pendingRequest)
-      user.webSocket.send(JSON.stringify({ error: 'timeout', message: 'The players took too much time to answer. Operation aborted!' }));
-    user.pendingRequest = false;
+app.get('/sessions/:sessionId/requestReaction', checkHasToken, checkIsAPIBackend, checkMandadoryParams(['addresseeUIDs']), checkParamsType({ addresseeUIDs: ARRAY(STRING) }), checkSessionExists, checkSessionStatus([SessionStatus.ongoing]), checkUsersOnline, (req: IAugmentedRequest, res: Response) => {
+
+  // Check that the active connection stores the connection of interest. This should always be true.
+  if (!(req.sessionId! in activeConnections) || req.addresseeUIDs?.some(uid => !(uid in activeConnections[req.sessionId!].users)))
+    return error500Factory.genericError().setStatus(res);
+
+  // Check that the specified session does not already have a pending request.
+  if (hasPendingRequest(req.sessionId!))
+    return error400Factory.websocketRequestAlreadyPending(req.sessionId!).setStatus(res);
+
+  // Request the players involved to roll the dice and update their pending status.
+  for (const userUID of req.addresseeUIDs!) {
+    activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'useReaction' }));
+    activeConnections[req.sessionId!].users[userUID].pendingRequest = true;
   }
-  (isTimeout ? error400Factory.clientTimeout() : error400Factory.clientDisconnected()).setStatus(res);
-  requestResponses = {};
-  activeConnections[sessionId].subscription?.unsubscribe();
-};
+
+  // When the player answer, send the HTTP response to the API backend.
+  activeConnections[req.sessionId!].subscription = activeConnections[req.sessionId!].subject.subscribe(({ ws, message, userUID }) => {
+
+    // Check that the sender had a pending request, otherwise ignore its message.  
+    if (!activeConnections[req.sessionId!].users[userUID].pendingRequest) return;
+
+    // Check that the provided dice result is an integer.
+    if (message != 'true' && message != 'false')
+      ws.send(JSON.stringify({ action: 'useReaction', error: `"${message}" is not a boolean! Please retry.` }));
+    else {
+      activeConnections[req.sessionId!].users[userUID].pendingRequest = false;
+      requestResponses[userUID] = { choice: message == 'true', answerTimestamp: Date.now() };
+
+      // If this was the last player to answer, send the result back to the API backend and unsubscribe this listner.
+      if (!hasPendingRequest(req.sessionId!)) {
+
+        // Cancel timeout emitter
+        cancelTimeout.next();
+        res.json(requestResponses);
+        requestResponses = {};
+        activeConnections[req.sessionId!].subscription?.unsubscribe();
+      }
+    }
+  });
+
+  // Set a timeout to prevent starvation. It is used to prevent starvation when waiting for players responses.
+  timer(timeoutLimit)
+    .pipe(takeUntil(cancelTimeout))
+    .subscribe(() => abortSubject.next({ isTimeout: true }));
+
+  // Register the abort operation on the abort subject
+  if (abortSubscription) abortSubscription.unsubscribe();
+  abortSubscription = abortSubject.subscribe(({ isTimeout }) => abortRequest(req.sessionId!, res, isTimeout));
+});
 
 // Start websocket and API servers
 (async () => {
