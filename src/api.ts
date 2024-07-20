@@ -14,7 +14,7 @@ import { initializeSequelize } from './db/sequelize';
 import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 import { checkDiceRoll } from './middleware/dice_middleware';
 import { IAugmentedRequest } from './interface/augmented_request';
-import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, OBJECT, STRING, BOOLEAN } from './middleware/parameters_middleware';
+import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, OBJECT, STRING, BOOLEAN, OBJECT_ARRAY } from './middleware/parameters_middleware';
 import { checkEntityExistsInSession, checkNewSession, checkSessionExists, checkSessionStatus } from './middleware/session_middleware';
 import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
 import { checkTryAttack, checkRequestSavingThrow, checkEnableReaction } from './middleware/attack_middleware';
@@ -68,18 +68,17 @@ app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, che
 
 // Attack Routes ===============================================================================
 app.get('/diceRoll', checkMandadoryParams(['diceList']), checkParamsType({ diceList: ARRAY(ENUM(Dice)), modifier: NUMBER }), checkDiceRoll, (req: IAugmentedRequest, res: Response) => diceRoll(req, res));
-// TODO add check on attackType: AttackType enum
-app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['attackType', 'attackInfo']), checkParamsType({ attackType: ENUM(AttackType), attackInfo: OBJECT ({'targetId': ARRAY(STRING), 'weapon': STRING, 'attackRoll': NUMBER, 'enchantment': STRING, 'difficultyClass': NUMBER, 'skill': ENUM(Skill), 'slotLevel': NUMBER }) }), checkTryAttack, (req: IAugmentedRequest, res: Response) => makeAttack(req, res));
+app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['attackType', 'attackInfo']), checkParamsType({ attackType: ENUM(AttackType), attackInfo: OBJECT({ 'targetId': ARRAY(STRING), 'weapon': STRING, 'attackRoll': NUMBER, 'enchantment': STRING, 'difficultyClass': NUMBER, 'skill': ENUM(Skill), 'slotLevel': NUMBER }) }), checkTryAttack, (req: IAugmentedRequest, res: Response) => makeAttack(req, res));
 app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['entitiesId', 'difficultyClass', 'skill']), checkParamsType({ entitiesId: ARRAY(STRING), difficultyClass: NUMBER, skill: ENUM(Skill) }), checkRequestSavingThrow, (req: IAugmentedRequest, res: Response) => getSavingThrow(req, res));
-app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['entitiesId', 'effect']), checkParamsType({ entitiesId: ARRAY(STRING), effect: ENUM(Effect)}), (req: IAugmentedRequest, res: Response) => addEffect(req, res));
+app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['entitiesId', 'effect']), checkParamsType({ entitiesId: ARRAY(STRING), effect: ENUM(Effect) }), (req: IAugmentedRequest, res: Response) => addEffect(req, res));
 app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, checkSessionExists, checkEnableReaction, (req: IAugmentedRequest, res: Response) => enableReaction(req, res));
 
 // Entity Routes ===============================================================================
 
-app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['entityType', 'entityInfo']), checkParamsType({ entityType: ENUM(EntityType), entityInfo: OBJECT({ 'name': STRING, 'maxHp': NUMBER, 'armorClass': NUMBER, 'isReactionActivable': BOOLEAN, 'speed': NUMBER, 'skills': OBJECT({ ARRAY(ENUM(Skill), NUMBER) }), 'enchantments': ARRAY(STRING), 'weapons': ARRAY(STRING), 'effectImmunities': ARRAY(ENUM(Effect)), 'uid': STRING }) }), checkAddEntity, (req: IAugmentedRequest, res: Response) => addEntity(req, res));
+app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['entityType', 'entityInfo']), checkParamsType({ entityType: ENUM(EntityType), entityInfo: OBJECT({ 'name': STRING, 'maxHp': NUMBER, 'armorClass': NUMBER, 'isReactionActivable': BOOLEAN, 'speed': NUMBER, 'skills': OBJECT_ARRAY(ENUM(Skill), NUMBER), 'enchantments': ARRAY(STRING), 'weapons': ARRAY(STRING), 'effectImmunities': ARRAY(ENUM(Effect)), 'uid': STRING }) }), checkAddEntity, (req: IAugmentedRequest, res: Response) => addEntity(req, res));
 app.delete('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityInSession, (req: IAugmentedRequest, res: Response) => deleteEntity(req, res));
 app.get('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityInSession, (req: IAugmentedRequest, res: Response) => getEntityInfo(req, res));
-app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityInSession, checkMandadoryParams(['entityInfo']), checkParamsType({ entityInfo: OBJECT({ 'hp': NUMBER, 'armorClass': NUMBER, 'speed': NUMBER, 'effects':ARRAY(ENUM(Effect)), 'slots': ARRAY(NUMBER)}) }), (req: IAugmentedRequest, res: Response) => updateEntityInfo(req, res));
+app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityInSession, checkMandadoryParams(['entityInfo']), checkParamsType({ entityInfo: OBJECT({ 'hp': NUMBER, 'armorClass': NUMBER, 'speed': NUMBER, 'effects':ARRAY(ENUM(Effect)), 'slots': ARRAY(NUMBER) }) }), (req: IAugmentedRequest, res: Response) => updateEntityInfo(req, res));
 
 // History Routes ==============================================================================
 app.get('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, checkSessionExists, (req: IAugmentedRequest, res: Response) => getHistory(req, res));
