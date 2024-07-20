@@ -11,6 +11,10 @@ export enum SessionStatus {
   ended = 'terminata',
 }
 
+/**
+ * Represents a session in the game.
+ * A session is a gameplay instance where entities interact with each other.
+ */
 @Table({
   tableName: 'sessions',
   timestamps: true,
@@ -49,6 +53,10 @@ export class Session extends Model<Session> {
   @HasMany(() => EntityTurn)
   declare entityTurns: EntityTurn[];
 
+  /**
+   * Returns the list of monster unique identifiers in the session.
+   * @returns An array of monster unique identifiers.
+   */
   get monsterUIDs(): string[] {
     return this.monsters.map(it => it.id);
   }

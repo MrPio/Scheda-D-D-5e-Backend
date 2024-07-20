@@ -4,7 +4,9 @@ import { Session } from './session';
 import { MonsterSkill } from './monster_skill';
 import IEntity from './entity';
 
+
 /**
+ * Represents a monster in a combat session.
  * A monster is a disposable `Entity` that the master may add at the beginning of each combat `Session`.
  */
 @Table({
@@ -43,6 +45,10 @@ export class Monster extends Model<Monster> implements IEntity {
   @HasMany(() => MonsterSkill)
   declare skills: MonsterSkill[];
 
+  /**
+   * Determines if the monster is considered dead based on its health points.
+   * A monster is dead if its health points are less than or equal to zero.
+   */
   get isDead(): boolean {
     return this._hp <= 0;
   }

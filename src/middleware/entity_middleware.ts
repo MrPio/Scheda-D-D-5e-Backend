@@ -242,8 +242,8 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
         
         const value = player?.slots[i] + slots[i];
 
-        if (value > player?.maxSlots[i])
-          return error400Factory.noNewSlot(i).setStatus(res);
+        //if (value > player?.maxSlots[i])
+        //  return error400Factory.noNewSlot(i).setStatus(res);
 
       }
     

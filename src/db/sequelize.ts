@@ -9,7 +9,11 @@ import { RepositoryFactory } from '../repository/repository_factory';
 import { Effect } from '../model/effect';
 
 dotenv.config();
+
+// Flag to check if the database has been synced
 let synced: boolean = false;
+
+// Initialize Sequelize instance for PostgreSQL database
 const sequelize = new Sequelize({
   database: process.env.DB_NAME,
   dialect: 'postgres',

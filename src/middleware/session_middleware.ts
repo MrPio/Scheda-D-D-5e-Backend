@@ -11,6 +11,11 @@ const error400Factory: Error400Factory = new Error400Factory();
 export const checkNewSession = async (req: Request, res: Response, next: NextFunction) => {
   const { mapSize, characters, npcs, monsters } = req.body;
 
+  const minMapWidth = 10;
+  const minMapHeight = 10;
+  const maxMapWidth = 100;
+  const maxMapHeight = 100;
+
   // Helper function to check if mapSize is valid
   const isValidMapSize = (): boolean => {
     return (

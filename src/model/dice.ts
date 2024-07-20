@@ -1,3 +1,7 @@
+/**
+ * Enum representing different types of dice used in games or simulations.
+ * Each member corresponds to a specific die with a given number of sides.
+ */
 export enum Dice {
   d2 = 2,
   d4 = 4,

@@ -9,6 +9,7 @@ import NPC from '../model/npc';
 import Character from '../model/character';
 import { findEntityTurn } from './utility/model_queries';
 import { MonsterSkill } from '../model/monster_skill';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
@@ -16,37 +17,41 @@ const monsterRepository = repositoryFactory.monsterRepository();
 const characterRepository = repositoryFactory.characterRepository();
 const npcRepository = repositoryFactory.npcRepository();
 
+/**
+ * This function simulates rolling a list of dice and applies a modifier to the result.
+ * The dice to be rolled and the modifier are provided in the request body.
+ * It calculates the total result by summing the dice rolls and adding the modifier.
+ */
 export async function diceRollService(req: IAugmentedRequest, res: Res) {
   const { diceList, modifier } = req.body;
 
-  // Parse diceList
+  // Parse the diceList to get the numerical values of each dice
   const diceValues: number[] = diceList.map((dice: string) => Object(Dice)[dice]);
 
-  // Roll the dice
+  // Roll each dice and compute the total result
   const rollResult = diceValues.reduce((total, dice) => total + randomInt(dice) + 1, 0) + modifier;
   return res.json({ result: rollResult });
 }
+
 
 
 export async function makeAttackService(req: IAugmentedRequest, res: Res) {
   // TODO MrPio
 }
 
+/**
+ * This function calculates the results of saving throws for a list of entities within a session.
+ * It checks each entity's saving throw against a difficulty class.
+ * The result for each entity is computed based on its type and skill, and the results are returned.
+ */
 export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
-  const { sessionId } = req.params;
   const { entitiesId, difficultyClass, skill } = req.body;
 
-  // Retrieve the session
-  const session = await sessionRepository.getById(sessionId);
-
-  if (!session) {
-    return res.status(404).json({ error: 'Session not found' });
-  }
-
-  // Initialize result array
+  // Initialize results array to store saving throw results
   const results = [];
 
   for (const entityId of entitiesId) {
+    // Retrieve entity by ID, checking each repository
     let entity: Monster | Character | NPC | null = await monsterRepository.getById(entityId);
 
     if (!entity) {
@@ -58,7 +63,7 @@ export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
     }
 
     if (entity) {
-      // Roll a d20 using crypto for randomness
+      // Roll a d20 for the saving throw
       const rollResult = randomInt(1, 20);
 
       let saveRoll: number;
@@ -73,10 +78,11 @@ export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
         // Get the skill modifier from the NPC's skillsModifier
         saveRoll = rollResult + (entity.skillsModifier[skill] || 0);
       } else {
-        continue; // Skip if entity type is unexpected
+        // Skip if entity type is unexpected
+        continue;
       }
 
-      // Determine if the save roll is successful
+      // Determine if the saving throw is successful
       const isSuccess = saveRoll >= difficultyClass;
 
       // Add the result to the results array
@@ -86,13 +92,16 @@ export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
         saveRoll,
         isSuccess,
       });
-
-      return res.json({ results });
+    } else {
+      // Return error if no entity is found
+      return res.status(404).json({ error: 'Entity not found' });
     }
   }
 
-  return res.status(404).json({ error: 'Entity not found' });
+  // Return the results of saving throws
+  return res.json({ results });
 }
+
 
 // TODO MrPio
 export async function addEffectService(req: IAugmentedRequest, res: Res) {
@@ -162,18 +171,24 @@ export async function addEffectService(req: IAugmentedRequest, res: Res) {
   // });
 }
 
+/**
+ * This function enables the reaction ability for a specified entity within a session.
+ * The session and entity are identified by the sessionId and entityId provided in 
+ * the request parameters and body.
+ * It updates the entity's `isReactionActivable` property and saves the changes.
+ */
 export async function enableReactionService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { entityId } = req.body;
 
   const session = await sessionRepository.getById(sessionId);
 
-  // Try to find the entity in entityTurn
-  //const entityTurn = session!.entityTurns.find(e => e.entityUID === entityId);
+  // Find the entity in the entityTurns list
   const entityTurn = findEntityTurn(session!, entityId);
   if (entityTurn) {
     let entity;
-    // Check if the entity is a monster/character/npc
+    
+    // Check if the entity is a monster, character, or NPC
     if (session!.monsterUIDs.includes(entityId)) {
       entity = await monsterRepository.getById(entityId);
     } else if (session!.characterUIDs!.includes(entityId)) {
@@ -183,10 +198,10 @@ export async function enableReactionService(req: IAugmentedRequest, res: Res) {
     }
 
     if (entity) {
-      // Update the entity's isReactionActivable property
-      entity.isReactionActivable = false;
+      // Update the entity's isReactionActivable property to true
+      entity.isReactionActivable = true;
 
-      // Save the updated entity back to the repository
+      // Save the updated entity back to its repository
       if (entity instanceof Monster) {
         await monsterRepository.update(entity.id, entity);
       } else if (entity instanceof Character) {
@@ -194,12 +209,14 @@ export async function enableReactionService(req: IAugmentedRequest, res: Res) {
       } else if (entity instanceof NPC) {
         await npcRepository.update(entity.uid!, entity);
       }
-      // Save the session
+      
+      // Save the updated session
       await sessionRepository.update(session!.id, session!);
 
       return res.status(200).json({ message: `Reaction enabled for entity ${entityId}!`, entity });
     }
   }
 
+  // Return error if the entity is not found in the session
   return res.status(404).json({ error: `Entity not found in session ${sessionId}!` });
 }

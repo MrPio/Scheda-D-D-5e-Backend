@@ -1,17 +1,23 @@
 import { Model, Column, Table, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Session } from './session';
 
+/**
+ * Enum representing different types of actions that can be recorded in the history.
+ */
 export enum ActionType {
   attackAttempt = 'attackAttempt',
   attackDamage = 'attackDamage',
   movement = 'movement',
   chat = 'chat',
 }
-
 /**
+ * Represents a message in the history of a session.
+ * This message could represent various actions performed during the session such as attacks,
+ * movements, or chat messages.
  * session (0,N)<------>(1,1) history
  * 
- * A `HistoryMessage' is a message that is generated when a player moves and sent to all players in the session.
+ * A `HistoryMessage' is a message that is generated when a player moves and sent to all players
+ * in the session.
  */
 @Table({
   tableName: 'history',

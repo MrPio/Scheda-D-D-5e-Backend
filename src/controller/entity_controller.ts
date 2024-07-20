@@ -1,15 +1,18 @@
-
 import { Response as Res } from 'express';
 import { addEntityService, deleteEntityService, getEntityInfoService, updateEntityInfoService } from '../service/entity_service';
 import { getSavingThrowService, makeAttackService, addEffectService, enableReactionService } from '../service/attack_service';
+import { IAugmentedRequest } from '../interface/augmented_request';
+
+/**
+ * Controller functions for handling various entity and attack-related requests.
+ * These functions serve as intermediaries between the HTTP request/response cycle
+ * and the corresponding service functions. They pass the request and response objects
+ * to the appropriate service functions and return the results.
+ */
 
 export const addEntity = (req: IAugmentedRequest, res: Res) => {
   return addEntityService(req, res);
 };
-
-//export const getMonsterInfo = (req: AugmentedRequest, res: Res) => {
-//  return getMonsterInfoService(req, res);
-//};
 
 export const deleteEntity = (req: IAugmentedRequest, res: Res) => {
   return deleteEntityService(req, res);

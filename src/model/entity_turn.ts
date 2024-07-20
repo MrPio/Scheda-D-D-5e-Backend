@@ -1,6 +1,11 @@
 import { Model, Column, Table, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Session } from './session';
 
+/**
+ * Represents an entity's turn in a session.
+ * This model captures information about the entity's position and turn index.
+ */
+
 @Table({
   tableName: 'entity_turns',
   timestamps: true,

@@ -1,10 +1,15 @@
-
 import { Response as Res } from 'express';
 import { createSessionService, deleteSessionService, getAllSessionsService, getSessionInfoService, pauseSessionService, startSessionService, stopSessionService } from '../service/session_service';
 import { getTurnService, postponeTurnService, endTurnService } from '../service/turn_service';
 import { getHistoryService, updateHistoryService } from '../service/history_service';
 import { diceRollService } from '../service/attack_service';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
+/**
+ * Controller functions for handling various session, turn, history, and dice roll requests.
+ * These functions act as intermediaries between HTTP requests and the corresponding service functions.
+ * They pass the request and response objects to the service layer and return the results to the client.
+ */
 
 export const getSessions = (req: IAugmentedRequest, res: Res) => {
   return getAllSessionsService(req, res);

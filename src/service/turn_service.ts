@@ -2,6 +2,7 @@
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { findEntityTurn } from './utility/model_queries';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
 
