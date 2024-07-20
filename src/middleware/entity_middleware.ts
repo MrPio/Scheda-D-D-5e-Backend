@@ -57,7 +57,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
     return error400Factory.wrongElementTypeError('entityType', entityType, validEntityType).setStatus(res);
 
   // Check if the entity is a Monster
-  if (entityType === EntityType.Monster) {
+  if (entityType === EntityType.monster) {
     const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.body;
 
 
@@ -131,7 +131,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
   }
 
   // Check if the entity is a Character
-  if (entityType === EntityType.Character) {
+  if (entityType === EntityType.character) {
 
     const { uid } = req.body;
 
@@ -146,7 +146,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
   }
 
   // Check if the entity is a Npc
-  if (entityType === EntityType.Npc) {
+  if (entityType === EntityType.npc) {
 
     const { uid } = req.body;
 
@@ -204,7 +204,7 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
     return error400Factory.wrongParameterType('effect', 'list').setStatus(res);
 
   // Check for any modification
-  if (hp && !armorClass && !speed && !effects)
+  if (hp && !armorClass && !speed && !effects && !slots)
     return error400Factory.genericError('You need to change at least one parameter.!').setStatus(res);
 
   // Check if the element is a valid value based on the enum Effect. 

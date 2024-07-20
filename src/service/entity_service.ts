@@ -47,21 +47,17 @@ In body:
   "entityType": "Monster",
   "entityInfo": {
     "authorUID": "masterPio",
-    "_name": "Orc",
-    "_maxHp": 30,
-    "_hp": 30,
+    "name": "Orc",
+    "maxHp": 30,
+    "hp": 30,
     "armorClass": 13,
     "enchantments": [],
     "isReactionActivable": true,
     "speed": 30,
     "weapons": ["axe"],
     "effectsImmunities": []
-    'strength', 
-    'dexterity', 
-    'constitution', 
-    'intelligence',
-    'wisdom', 
-    'charisma'
+    "skills": {[key:Skill]:number}
+    
   }
 }
 2) add other entity:
