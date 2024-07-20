@@ -47,13 +47,14 @@ import express, { Response, json } from 'express';
 import { Session, SessionStatus } from '../model/session';
 import { checkJWT, checkSession, IConnectionFailError } from './middleware/websocket_middleware';
 import { checkHasToken } from '../middleware/jwt_middleware';
-import { checkIsAPIBackend, checkSessionExists, checkUsersOnline } from './middleware/api_middleware';
+import { checkIsAPIBackend, checkUsersOnline } from './middleware/api_middleware';
 import { generateJWT } from '../service/jwt_service';
 import { Error400Factory, Error500Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
 import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, STRING } from '../middleware/parameters_middleware';
 import { Dice } from '../model/dice';
-import { checkSessionStatus } from '../middleware/session_middleware';
+import { checkSessionExists, checkSessionStatus } from '../middleware/session_middleware';
+import { ActionType, HistoryMessage } from '../model/history_message';
 
 
 
@@ -104,6 +105,7 @@ const activeConnections: Connections = {};
 const onOpenSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string, username: string }>();
 const onCloseSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string }>();
 const sessionRepository = new RepositoryFactory().sessionRepository();
+const historyRepository = new RepositoryFactory().historyRepository();
 const error500Factory: Error500Factory = new Error500Factory();
 const error400Factory: Error400Factory = new Error400Factory();
 
@@ -179,15 +181,16 @@ onOpenSubject.subscribe(async ({ ws, session, userUID, username }) => {
     activeConnections[session.id] = { subject: new Subject(), users: {} };
 
     // Subscribe message broadcaster listener.
-    activeConnections[session.id].subject.subscribe(({ userUID: senderUID, message }) => {
+    activeConnections[session.id].subject.subscribe(async ({ userUID: senderUID, message }) => {
 
-      // TODO: save history message in table
-      ''
       // If the player has a pending request, don't broadcast its message
       if (activeConnections[session.id].users[senderUID].pendingRequest) return;
       try {
         // Try to cast the received message to the BroadcastMessage type
         const jsonMessage = JSON.parse(message) as BroadcastMessage;
+
+        // Create a new history message
+        await historyRepository.create({ msg: jsonMessage.message, actionType: ActionType.chat, sessionId: session.id } as HistoryMessage);
 
         // Echo the message to all connected players in the session except the sender, or to a subset of them if addresseeUIDs was specified.
         Object.entries(activeConnections[session.id].users).forEach(user => {
