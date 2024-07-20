@@ -36,10 +36,18 @@ export const ARRAY =
   (next: (arg0: object) => boolean) =>
     (obj: object) =>
       Array.isArray(obj) && obj.every(it => next(it));
+
+// For object of type {key1: ValueType1, ..., keyN: ValueTypeN}
 export const OBJECT =
   (objectType: { [key: string]: (arg0: object) => boolean }) =>
     (obj: object) =>
       Object.entries(obj).every(it => objectType[it[0]](it[1]));
+
+// For object of type {[key: KeyType]: ValueType}
+export const OBJECT_ARRAY =
+  (key: (arg0: object) => boolean, value: (arg0: object) => boolean) =>
+    (obj: object) =>
+      Object.entries(obj).every(it => key(it[0] as unknown as object) && value(it[1]));
 
 
 /**

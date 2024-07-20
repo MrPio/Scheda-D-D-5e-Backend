@@ -104,6 +104,7 @@ export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
 
 
 // TODO MrPio
+// TODO broadcast an History Message at the end of some routes
 export async function addEffectService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;
   const { entitiesId, effect } = req.body;

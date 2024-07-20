@@ -1,258 +1,74 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { Effect } from '../model/effect';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { Error400Factory } from '../error/error_factory';
-import { EntityTurn } from '../model/entity_turn';
 import { EntityType } from '../model/entity';
+import { IAugmentedRequest } from '../interface/augmented_request';
+import Character from '../model/character';
 
 const error400Factory: Error400Factory = new Error400Factory();
-
-/**
- * Utility function to check if a value is a positive integer
- */
-function isPositiveInteger(value: number): boolean {
-  const number = Number(value);
-  return Number.isInteger(number) && number > 0;
-}
-
-/**
- * Utility function to check if a value is an integer
- */
-function isInteger(value: number): boolean {
-  const number = Number(value);
-  return Number.isInteger(number);
-}
-
-/**
- * Utility function to check if a value is positive and divisible by 1.5
- */
-function isValidSpeed(value: number): boolean {
-  const number = Number(value);
-  return number > 0 && number % 1.5 === 0;
-}
-
-/**
- * Utility function to check if a value is an integer between 1 and 30
- */
-function isValidAttributeValue(value: number): boolean {
-  const number = Number(value);
-  return Number.isInteger(number) && number >= 1 && number <= 30;
-}
+const enchantmentRepository = new RepositoryFactory().enchantmentRepository();
+const characterRepository = new RepositoryFactory().characterRepository();
+const npcRepository = new RepositoryFactory().npcRepository();
 
 /**
  * Check the validity of adding a new entity to a session
+ * @precondition `checkSessionExists`
  */
-export const checkAddEntity = async (req: Request, res: Response, next: NextFunction) => {
-  
-  const { sessionId } = req.params;
-  const { entityType } = req.body;
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+export const checkAddEntity = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  const body: { entityType: EntityType, entityInfo: { uid?: string, maxHp?: number, armorClass?: number, enchantments?: string[], weapons?: string[], effectImmunities?: Effect[], speed?: number, skills?: { [skill: string]: number } } } = req.body;
 
-  // Convert enum values to an array of strings
-  const validEffect = Object.values(Effect) as string[];
-  const validEntityType = Object.values(EntityType) as string[];
-    
-  // Check if the entityType is correct
-  if (!validEntityType.includes(entityType))
-    return error400Factory.wrongElementTypeError('entityType', entityType, validEntityType).setStatus(res);
-
-  // Check if the entity is a Monster
-  if (entityType === EntityType.monster) {
-    const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.body;
-
-
-    // Check maxHp
-    if (!isPositiveInteger(maxHp))
+  // If the entity is a Monster, check its properties values.
+  if (body.entityType === EntityType.monster) {
+    if (body.entityInfo.maxHp! <= 0)
       return error400Factory.invalidNumber('maxHp', 'a positive integer').setStatus(res);
-
-    // Check armorClass
-    if (!isPositiveInteger(armorClass))
-      return error400Factory.invalidNumber('armorClass', 'a positive integer' ).setStatus(res);
-
-    // Check speed
-    if (!isValidSpeed(speed))
+    if (body.entityInfo.armorClass! <= 0)
+      return error400Factory.invalidNumber('armorClass', 'a positive integer').setStatus(res);
+    if (body.entityInfo.speed! % 1.5 !== 0)
       return error400Factory.invalidNumber('speed', 'a positive number divisible by 1.5').setStatus(res);
-    
-    // Check skillValues
-    if (!isValidAttributeValue(strength))
-      return error400Factory.invalidNumber('strength', 'an integer between 1 and 30').setStatus(res);
+    if (Object.values(body.entityInfo.skills!).some(it => it < 1 || it > 30))
+      return error400Factory.invalidNumber('skills', 'an integer between 1 and 30').setStatus(res);
 
-    if (!isValidAttributeValue(dexterity))
-      return error400Factory.invalidNumber('dexterity', 'an integer between 1 and 30').setStatus(res);
-    
-    if (!isValidAttributeValue(intelligence))
-      return error400Factory.invalidNumber('intelligence', 'an integer between 1 and 30').setStatus(res);
-    
-    if (!isValidAttributeValue(wisdom))
-      return error400Factory.invalidNumber('wisdom', 'an integer between 1 and 30').setStatus(res);
-    
-    if (!isValidAttributeValue(charisma))
-      return error400Factory.invalidNumber('charisma', 'an integer between 1 and 30').setStatus(res);
-    
-    if (!isValidAttributeValue(constitution))
-      return error400Factory.invalidNumber('constitution', 'an integer between 1 and 30').setStatus(res);
-    
+    // Verify the name of the enchantments
+    for (const enchantmentId of body.entityInfo.enchantments ?? [])
+      if (!await enchantmentRepository.getById(enchantmentId))
+        return error400Factory.enchantmentNotFound(enchantmentId).setStatus(res);
+  } else {
 
-    // Check effectImmunities
-    if (!effectImmunities) {
-      if (!Array.isArray(effectImmunities))
-        return error400Factory.wrongParameterType('effectImmunities', 'list').setStatus(res);
-  
-      for (const element of effectImmunities as string[]) {
-        if (!validEffect.includes(element))
-          return error400Factory.wrongElementTypeError('effect immunities', element, validEffect).setStatus(res);
-      }
-    }
-    
+    // Check that the character or npc exists.
+    if (!await (body.entityType === EntityType.character ? characterRepository : npcRepository).getById(body.entityInfo.uid!))
+      return (body.entityType === EntityType.character ? error400Factory.characterNotFound(body.entityInfo.uid!) : error400Factory.npcNotFound(body.entityInfo.uid!)).setStatus(res);
 
-    // Check enchantments
-    if (enchantments) {
-
-      if (!Array.isArray(enchantments))
-        return error400Factory.wrongParameterType('enchantments', 'list').setStatus(res);
-
-      const enchantmentRepository = new RepositoryFactory().enchantmentRepository();
-    
-      // Verify the name of the enchantments
-      for (const enchantmentId of enchantments) {
-        const enchantment = await enchantmentRepository.getById(enchantmentId);
-        if (!enchantment)
-          return error400Factory.enchantmentNotFound(enchantmentId).setStatus(res);
-      }
-      
-    }
-
-    // Check weapons
-    if (weapons) {
-      if (!Array.isArray(weapons))
-        return error400Factory.wrongParameterType('weapons', 'list').setStatus(res);
-
-    }
+    // Check that the entity is not already part of the session
+    if ((body.entityType === EntityType.character ? req.session!.characterUIDs : req.session!.npcUIDs)?.includes(body.entityInfo.uid!))
+      return error400Factory.genericError(`"${body.entityInfo.uid!}" is already in the battle!`).setStatus(res);
   }
-
-  // Check if the entity is a Character
-  if (entityType === EntityType.character) {
-
-    const { uid } = req.body;
-
-    const character = await new RepositoryFactory().characterRepository().getById(uid);
-    
-    if (!character) 
-      return error400Factory.characterNotFound(uid).setStatus(res);
-
-    if (session!.characterUIDs?.includes(uid))
-      return error400Factory.genericError(`The "${uid}" is already in the battle!`).setStatus(res);
-    
-  }
-
-  // Check if the entity is a Npc
-  if (entityType === EntityType.npc) {
-
-    const { uid } = req.body;
-
-    const npc = await new RepositoryFactory().npcRepository().getById(uid);
-    
-    if (!npc) 
-      return error400Factory.npcNotFound(uid).setStatus(res);
-
-    if (session!.characterUIDs?.includes(uid))
-      return error400Factory.genericError(`The "${uid}" is already in the battle!`).setStatus(res);
-  }
-   
   next();
 };
-
-/**
- * Checks if the entity is in the session
- */
-export const checkEntityInSession = async (req: Request, res: Response, next: NextFunction) => {
-  const { entityId, sessionId } = req.params;
-
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
-
-  const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
-
-  // Check if the entityId exists in the battle
-  if (!entityUIDsInTurn.includes(entityId))
-    return error400Factory.entityNotFoundInSession(entityId, sessionId).setStatus(res);
-
-  next();
-};
-
-
 
 /**
  * Checks if an entity update is valid
+ * @precondition `checkSessionExists`
+ * @precondition `checkEntityExistsInSession`
  */
 //TODO: MrPio check turn
-export const checkUpdateEntity = async (req: Request, res: Response, next: NextFunction) => {
-
-  const { entityId, sessionId } = req.params;
-
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
-
-  // Check if the entityId is in the session
-  if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId)) 
-    return error400Factory.entityNotFoundInSession(entityId, sessionId).setStatus(res);
-
-  // Convert enum values to an array of strings
-  const validEffect = Object.values(Effect) as string[];
-  const { hp, armorClass, speed, effects, slots } = req.body;
-
-  // Check effects
-  if (!Array.isArray(effects))
-    return error400Factory.wrongParameterType('effect', 'list').setStatus(res);
+export const checkUpdateEntity = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  const body: { hp?: number, armorClass?: number, speed?: number, effects?: Effect[], slots?: { [key: number]: number } } = req.body;
 
   // Check for any modification
-  if (hp && !armorClass && !speed && !effects && !slots)
+  if (Object.values(body).every(it => !it))
     return error400Factory.genericError('You need to change at least one parameter.!').setStatus(res);
 
-  // Check if the element is a valid value based on the enum Effect. 
-  if (effects) {
-
-    if (!Array.isArray(effects))
-      return error400Factory.wrongParameterType('effects', 'list').setStatus(res);
-
-    for (const element of validEffect as string[]) {
-      if (!validEffect.includes(element))
-        return error400Factory.wrongElementTypeError('effect', element, validEffect).setStatus(res);
-    }
-
-  }
-  
-  // Check speed
-  if (!isValidSpeed(speed))
+  // Check params values
+  if ((body.speed ?? 0) % 1.5 !== 0)
     return error400Factory.invalidNumber('speed', 'a positive number divisible by 1.5').setStatus(res);
-
-  // Check Hp
-  if (!isInteger(hp))
-    return error400Factory.invalidNumber('hp', 'an integer').setStatus(res);
-
-  // Check armorClass
-  if (!isPositiveInteger(armorClass))
+  if ((body.armorClass ?? 1) <= 0)
     return error400Factory.invalidNumber('armorClass', 'a positive integer').setStatus(res);
 
+  // Check if the new value for the slot enchantment level does not exceed the maxSlots 
+  if (req.entityType === EntityType.character)
+    for (let i = 0; i <= 8; i++)
+      if (body.slots![i] ?? 0 + (req.entity! as Character).slots[i] ?? 0 > (req.entity! as Character).maxSlots[i])
+        return error400Factory.genericError(`The new value of level "${i}" slots exceeds your maximum number of slots for that level!`).setStatus(res);
   next();
-
-  // Check if the new value for the slot enchantment level does not exceed the maxSlots  
-  if (session!.characterUIDs?.includes(entityId)) { 
-    
-    const player = await new RepositoryFactory().characterRepository().getById(entityId);
-
-    for (let i = 0; i <= 8; i++) {
-
-      if (slots[i] !== 0) {
-        
-        const value = player?.slots[i] + slots[i];
-
-        //if (value > player?.maxSlots[i])
-        //  return error400Factory.noNewSlot(`The new value of level "${level}" slots exceeds your maximum number of slots for that level!`).setStatus(res);
-
-      }
-    
-    }
-  
-
-  }
-
 };
