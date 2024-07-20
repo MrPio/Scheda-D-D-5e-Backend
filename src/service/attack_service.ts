@@ -23,13 +23,13 @@ const npcRepository = repositoryFactory.npcRepository();
  * It calculates the total result by summing the dice rolls and adding the modifier.
  */
 export async function diceRollService(req: IAugmentedRequest, res: Res) {
-  const { diceList, modifier } = req.body;
+  const body: { diceList: string[], modifier?: number } = req.body;
 
   // Parse the diceList to get the numerical values of each dice
-  const diceValues: number[] = diceList.map((dice: string) => Object(Dice)[dice]);
+  const diceValues: number[] = body.diceList.map((dice: string) => Object(Dice)[dice]);
 
   // Roll each dice and compute the total result
-  const rollResult = diceValues.reduce((total, dice) => total + randomInt(dice) + 1, 0) + modifier;
+  const rollResult = diceValues.reduce((total, dice) => total + randomInt(dice) + 1, 0) + (body.modifier ?? 0);
   return res.json({ result: rollResult });
 }
 
@@ -187,7 +187,7 @@ export async function enableReactionService(req: IAugmentedRequest, res: Res) {
   const entityTurn = findEntityTurn(session!, entityId);
   if (entityTurn) {
     let entity;
-    
+
     // Check if the entity is a monster, character, or NPC
     if (session!.monsterUIDs.includes(entityId)) {
       entity = await monsterRepository.getById(entityId);
@@ -209,7 +209,7 @@ export async function enableReactionService(req: IAugmentedRequest, res: Res) {
       } else if (entity instanceof NPC) {
         await npcRepository.update(entity.uid!, entity);
       }
-      
+
       // Save the updated session
       await sessionRepository.update(session!.id, session!);
 
