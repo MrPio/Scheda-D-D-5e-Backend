@@ -198,8 +198,8 @@ export async function enableReactionService(req: IAugmentedRequest, res: Res) {
     }
 
     if (entity) {
-      // Update the entity's isReactionActivable property to true
-      entity.isReactionActivable = true;
+      // Update the entity's isReactionActivable property to false
+      entity.isReactionActivable = false;
 
       // Save the updated entity back to its repository
       if (entity instanceof Monster) {
