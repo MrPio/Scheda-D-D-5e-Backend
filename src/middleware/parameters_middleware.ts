@@ -1,3 +1,4 @@
+
 import { Response, NextFunction } from 'express';
 import { IAugmentedRequest } from '../interface/augmented_request';
 import { Error400Factory } from '../error/error_factory';
@@ -17,7 +18,16 @@ export function checkMandadoryParams(mandatoryParams: string[]) {
   };
 }
 
+/**
+ * Define the supertype of enum types. 
+ * This is used to assign an enum type to the `ENUM' parametric function to avoid lint errors.
+ */
 type Enum<E> = Record<keyof E, number | string> & { [k: number]: string };
+
+/**
+ * Define type checking function using HOF pogramming.
+ * For instance, `ARRAY(STRING)` returns a function that checks if a given `object` is of type `string[]`.
+ */
 export const STRING = (obj: object) => typeof obj === 'string';
 export const NUMBER = (obj: object) => typeof obj === 'number';
 export const BOOLEAN = (obj: object) => typeof obj === 'boolean';
@@ -28,14 +38,17 @@ export const ARRAY =
       Array.isArray(obj) && obj.every(it => next(it));
 
 /**
- * Checks that the request body parameters are of the correct types 
+ * Checks that the request body parameters are of the correct types .
+ * NOTE: This does not check for mandatory parameters in the request body, but treats them all as optional,
+ * meaning that the type is only checked if the parameter is present in the request body. Therefore, this
+ * middleware should always be called after `checkMandadoryParams`.
  * @param mandatoryParams the list of mandadory parameters
  * @returns a middleware function that performs the check. 
  */
 export function checkParamsType(paramsTypes: { [key: string]: (arg0: object) => boolean }) {
   return (req: IAugmentedRequest, res: Response, next: NextFunction) => {
     for (const entry of Object.entries(paramsTypes))
-      if (!entry[1](req.body[entry[0]]))
+      if (entry[0] in req.body && !entry[1](req.body[entry[0]]))
         return new Error400Factory().wrongParameterType(entry[0]).setStatus(res);
     next();
   };
