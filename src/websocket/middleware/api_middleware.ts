@@ -36,7 +36,7 @@ export const checkSessionExists = async (req: IAugmentedRequest, res: Response, 
 
   // Check that the session is ongoing.
   if (req.session.sessionStatus !== SessionStatus.ongoing)
-    return error400Factory.sessionNotInOngoingState(req.sessionId).setStatus(res);
+    return error400Factory.sessionInWrongState(req.session.name, SessionStatus.ongoing).setStatus(res);
 
   // All the checks succedeed.
   next();

@@ -1,5 +1,5 @@
-import { Session } from '../model/session';
-import ErrorProduct, { AuthError, ClientDisconnected, GenericClientError, GenericServerError, MissingMandatoryParamError, ModelNotFound, TimeoutError, WrongParamTypeError } from './error_product';
+import { Session, SessionStatus } from '../model/session';
+import ErrorProduct, { AuthError, ClientDisconnected, GenericClientError, GenericServerError, MissingMandatoryParamError, ModelNotFound, TimeoutError, WrongModelState, WrongParamTypeError } from './error_product';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
@@ -43,25 +43,19 @@ export class Error400Factory {
 
   userNotOnline = (sessionId: string, userUID: string): ErrorProduct => new GenericClientError(`User "${userUID}" is not online in "${sessionId}" at the moment!`);
 
-  sessionNotInOngoingState = (sessionId: string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Ongoing state at the moment!`);
-
   websocketRequestAlreadyPending = (sessionId: string): ErrorProduct => new GenericClientError(`A websocket request is already pending for session "${sessionId}"!`);
 
   clientTimeout = (): ErrorProduct => new TimeoutError();
 
   clientDisconnected = (): ErrorProduct => new ClientDisconnected();
 
-  sessionNotInCreatedState = (sessionId:string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Created state at the moment!`);
+  sessionInWrongState = (sessionName: string, status: SessionStatus[]): ErrorProduct => new WrongModelState('Session', sessionName, 'status', status.toString());
 
-  sessionNotInPausedState = (sessionId:string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Paused state at the moment!`);
-
-  sessionNotInStopState = (sessionId:string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Paused or Ongoing state at the moment!`);
-  
   invalidMapSize = (): ErrorProduct => new GenericClientError('Map size is invalid. Width must be between 10 and 100, and height must be between 10 and 100!');
 
-  entityDuplicated = (entityType:string): ErrorProduct => new GenericClientError(`There is a duplicate in the list ${entityType}!`);
+  entityDuplicated = (entityType: string): ErrorProduct => new GenericClientError(`There is a duplicate in the list ${entityType}!`);
 
-  entityIsOnBattle = (entityType: string, entityUid:string): ErrorProduct => new GenericClientError(`The ${entityType} ${entityUid} is already in the battle!!`);
+  entityIsOnBattle = (entityType: string, entityUid: string): ErrorProduct => new GenericClientError(`The ${entityType} ${entityUid} is already in the battle!!`);
 
   invalidPositiveInteger = (value: string): ErrorProduct => new GenericClientError(`The ${value} must be a positive integer!`);
 
