@@ -4,6 +4,7 @@ import { Session } from '../model/session';
 import Character from '../model/character';
 import NPC from '../model/npc';
 import { Monster } from '../model/monster';
+import IEntity, { EntityType } from '../model/entity';
 
 /**
  * Extends the default Express `Request` interface to include additional properties
@@ -18,6 +19,8 @@ export interface IAugmentedRequest extends Request {
   decodedToken?: CachedToken;
   sessionId?: string;
   entityId?: string;
+  entity?: IEntity;
+  entityType?: EntityType;
   userUID?: string;
   addresseeUIDs?: string[];
   session?: Session | null;

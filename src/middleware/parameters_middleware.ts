@@ -36,6 +36,11 @@ export const ARRAY =
   (next: (arg0: object) => boolean) =>
     (obj: object) =>
       Array.isArray(obj) && obj.every(it => next(it));
+export const OBJECT =
+  (objectType: { [key: string]: (arg0: object) => boolean }) =>
+    (obj: object) =>
+      Object.entries(objectType).every(it => it[1]((obj as { [key: string]: object })[it[0]]));
+
 
 /**
  * Checks that the request body parameters are of the correct types .
@@ -53,3 +58,4 @@ export function checkParamsType(paramsTypes: { [key: string]: (arg0: object) => 
     next();
   };
 }
+

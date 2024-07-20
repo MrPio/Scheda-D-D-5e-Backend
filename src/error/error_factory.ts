@@ -51,7 +51,7 @@ export class Error400Factory {
 
   sessionInWrongState = (sessionName: string, status: SessionStatus[]): ErrorProduct => new WrongModelState('Session', sessionName, 'status', status.toString());
 
-  ////////////////////
+  invalidMapSize = (): ErrorProduct => new GenericClientError('Map size is invalid. Width must be between 10 and 100, and height must be between 10 and 100!');
 
   invalidNumber = (param: string, message: string): ErrorProduct => new InvalidNumber(param, message);
 
@@ -65,19 +65,7 @@ export class Error400Factory {
 
   notYourTurn = (id: string): ErrorProduct => new WrongTurn(id);
 
-  noModification = (message: string): ErrorProduct => new GenericClientError(message);
-
-  reactionNotActivable = (message: string): ErrorProduct => new GenericClientError(message);
-
-  notYourTurnEnchantment = (message: string): ErrorProduct => new GenericClientError(message);
-
-  entityIsOnBattle = (message: string): ErrorProduct => new GenericClientError(message);
-
-  invalidSlotCasting = (message: string): ErrorProduct => new GenericClientError(message);
-
-  noSlotAvaible = (message: string): ErrorProduct => new GenericClientError(message);
-
-  //noNewSlot = (message: string): ErrorProduct => new GenericClientError(message);
+  reactionNotActivable = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} has already used its reaction! They need to wait for the next turn!`);
 }
 
 /**

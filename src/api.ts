@@ -14,13 +14,12 @@ import { initializeSequelize } from './db/sequelize';
 import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 import { checkDiceRoll } from './middleware/dice_middleware';
 import { IAugmentedRequest } from './interface/augmented_request';
-import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, STRING, BOOLEAN } from './middleware/parameters_middleware';
+import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, OBJECT, STRING } from './middleware/parameters_middleware';
 import { checkEntityExistsInSession, checkNewSession, checkSessionExists, checkSessionStatus } from './middleware/session_middleware';
 import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
-import { checkTryAttack, checkRequestSavingThrow, checkGiveEffects, checkEnableReaction } from './middleware/attack_middleware';
+import { checkTryAttack, checkRequestSavingThrow, checkEnableReaction } from './middleware/attack_middleware';
 import { checkAddEntity, checkEntityInSession } from './middleware/entity_middleware';
 import { Dice } from './model/dice';
-import { ActionType } from './model/history_message';
 import { SessionStatus } from './model/session';
 import { EntityType } from './model/entity';
 
@@ -65,9 +64,10 @@ app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, che
 
 // Attack Routes ===============================================================================
 app.get('/diceRoll', checkMandadoryParams(['diceList']), checkParamsType({ diceList: ARRAY(ENUM(Dice)), modifier: NUMBER }), checkDiceRoll, (req: IAugmentedRequest, res: Response) => diceRoll(req, res));
+// TODO add check on attackType: AttackType enum
 app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, checkSessionExists, checkTryAttack, (req: IAugmentedRequest, res: Response) => makeAttack(req, res));
 app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, checkSessionExists, checkRequestSavingThrow, (req: IAugmentedRequest, res: Response) => getSavingThrow(req, res));
-app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionExists, checkGiveEffects, (req: IAugmentedRequest, res: Response) => addEffect(req, res));
+app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionExists, (req: IAugmentedRequest, res: Response) => addEffect(req, res));
 app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, checkSessionExists, checkEnableReaction, (req: IAugmentedRequest, res: Response) => enableReaction(req, res));
 
 // Entity Routes ===============================================================================

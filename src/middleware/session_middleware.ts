@@ -3,6 +3,7 @@ import { RepositoryFactory } from '../repository/repository_factory';
 import { Session, SessionStatus } from '../model/session';
 import { Error400Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
+import { EntityType } from '../model/entity';
 
 const error400Factory = new Error400Factory();
 const sessionRepository = new RepositoryFactory().sessionRepository();
@@ -54,7 +55,10 @@ export const checkNewSession = async (req: IAugmentedRequest, res: Response, nex
   next();
 };
 
-// Check that the provided `sessionID` belongs to an existing session.
+/**
+ * Check that the provided `sessionID` belongs to an existing session.
+ * @postcondition `req.sessionId`, `req.session`.
+ */
 export const checkSessionExists = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   req.sessionId = req.params.sessionId;
 
@@ -69,13 +73,22 @@ export const checkSessionExists = async (req: IAugmentedRequest, res: Response, 
 /**
  * Check that the provided `entityID` belongs to a player of the given session.
  * @precondition `checkSessionExists`.
+ * @postcondition `req.entityId`, `req.entity`.
  */
 export const checkEntityExistsInSession = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   req.entityId = req.params.entityId ?? req.body.entityId as string;
 
-  // Check that the `entityId` is in the session.
-  if ([req.session?.characterUIDs, req.session?.npcUIDs, req.session?.monsterUIDs].every(it => !it?.includes(req.entityId!)))
-    return error400Factory.entityNotFoundInSession(req.entityId!, req.sessionId!).setStatus(res);
+  // Check that the `entityId` is in the session and retrieve the object from the repository.
+  if (req.session!.characterUIDs?.includes(req.entityId!)) {
+    req.entityType = EntityType.character;
+    req.entity = (await characterRepository.getById(req.entityId!))!;
+  } else if (req.session!.npcUIDs?.includes(req.entityId!)) {
+    req.entityType = EntityType.npc;
+    req.entity = (await npcRepository.getById(req.entityId!))!;
+  } else if (req.session!.monsterUIDs?.includes(req.entityId!)) {
+    req.entityType = EntityType.monster;
+    req.entity = (await monsterRepository.getById(req.entityId!))!;
+  } else return error400Factory.entityNotFoundInSession(req.entityId!, req.sessionId!).setStatus(res);
 
   next();
 };
