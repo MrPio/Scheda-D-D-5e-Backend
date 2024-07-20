@@ -30,6 +30,13 @@ export class ModelNotFound extends ErrorProduct {
   ) { super(StatusCodes.NOT_FOUND, `Id "${id}" not found for model "${className}"!`); }
 }
 
+export class ModelNotFoundInSession extends ErrorProduct {
+  constructor(
+    public entity: string,
+    public session: string,
+  ) { super(StatusCodes.NOT_FOUND, `The entity "${entity}" is not in the session "${session}"!`); }
+}
+
 // Error class for unauthorized access attempts.
 export class AuthError extends ErrorProduct {
   constructor(message: string) { super(StatusCodes.UNAUTHORIZED, message); }
@@ -45,9 +52,29 @@ export class WrongParamTypeError extends ErrorProduct {
   constructor(param: string, type?: string) { super(StatusCodes.BAD_REQUEST, `Parameter "${param}" ` + (type ? `must be of type "${type}"!` : 'is of wrong type!')); }
 }
 
+export class WrongElementTypeError extends ErrorProduct {
+  constructor(value: string, element: string, list: string[]) { super(StatusCodes.BAD_REQUEST, `The ${value}:"${element}" is invalid. It must be one of the following values: "${list.join(', ')}"!`); }
+}
+
+export class InvalidNumber extends ErrorProduct {
+  constructor(param: string, message: string) { super(StatusCodes.BAD_REQUEST, `The "${param}" must be "${message}"!`); }
+}
+
 // Generic error class for client-side errors that don't fall into other specific categories.
 export class GenericClientError extends ErrorProduct {
   constructor(message: string) { super(StatusCodes.BAD_REQUEST, message); }
+}
+
+export class InventoryAbscence extends ErrorProduct {
+  constructor(id: string, element: string, value: string) { super(StatusCodes.BAD_REQUEST, `The entity "${id}" does not possess the ${element}:"${value}"!`); }
+}
+
+export class InvalidEnchantmentCategory extends ErrorProduct {
+  constructor(enchantment: string, category: string) { super(StatusCodes.BAD_REQUEST, `The enchantment: "${enchantment}" does not belong to the category of spells "${category}"!`); }
+}
+
+export class WrongTurn extends ErrorProduct {
+  constructor(id:string) { super(StatusCodes.BAD_REQUEST, `It's not the turn of "${id}"!`); }
 }
 
 export class WrongModelState extends ErrorProduct {

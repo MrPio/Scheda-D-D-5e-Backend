@@ -23,7 +23,7 @@ export const checkNewSession = async (req: IAugmentedRequest, res: Response, nex
   // Check that mapSize is within the limits set for the map.
   if (body.mapSize.width > Session.maxMapSize.width || body.mapSize.width < Session.minMapSize.width ||
     body.mapSize.height > Session.maxMapSize.height || body.mapSize.height < Session.minMapSize.height)
-    return error400Factory.invalidMapSize().setStatus(res);
+    return error400Factory.invalidNumber('mapsize', 'must be between 10 and 100').setStatus(res);
 
   /**
    * Check that all the character, npc and monster IDs provided exist in the database. 

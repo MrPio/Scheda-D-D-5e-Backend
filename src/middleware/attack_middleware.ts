@@ -73,7 +73,7 @@ export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next
     if (body.attackType === AttackType.savingThrowEnchantment && body.difficultyClass >= 0)
       return error400Factory.invalidPositiveInteger('difficultyClass').setStatus(res);
     next();
-  }
+  } 
 
 };
 
