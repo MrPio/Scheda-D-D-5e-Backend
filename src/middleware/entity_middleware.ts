@@ -60,34 +60,34 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
 
     // Check maxHp
     if (!isPositiveInteger(maxHp))
-      return error400Factory.invalidPositiveInteger('maxHp').setStatus(res);
+      return error400Factory.invalidNumber('maxHp', 'a positive integer').setStatus(res);
 
     // Check armorClass
     if (!isPositiveInteger(armorClass))
-      return error400Factory.invalidPositiveInteger('armorClass').setStatus(res);
+      return error400Factory.invalidNumber('armorClass', 'a positive integer' ).setStatus(res);
 
     // Check speed
     if (!isValidSpeed(speed))
-      return error400Factory.invalidSpeed().setStatus(res);
+      return error400Factory.invalidNumber('speed', 'a positive number divisible by 1.5').setStatus(res);
     
     // Check skillValues
     if (!isValidAttributeValue(strength))
-      return error400Factory.invalidSkillValue('strength').setStatus(res);
+      return error400Factory.invalidNumber('strength', 'an integer between 1 and 30').setStatus(res);
 
     if (!isValidAttributeValue(dexterity))
-      return error400Factory.invalidSkillValue('dexterity').setStatus(res);
+      return error400Factory.invalidNumber('dexterity', 'an integer between 1 and 30').setStatus(res);
     
     if (!isValidAttributeValue(intelligence))
-      return error400Factory.invalidSkillValue('intelligence').setStatus(res);
+      return error400Factory.invalidNumber('intelligence', 'an integer between 1 and 30').setStatus(res);
     
     if (!isValidAttributeValue(wisdom))
-      return error400Factory.invalidSkillValue('wisdom').setStatus(res);
+      return error400Factory.invalidNumber('wisdom', 'an integer between 1 and 30').setStatus(res);
     
     if (!isValidAttributeValue(charisma))
-      return error400Factory.invalidSkillValue('charisma').setStatus(res);
+      return error400Factory.invalidNumber('charisma', 'an integer between 1 and 30').setStatus(res);
     
     if (!isValidAttributeValue(constitution))
-      return error400Factory.invalidSkillValue('constitution').setStatus(res);
+      return error400Factory.invalidNumber('constitution', 'an integer between 1 and 30').setStatus(res);
     
 
     // Check effectImmunities
@@ -97,7 +97,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
   
       for (const element of effectImmunities as string[]) {
         if (!validEffect.includes(element))
-          return error400Factory.invalidEffect(element, validEffect).setStatus(res);
+          return error400Factory.wrongElementTypeError('effect immunities', element, validEffect).setStatus(res);
       }
     }
     
@@ -138,7 +138,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
       return error400Factory.characterNotFound(uid).setStatus(res);
 
     if (session!.characterUIDs?.includes(uid))
-      return error400Factory.entityIsOnBattle('character', uid).setStatus(res);
+      return error400Factory.entityIsOnBattle(`The "${uid}" is already in the battle!`).setStatus(res);
     
   }
 
@@ -153,7 +153,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
       return error400Factory.npcNotFound(uid).setStatus(res);
 
     if (session!.characterUIDs?.includes(uid))
-      return error400Factory.entityIsOnBattle('npc', uid).setStatus(res);
+      return error400Factory.entityIsOnBattle(`The "${uid}" is already in the battle!`).setStatus(res);
   }
    
   next();
@@ -171,7 +171,7 @@ export const checkEntityInSession = async (req: Request, res: Response, next: Ne
 
   // Check if the entityId exists in the battle
   if (!entityUIDsInTurn.includes(entityId))
-    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId, sessionId).setStatus(res);
 
   next();
 };
@@ -190,7 +190,7 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
 
   // Check if the entityId is in the session
   if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId)) 
-    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId, sessionId).setStatus(res);
 
   // Convert enum values to an array of strings
   const validEffect = Object.values(Effect) as string[];
@@ -202,7 +202,7 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
 
   // Check for any modification
   if (hp && !armorClass && !speed && !effects)
-    return error400Factory.noModification().setStatus(res);
+    return error400Factory.noModification('You need to change at least one parameter.!').setStatus(res);
 
   // Check if the element is a valid value based on the enum Effect. 
   if (effects) {
@@ -212,22 +212,22 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
 
     for (const element of validEffect as string[]) {
       if (!validEffect.includes(element))
-        return error400Factory.invalidEffect(element, validEffect).setStatus(res);
+        return error400Factory.wrongElementTypeError('effect', element, validEffect).setStatus(res);
     }
 
   }
   
   // Check speed
   if (!isValidSpeed(speed))
-    return error400Factory.invalidSpeed().setStatus(res);
+    return error400Factory.invalidNumber('speed', 'a positive number divisible by 1.5').setStatus(res);
 
   // Check Hp
   if (!isInteger(hp))
-    return error400Factory.invalidInteger('hp').setStatus(res);
+    return error400Factory.invalidNumber('hp', 'an integer').setStatus(res);
 
   // Check armorClass
   if (!isPositiveInteger(armorClass))
-    return error400Factory.invalidPositiveInteger('armorClass').setStatus(res);
+    return error400Factory.invalidNumber('armorClass', 'a positive integer').setStatus(res);
 
   next();
 
@@ -243,7 +243,7 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
         const value = player?.slots[i] + slots[i];
 
         //if (value > player?.maxSlots[i])
-        //  return error400Factory.noNewSlot(i).setStatus(res);
+        //  return error400Factory.noNewSlot(`The new value of level "${level}" slots exceeds your maximum number of slots for that level!`).setStatus(res);
 
       }
     

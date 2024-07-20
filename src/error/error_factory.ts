@@ -1,5 +1,5 @@
 import { Session, SessionStatus } from '../model/session';
-import ErrorProduct, { AuthError, ClientDisconnected, GenericClientError, GenericServerError, MissingMandatoryParamError, ModelNotFound, TimeoutError, WrongModelState, WrongParamTypeError } from './error_product';
+import ErrorProduct, { AuthError, ClientDisconnected, GenericClientError, GenericServerError, InvalidNumber, InventoryAbscence, MissingMandatoryParamError, ModelNotFound, TimeoutError, WrongElementTypeError, WrongModelState, WrongParamTypeError, ModelNotFoundInSession, InvalidEnchantmentCategory, WrongTurn } from './error_product';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
@@ -51,55 +51,33 @@ export class Error400Factory {
 
   sessionInWrongState = (sessionName: string, status: SessionStatus[]): ErrorProduct => new WrongModelState('Session', sessionName, 'status', status.toString());
 
-  invalidMapSize = (): ErrorProduct => new GenericClientError('Map size is invalid. Width must be between 10 and 100, and height must be between 10 and 100!');
+  ////////////////////
 
-  entityDuplicated = (entityType: string): ErrorProduct => new GenericClientError(`There is a duplicate in the list ${entityType}!`);
+  invalidNumber = (param: string, message: string): ErrorProduct => new InvalidNumber(param, message);
 
-  entityIsOnBattle = (entityType: string, entityUid: string): ErrorProduct => new GenericClientError(`The ${entityType} ${entityUid} is already in the battle!!`);
+  invalidEnchantmentCategory = (enchantment: string, category: string): ErrorProduct => new InvalidEnchantmentCategory(enchantment, category);
 
-  invalidPositiveInteger = (value: string): ErrorProduct => new GenericClientError(`The ${value} must be a positive integer!`);
+  wrongElementTypeError = (value: string, element: string, list: string[]): ErrorProduct => new WrongElementTypeError(value, element, list);
 
-  invalidInteger = (value: string): ErrorProduct => new GenericClientError(`The ${value} must be an integer!`);
+  inventoryAbscence = (id: string, element: string, value: string): ErrorProduct => new InventoryAbscence(id, element, value);
 
-  invalidSpeed = (): ErrorProduct => new GenericClientError('Speed must be a positive number divisible by 1.5!');
+  entityNotFoundInSession = (entity: string, session: string): ErrorProduct => new ModelNotFoundInSession(entity, session);
 
-  invalidSkill = (value: string[]): ErrorProduct => new GenericClientError(`Invalid skill. It must be one of the following values: ${value.join(', ')}!`);
+  notYourTurn = (id: string): ErrorProduct => new WrongTurn(id);
 
-  invalidSkillValue = (value: string): ErrorProduct => new GenericClientError(`The ${value} must be an integer between 1 and 30!`);
+  noModification = (message: string): ErrorProduct => new GenericClientError(message);
 
-  invalidEffectImmunities = (): ErrorProduct => new GenericClientError('The effectImmunities must be a list of effects!');
+  reactionNotActivable = (message: string): ErrorProduct => new GenericClientError(message);
 
-  invalidEffect = (value: string, list: string[]): ErrorProduct => new GenericClientError(`Invalid effect in the list: ${value}. The effect must be one of the following values: ${list.join(', ')}!`);
+  notYourTurnEnchantment = (message: string): ErrorProduct => new GenericClientError(message);
 
-  entityNotFoundInSession = (entiyId: string, session: string): ErrorProduct => new GenericClientError(`The entity "${entiyId}" is not in the session "${session}"!`);
+  entityIsOnBattle = (message: string): ErrorProduct => new GenericClientError(message);
 
-  noModification = (): ErrorProduct => new GenericClientError('You need to change at least one parameter.!');
+  invalidSlotCasting = (message: string): ErrorProduct => new GenericClientError(message);
 
-  noNewSlot = (level: number): ErrorProduct => new GenericClientError(`The new value of level "${level}" slots exceeds your maximum number of slots for that level!`);
+  noSlotAvaible = (message: string): ErrorProduct => new GenericClientError(message);
 
-  notYourTurn = (id: string): ErrorProduct => new GenericClientError(`It's not the turn of "${id}"!`);
-
-  notYourTurnEnchantment = (): ErrorProduct => new GenericClientError('It is not your turn. You cannot cast an enchantment with a casting time other than reaction!');
-
-  identicalId = (): ErrorProduct => new GenericClientError('The two ids are identical!');
-
-  postponeTurn = (): ErrorProduct => new GenericClientError('The turn can only be postponed with those who have not yet taken it!');
-
-  reactionNotActivable = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} has already used its reaction!`);
-
-  attackTypeInvalid = (): ErrorProduct => new GenericClientError('The attackType is invalid. It must be one of the following values: attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment!');
-
-  weaponNotInInventory = (id: string, weapon: string): ErrorProduct => new GenericClientError(`The entity ${id} does not possess the weapon ${weapon}!`);
-
-  enchantmentNotInInventory = (id: string, enchantment: string): ErrorProduct => new GenericClientError(`The entity ${id} does not possess the enchantment ${enchantment}!`);
-
-  invalidEnchantmentCategory = (enchantment: string, category: string): ErrorProduct => new GenericClientError(`The enchantment: ${enchantment} does not belong to the category of spells ${category}!`);
-
-  invalidSlotLevel = (): ErrorProduct => new GenericClientError('Slot must be an integer from 1 to 9, inclusive!');
-
-  invalidSlotCasting = (level: number, slotLevel: number): ErrorProduct => new GenericClientError(`You can't cast a level ${level} enchantment with a level ${slotLevel} slot!`);
-
-  noSlotAvaible = (level: number): ErrorProduct => new GenericClientError(`You don't have a level ${level} slot available!`);
+  //noNewSlot = (message: string): ErrorProduct => new GenericClientError(message);
 }
 
 /**

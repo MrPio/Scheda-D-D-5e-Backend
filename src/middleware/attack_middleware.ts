@@ -5,6 +5,7 @@ import { Skill } from '../model/monster_skill';
 import { EntityTurn } from '../model/entity_turn';
 import { EnchantmentCategory } from '../model/enchantment';
 import { Error400Factory } from '../error/error_factory';
+import { AttackType } from '../model/attack_type';
 
 const error400Factory: Error400Factory = new Error400Factory();
 
@@ -33,11 +34,11 @@ export const checkEnableReaction = async (req: Request, res: Response, next: Nex
   else if (session!.monsterUIDs?.includes(entityId))
     player = await new RepositoryFactory().monsterRepository().getById(sessionId);  
   else
-    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId, sessionId).setStatus(res);
 
   // Check if the reaction is activable for the entity
   if (!player?.isReactionActivable) 
-    return error400Factory.reactionNotActivable(entityId).setStatus(res);
+    return error400Factory.reactionNotActivable(`The entity ${entityId} has already used its reaction!`).setStatus(res);
 
 
   next();
@@ -55,13 +56,13 @@ export const checkGiveEffects = async (req: Request, res: Response, next: NextFu
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
 
   if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId) )
-    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId, sessionId).setStatus(res);
 
   // Check if the element is a valid value based on the enum Effect and the effect list is not null. 
   if (effect) {
     for (const element of effect as string[]) {
       if (!validEffect.includes(element))  
-        return error400Factory.invalidEffect(element, validEffect).setStatus(res);
+        return error400Factory.wrongElementTypeError('effect', element, validEffect).setStatus(res);
 
     }
   }
@@ -80,8 +81,12 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
   const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
-  if (attackType !== 'attack' && attackType !== 'damageEnchantment' && attackType !== 'savingThrowEnchantment' && attackType !== 'descriptiveEnchantment' )
-    return error400Factory.attackTypeInvalid().setStatus(res);
+  // Convert enum values to an array of strings
+  const validEffect = Object.values(AttackType) as string[];
+
+  
+  if (!validEffect.includes(attackType))
+    return error400Factory.wrongElementTypeError('attackType', attackType, validEffect).setStatus(res);
 
   // Check if the attackerId is valid and save is type.
   let attacker;
@@ -97,25 +102,22 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
     attacker = await new RepositoryFactory().monsterRepository().getById(attackerId);
     characterType = false;
   } else
-    return error400Factory.entityNotFoundInSession(attackerId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(attackerId, sessionId).setStatus(res);
 
-  if (attackType === 'attack') {
+  if (attackType === AttackType.attack) {
     
     // Check if the attack is valid
     if (!isPositiveInteger(attackRoll))
-      return error400Factory.invalidInteger('attackRoll').setStatus(res);
+      return error400Factory.invalidNumber('attackRoll', 'an integer').setStatus(res);
 
     // Check if the target entity is in the battle.
     if (!entityUIDsInTurn.includes(targetId))
-      return error400Factory.entityNotFoundInSession(targetId).setStatus(res);
+      return error400Factory.entityNotFoundInSession(targetId, sessionId).setStatus(res);
 
     // Check if the entity possess the weapon
     if (!attacker?.weapons.includes(weapon))
-      return error400Factory.weaponNotInInventory(attackerId, weapon).setStatus(res);
-  }
-
-  if (attackType === 'damageEnchantment' && attackType === 'savingThrowEnchantment' && attackType === 'descriptiveEnchantment') {
-
+      return error400Factory.inventoryAbscence(attackerId, 'weapon', weapon).setStatus(res);
+  } else {
     const enchantmentName = await new RepositoryFactory().enchantmentRepository().getById(enchantment);
 
     // Check if the enchantment exists
@@ -124,11 +126,11 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
 
     // Check if the attacker knows this enchantment
     if (!attacker?.enchantments.includes(enchantment)) 
-      return error400Factory.enchantmentNotInInventory(attackerId, enchantment).setStatus(res);
+      return error400Factory.inventoryAbscence(attackerId, 'enchantment', enchantment).setStatus(res);
 
     // Check if it is the turn of the attacker
     if (session!.currentEntityUID !== attackerId && !enchantmentName.isReaction) 
-      return error400Factory.notYourTurnEnchantment().setStatus(res);
+      return error400Factory.notYourTurnEnchantment('It is not your turn. You cannot cast an enchantment with a casting time other than reaction!').setStatus(res);
 
     // Check if the character has an enchantment level slot to be able to cast it
     if (characterType && enchantmentName.level !== 0) {
@@ -137,25 +139,25 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
       const player = await new RepositoryFactory().characterRepository().getById(attackerId);
 
       if (!Number.isInteger(slotLevel) || slotLevel < 1 || slotLevel > 9)
-        return error400Factory.invalidSlotLevel().setStatus(res);
+        return error400Factory.invalidNumber('slotLevel', 'an integer from 1 to 9, inclusive').setStatus(res);
       
       if (slotLevel < level)
-        return error400Factory.invalidSlotCasting(level, slotLevel).setStatus(res);
+        return error400Factory.invalidSlotCasting(`You can't cast a level ${level} enchantment with a level ${slotLevel} slot!`).setStatus(res);
 
       if (player?.slots[slotLevel - 1] === 0)
-        return error400Factory.noSlotAvaible(level).setStatus(res);
+        return error400Factory.noSlotAvaible(`You don't have a level ${level} slot available!`).setStatus(res);
     }
 
 
-    if (attackType === 'damageEnchantment') {
+    if (attackType === AttackType.damageEnchantment) {
       
       // Check if the attack is valid
       if (!isPositiveInteger(attackRoll))
-        return error400Factory.invalidInteger('attackRoll').setStatus(res);
+        return error400Factory.invalidNumber('attackRoll', 'an integer').setStatus(res);
   
       // Check if the target entity is in the battle.
       if (!entityUIDsInTurn.includes(targetId))
-        return error400Factory.entityNotFoundInSession(targetId).setStatus(res);
+        return error400Factory.entityNotFoundInSession(targetId, sessionId).setStatus(res);
 
       // Check if the category of the enchantment is correct
       if (enchantmentName?.category !== EnchantmentCategory.damage)
@@ -163,7 +165,7 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
   
     }
   
-    if (attackType === 'savingThrowEnchantment') {
+    if (attackType === AttackType.savingThrowEnchantment) {
   
       const validSkill = Object.values(Skill) as string[];
       
@@ -173,21 +175,21 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
   
       // Check if DC is a positive integer
       if (!isPositiveInteger(difficultyClass))
-        return error400Factory.invalidPositiveInteger('difficultyClass').setStatus(res);
+        return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
     
       // Check if the skill is one of the 6 known
       if (!validSkill.includes(skill))
-        return error400Factory.invalidSkill(validSkill).setStatus(res);
+        return error400Factory.wrongElementTypeError('skill', skill, validSkill).setStatus(res);
     
       // Check if all the entities are in the battle.
       for (const id of targetsId) {
         if (!entityUIDsInTurn.includes(id))
-          return error400Factory.entityNotFoundInSession(id).setStatus(res);
+          return error400Factory.entityNotFoundInSession(id, sessionId).setStatus(res);
       }
 
     }
   
-    if (attackType === 'descriptiveEnchantment') {
+    if (attackType === AttackType.descriptiveEnchantment) {
   
       // Check if the category of the enchantment is correct
       if (enchantmentName?.category !== EnchantmentCategory.descriptive)
@@ -196,7 +198,7 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
     }
   
     next();
-  }
+  } 
 
 };
 
@@ -215,17 +217,17 @@ export const checkRequestSavingThrow = async (req: Request, res: Response, next:
 
   // Check if DC is a positive integer
   if (!isPositiveInteger(difficultyClass))
-    return error400Factory.invalidPositiveInteger('difficultyClass').setStatus(res);
+    return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
 
   // Check if the skill is one of the 6 known
   if (!validSkill.includes(skill))
-    return error400Factory.invalidSkill(validSkill).setStatus(res);
+    return error400Factory.wrongElementTypeError('skill', skill, validSkill).setStatus(res);
 
   // Check if all the entities are in the battle.
   const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
   for (const id of entitiesId) {
     if (!entityUIDsInTurn.includes(id))
-      return error400Factory.entityNotFoundInSession(id).setStatus(res);
+      return error400Factory.entityNotFoundInSession(id, sessionId).setStatus(res);
   }
 
   next();
