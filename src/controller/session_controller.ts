@@ -1,4 +1,4 @@
-import { IAugmentedRequest } from '../api';
+
 import { Response as Res } from 'express';
 import { createSessionService, deleteSessionService, getAllSessionsService, getSessionInfoService, pauseSessionService, startSessionService, stopSessionService } from '../service/session_service';
 import { getTurnService, postponeTurnService, endTurnService } from '../service/turn_service';

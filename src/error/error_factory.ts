@@ -37,7 +37,7 @@ export class Error400Factory {
 
   missingMandatoryParam = (param: string): ErrorProduct => new MissingMandatoryParamError(param);
 
-  wrongParameterType = (param: string, type: string): ErrorProduct => new WrongParamTypeError(param, type);
+  wrongParameterType = (param: string, type?: string): ErrorProduct => new WrongParamTypeError(param, type);
 
   userNotInSession = (sessionId: string, userUID: string): ErrorProduct => new GenericClientError(`User "${userUID}" is not a player nor the master of session "${sessionId}"!`);
 

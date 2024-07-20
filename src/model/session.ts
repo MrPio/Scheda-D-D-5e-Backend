@@ -16,6 +16,10 @@ export enum SessionStatus {
   timestamps: true,
 })
 export class Session extends Model<Session> {
+  static minMapSize = { height: 10, width: 10 };
+
+  static maxMapSize = { height: 100, width: 100 };
+
   @Column declare name: string;
 
   @Column declare masterUID: string;

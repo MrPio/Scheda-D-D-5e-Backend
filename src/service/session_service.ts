@@ -1,7 +1,7 @@
-import { IAugmentedRequest } from '../api';
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { Session, SessionStatus } from '../model/session';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
 

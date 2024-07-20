@@ -51,7 +51,7 @@ import { checkIsAPIBackend, checkSessionExists, checkUsersOnline } from './middl
 import { generateJWT } from '../service/jwt_service';
 import { Error400Factory, Error500Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
-import { checkMandadoryParams } from '../middleware/mandatory_parameters';
+import { checkMandadoryParams } from '../middleware/parameters_middleware';
 
 
 
@@ -322,4 +322,3 @@ const abortRequest = (sessionId: string, res: Response, isTimeout: boolean) => {
   server.listen(8080, () => console.log('Server WSS is running on port 8080'));
   app.listen(3000, () => console.log('Server API is running on port 3000'));
 })();
-

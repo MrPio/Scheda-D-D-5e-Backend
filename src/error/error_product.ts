@@ -29,7 +29,7 @@ export class MissingMandatoryParamError extends ErrorProduct {
 }
 
 export class WrongParamTypeError extends ErrorProduct {
-  constructor(param: string, type: string) { super(StatusCodes.BAD_REQUEST, `Parameter "${param}" must be of type "${type}"!`); }
+  constructor(param: string, type?: string) { super(StatusCodes.BAD_REQUEST, `Parameter "${param}" ` + (type ? `must be of type "${type}"!` : 'is of wrong type!')); }
 }
 
 export class GenericClientError extends ErrorProduct {

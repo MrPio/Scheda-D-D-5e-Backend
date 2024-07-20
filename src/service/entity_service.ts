@@ -1,4 +1,4 @@
-import { IAugmentedRequest } from '../api';
+
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { Error400Factory } from '../error/error_factory';

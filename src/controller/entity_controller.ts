@@ -1,4 +1,4 @@
-import { IAugmentedRequest } from '../api';
+
 import { Response as Res } from 'express';
 import { addEntityService, deleteEntityService, getEntityInfoService, updateEntityInfoService } from '../service/entity_service';
 import { getSavingThrowService, makeAttackService, addEffectService, enableReactionService } from '../service/attack_service';

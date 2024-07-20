@@ -160,7 +160,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
 };
 
 /**
- * Checks if the entity is in a session
+ * Checks if the entity is in the session
  */
 export const checkEntityInSession = async (req: Request, res: Response, next: NextFunction) => {
   const { entityId, sessionId } = req.params;
