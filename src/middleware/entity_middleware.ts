@@ -181,7 +181,7 @@ export const checkEntityInSession = async (req: Request, res: Response, next: Ne
 /**
  * Checks if an entity update is valid
  */
-//TODO: MrPio
+//TODO: MrPio check turn
 export const checkUpdateEntity = async (req: Request, res: Response, next: NextFunction) => {
 
   const { entityId, sessionId } = req.params;

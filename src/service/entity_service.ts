@@ -131,7 +131,6 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     return res.status(200).json({ message: 'Monster info updated successfully!' });
   }
 
-  // TODO: check
   // Try to find the entity in characterUIDs or npcUIDs
   const entityTurnEntity = session!.entityTurns.find(e => e.entityUID === entityId);
   if (entityTurnEntity) {

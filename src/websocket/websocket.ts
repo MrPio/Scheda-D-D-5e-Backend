@@ -179,6 +179,8 @@ onOpenSubject.subscribe(async ({ ws, session, userUID, username }) => {
     // Subscribe message broadcaster listener.
     activeConnections[session.id].subject.subscribe(({ userUID: senderUID, message }) => {
 
+      // TODO: save history message in table
+      ''
       // If the player has a pending request, don't broadcast its message
       if (activeConnections[session.id].users[senderUID].pendingRequest) return;
       try {

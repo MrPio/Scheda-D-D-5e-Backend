@@ -51,63 +51,61 @@ export class Error400Factory {
 
   clientDisconnected = (): ErrorProduct => new ClientDisconnected();
 
-  sessionNotInCreatedState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Created state at the moment!`);
+  sessionNotInCreatedState = (sessionId:string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Created state at the moment!`);
 
-  sessionNotInPausedState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Paused state at the moment!`);
+  sessionNotInPausedState = (sessionId:string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Paused state at the moment!`);
 
-  sessionNotInStopState = (sessionId:string): WrongParamTypeError => new GenericClientError(`Session "${sessionId}" is not in Paused or Ongoing state at the moment!`);
+  sessionNotInStopState = (sessionId:string): ErrorProduct => new GenericClientError(`Session "${sessionId}" is not in Paused or Ongoing state at the moment!`);
   
-  invalidMapSize = (): WrongParamTypeError => new GenericClientError('Map size is invalid. Width must be between 10 and 100, and height must be between 10 and 100!');
+  invalidMapSize = (): ErrorProduct => new GenericClientError('Map size is invalid. Width must be between 10 and 100, and height must be between 10 and 100!');
 
-  entityDuplicated = (entityType:string): WrongParamTypeError => new GenericClientError(`There is a duplicate in the list ${entityType}!`);
+  entityDuplicated = (entityType:string): ErrorProduct => new GenericClientError(`There is a duplicate in the list ${entityType}!`);
 
-  entityIsOnBattle = (entityType: string, entityUid:string): WrongParamTypeError => new GenericClientError(`The ${entityType} ${entityUid} is already in the battle!!`);
+  entityIsOnBattle = (entityType: string, entityUid:string): ErrorProduct => new GenericClientError(`The ${entityType} ${entityUid} is already in the battle!!`);
 
-  invalidPositiveInteger = (value: string): WrongParamTypeError => new GenericClientError(`The ${value} must be a positive integer!`);
+  invalidPositiveInteger = (value: string): ErrorProduct => new GenericClientError(`The ${value} must be a positive integer!`);
 
-  invalidInteger = (value: string): WrongParamTypeError => new GenericClientError(`The ${value} must be an integer!`);
+  invalidInteger = (value: string): ErrorProduct => new GenericClientError(`The ${value} must be an integer!`);
 
-  invalidSpeed = (): WrongParamTypeError => new GenericClientError('Speed must be a positive number divisible by 1.5!');
+  invalidSpeed = (): ErrorProduct => new GenericClientError('Speed must be a positive number divisible by 1.5!');
 
-  invalidSkill = (value: string[]): WrongParamTypeError => new GenericClientError(`Invalid skill. It must be one of the following values: ${value.join(', ')}!`);
+  invalidSkill = (value: string[]): ErrorProduct => new GenericClientError(`Invalid skill. It must be one of the following values: ${value.join(', ')}!`);
 
-  invalidSkillValue = (value: string): WrongParamTypeError => new GenericClientError(`The ${value} must be an integer between 1 and 30!`);
+  invalidSkillValue = (value: string): ErrorProduct => new GenericClientError(`The ${value} must be an integer between 1 and 30!`);
 
-  invalidEffectImmunities = (): WrongParamTypeError => new GenericClientError('The effectImmunities must be a list of effects!');
+  invalidEffectImmunities = (): ErrorProduct => new GenericClientError('The effectImmunities must be a list of effects!');
 
-  invalidEffect = (value: string, list: string[]): WrongParamTypeError => new GenericClientError(`Invalid effect in the list: ${value}. The effect must be one of the following values: ${list.join(', ')}!`);
+  invalidEffect = (value: string, list: string[]): ErrorProduct => new GenericClientError(`Invalid effect in the list: ${value}. The effect must be one of the following values: ${list.join(', ')}!`);
 
-  entityNotFound = (id: string): WrongParamTypeError => new GenericClientError(`The entity ${id} is not in the battle!`);
+  entityNotFound = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} is not in the battle!`);
 
-  noModification = (): WrongParamTypeError => new GenericClientError('You need to change at least one parameter.!');
+  noModification = (): ErrorProduct => new GenericClientError('You need to change at least one parameter.!');
 
-  noNewSlot = (level: number): WrongParamTypeError => new GenericClientError(`The new value of level ${level} slots exceeds your maximum number of slots for that level!`);
+  noNewSlot = (level: number): ErrorProduct => new GenericClientError(`The new value of level "${level}" slots exceeds your maximum number of slots for that level!`);
 
-  notYourTurn = (id: string): WrongParamTypeError => new GenericClientError(`It's not the turn of ${id}!`);
+  notYourTurn = (id: string): ErrorProduct => new GenericClientError(`It's not the turn of ${id}!`);
 
-  notYourTurnEnchantment = (): WrongParamTypeError => new GenericClientError('It is not your turn. You cannot cast an enchantment with a casting time other than reaction!');
+  notYourTurnEnchantment = (): ErrorProduct => new GenericClientError('It is not your turn. You cannot cast an enchantment with a casting time other than reaction!');
 
-  identicalId = (): WrongParamTypeError => new GenericClientError('The two ids are identical!');
+  identicalId = (): ErrorProduct => new GenericClientError('The two ids are identical!');
 
-  postponeTurn = (): WrongParamTypeError => new GenericClientError('The turn can only be postponed with those who have not yet taken it!');
+  postponeTurn = (): ErrorProduct => new GenericClientError('The turn can only be postponed with those who have not yet taken it!');
 
-  reactionNotActivable = (id: string): WrongParamTypeError => new GenericClientError(`The entity ${id} has already used its reaction!`);
+  reactionNotActivable = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} has already used its reaction!`);
 
-  attackTypeInvalid = (): WrongParamTypeError => new GenericClientError('The attackType is invalid. It must be one of the following values: attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment!');
+  attackTypeInvalid = (): ErrorProduct => new GenericClientError('The attackType is invalid. It must be one of the following values: attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment!');
 
-  weaponNotInInventory = (id: string, weapon: string): WrongParamTypeError => new GenericClientError(`The entity ${id} does not possess the weapon ${weapon}!`);
+  weaponNotInInventory = (id: string, weapon: string): ErrorProduct => new GenericClientError(`The entity ${id} does not possess the weapon ${weapon}!`);
 
-  enchantmentNotInInventory = (id: string, enchantment: string): WrongParamTypeError => new GenericClientError(`The entity ${id} does not possess the enchantment ${enchantment}!`);
+  enchantmentNotInInventory = (id: string, enchantment: string): ErrorProduct => new GenericClientError(`The entity ${id} does not possess the enchantment ${enchantment}!`);
 
-  invalidEnchantmentCategory = (enchantment: string, category: string): WrongParamTypeError => new GenericClientError(`The enchantment: ${enchantment} does not belong to the category of spells ${category}!`);
+  invalidEnchantmentCategory = (enchantment: string, category: string): ErrorProduct => new GenericClientError(`The enchantment: ${enchantment} does not belong to the category of spells ${category}!`);
 
-  invalidSlotLevel = (): WrongParamTypeError => new GenericClientError('Slot must be an integer from 1 to 9, inclusive!');
+  invalidSlotLevel = (): ErrorProduct => new GenericClientError('Slot must be an integer from 1 to 9, inclusive!');
 
-  invalidSlotCasting = (level: number, slotLevel: number): WrongParamTypeError => new GenericClientError(`You can't cast a level ${level} enchantment with a level ${slotLevel} slot!`);
+  invalidSlotCasting = (level: number, slotLevel: number): ErrorProduct => new GenericClientError(`You can't cast a level ${level} enchantment with a level ${slotLevel} slot!`);
 
-  noSlotAvaible = (level: number): WrongParamTypeError => new GenericClientError(`You don't have a level ${level} slot available!`);
-
-
+  noSlotAvaible = (level: number): ErrorProduct => new GenericClientError(`You don't have a level ${level} slot available!`);
 }
 
 /**

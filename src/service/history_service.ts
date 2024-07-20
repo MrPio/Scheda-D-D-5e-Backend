@@ -3,9 +3,13 @@ import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { HistoryMessage } from '../model/history_message';
 import { StatusCodes } from 'http-status-codes';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
 const sessionRepository = new RepositoryFactory().sessionRepository();
 const historyRepository = new RepositoryFactory().historyRepository();
+
+// TODO: filter per ActionType
+
 
 export async function getHistoryService(req: IAugmentedRequest, res: Res) {
   const { sessionId } = req.params;

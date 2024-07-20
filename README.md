@@ -109,7 +109,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 
 | Type | Route | Parameters | Description |
 | --- | --- | --- | --- |
-| `GET` |`/diceRoll` | diceList, modifier | Rolls the dice in the `diceList` and adds up any `modifier`. The `diceList` must be non empty.  |
+| `GET` |`/diceRoll` | diceList, modifier? | Rolls the dice in the `diceList` and adds up any `modifier`. The `diceList` must be non empty.  |
 | `PATCH` |`/sessions/{sessionId}/attack` | attackInfo, attackerId, targetId | Causes `attackerId` to attack `targetId`. The attack may be melee or enchantment. The `attackInfo` must contain the attempt dice roll. If this is greater than the target's AC, the attacker is asked to roll the damage dice. |
 | `GET` |`/sessions/{sessionId}/savingThrow` | entitiesId, difficultyClass, skill | Requests all the `entitiesId` to make a save roll on `skill`. The result is positive if greater than `difficultyClass`.|
 | `PATCH` |`/sessions/{sessionId}/effect` | entityId, effect | Assigns the `effect` to the `entityId`. If `effect` is null, the effects of the entities are deleted. |
@@ -130,7 +130,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 
 | Type | Route | Parameters | Description |
 | --- | --- | --- | --- |
-| `GET` |`/sessions/{sessionId}/history` | - | Returns the whole `sessionId` history. |
+| `GET` |`/sessions/{sessionId}/history` | actionType? | Returns the whole `sessionId` history. Filter it by `actionType` if provided. |
 | `POST` |`/sessions/{sessionId}/history` | message | Adds a message to the `sessionId` history. Notifies all players except the one who posted the message. |
 
 

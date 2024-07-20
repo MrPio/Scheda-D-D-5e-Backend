@@ -1,7 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { IAugmentedRequest } from '../interface/augmented_request';
 import { Error400Factory } from '../error/error_factory';
-import { EnumType } from 'typescript';
 
 
 /**

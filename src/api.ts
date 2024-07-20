@@ -20,6 +20,7 @@ import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
 import { checkTryAttack, checkRequestSavingThrow, checkGiveEffects, checkEnableReaction } from './middleware/attack_middleware';
 import { checkAddEntity, checkEntityInSession } from './middleware/entity_middleware';
 import { Dice } from './model/dice';
+import { ActionType } from './model/history_message';
 
 const requestTime = (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   req.requestTime = Date.now();
