@@ -39,7 +39,7 @@ export const ARRAY =
 export const OBJECT =
   (objectType: { [key: string]: (arg0: object) => boolean }) =>
     (obj: object) =>
-      Object.entries(objectType).every(it => it[1]((obj as { [key: string]: object })[it[0]]));
+      Object.entries(obj).every(it => objectType[it[0]](it[1]));
 
 
 /**
