@@ -15,12 +15,13 @@ import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 import { checkDiceRoll } from './middleware/dice_middleware';
 import { IAugmentedRequest } from './interface/augmented_request';
 import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER } from './middleware/parameters_middleware';
-import { checkContinueSession, checkNewSession, checkPauseSession, checkSessionId, checkStartSession, checkStopSession } from './middleware/session_middleware';
+import { checkNewSession, checkSessionId, checkSessionStatus } from './middleware/session_middleware';
 import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
 import { checkTryAttack, checkRequestSavingThrow, checkGiveEffects, checkEnableReaction } from './middleware/attack_middleware';
 import { checkAddEntity, checkEntityInSession } from './middleware/entity_middleware';
 import { Dice } from './model/dice';
 import { ActionType } from './model/history_message';
+import { SessionStatus } from './model/session';
 
 const requestTime = (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   req.requestTime = Date.now();
@@ -51,10 +52,10 @@ app.get('/sessions', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, 
 app.post('/sessions', checkHasToken, checkTokenIsValid, checkMandadoryParams(['name', 'masterUID', 'campaignName', 'mapSize']), checkNewSession, (req: IAugmentedRequest, res: Response) => createSession(req, res));
 app.get('/sessions/:sessionId', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => getSessionInfo(req, res));
 app.delete('/sessions/:sessionId', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => deleteSession(req, res));
-app.patch('/sessions/:sessionId/start', checkHasToken, checkTokenIsValid, checkSessionId, checkStartSession, (req: IAugmentedRequest, res: Response) => startSession(req, res));
-app.patch('/sessions/:sessionId/pause', checkHasToken, checkTokenIsValid, checkSessionId, checkPauseSession, (req: IAugmentedRequest, res: Response) => pauseSession(req, res));
-app.patch('/sessions/:sessionId/continue', checkHasToken, checkTokenIsValid, checkSessionId, checkContinueSession, (req: IAugmentedRequest, res: Response) => continueSession(req, res));
-app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, checkSessionId, checkStopSession, (req: IAugmentedRequest, res: Response) => stopSession(req, res));
+app.patch('/sessions/:sessionId/start', checkHasToken, checkTokenIsValid, checkSessionId, checkSessionStatus([SessionStatus.created]), (req: IAugmentedRequest, res: Response) => startSession(req, res));
+app.patch('/sessions/:sessionId/pause', checkHasToken, checkTokenIsValid, checkSessionId, checkSessionStatus([SessionStatus.ongoing]), (req: IAugmentedRequest, res: Response) => pauseSession(req, res));
+app.patch('/sessions/:sessionId/continue', checkHasToken, checkTokenIsValid, checkSessionId, checkSessionStatus([SessionStatus.paused]), (req: IAugmentedRequest, res: Response) => continueSession(req, res));
+app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, checkSessionId, checkSessionStatus([SessionStatus.paused, SessionStatus.ongoing]), (req: IAugmentedRequest, res: Response) => stopSession(req, res));
 
 // Turn Routes =================================================================================
 app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, checkSessionId, (req: IAugmentedRequest, res: Response) => getTurn(req, res));
