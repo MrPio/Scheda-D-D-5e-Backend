@@ -64,6 +64,7 @@ app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, che
 
 // Attack Routes ===============================================================================
 app.get('/diceRoll', checkMandadoryParams(['diceList']), checkParamsType({ diceList: ARRAY(ENUM(Dice)), modifier: NUMBER }), checkDiceRoll, (req: IAugmentedRequest, res: Response) => diceRoll(req, res));
+// TODO add check on attackType: AttackType enum
 app.patch('/sessions/:sessionId/attack', checkHasToken, checkTokenIsValid, checkSessionExists, checkTryAttack, (req: IAugmentedRequest, res: Response) => makeAttack(req, res));
 app.get('/sessions/:sessionId/savingThrow', checkHasToken, checkTokenIsValid, checkSessionExists, checkRequestSavingThrow, (req: IAugmentedRequest, res: Response) => getSavingThrow(req, res));
 app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, checkSessionExists, checkGiveEffects, (req: IAugmentedRequest, res: Response) => addEffect(req, res));

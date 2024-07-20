@@ -85,7 +85,7 @@ export class Error400Factory {
 
   postponeTurn = (): ErrorProduct => new GenericClientError('The turn can only be postponed with those who have not yet taken it!');
 
-  reactionNotActivable = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} has already used its reaction!`);
+  reactionNotActivable = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} has already used its reaction! They need to wait for the next turn!`);
 
   attackTypeInvalid = (): ErrorProduct => new GenericClientError('The attackType is invalid. It must be one of the following values: attack, damageEnchantment, savingThrowEnchantment, descriptiveEnchantment!');
 
