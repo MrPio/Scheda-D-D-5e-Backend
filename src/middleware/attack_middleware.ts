@@ -12,7 +12,7 @@ import { EntityType } from '../model/entity';
 const error400Factory = new Error400Factory();
 
 /**
- * Check if the attack can be performed
+ * Check if the attack can be performed.
  * @precondition `checkSessionExists`
  * @precondition `checkEntityExistsInSession`
  */
@@ -87,7 +87,7 @@ export const checkRequestSavingThrow = async (req: IAugmentedRequest, res: Respo
   // Check if DC is a non negative integer
   if (body.difficultyClass >= 0)
     return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
-  
+
   // Check if all the entities are in the battle.
   const entityUIDsInTurn = req.session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
   for (const targetId of body.entitiesId)

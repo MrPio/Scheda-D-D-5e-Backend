@@ -71,7 +71,7 @@ export const checkSessionExists = async (req: IAugmentedRequest, res: Response, 
 };
 
 /**
- * Check that the provided `entityID` belongs to a player of the given session.
+ * Check that the provided `entityId` belongs to a player of the given session.
  * @precondition `checkSessionExists`.
  * @postcondition `req.entityId`, `req.entity`.
  */
