@@ -2,45 +2,13 @@ import { Response, NextFunction } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { Session, SessionStatus } from '../model/session';
 import { Error400Factory } from '../error/error_factory';
-<<<<<<< HEAD
-
-const error400Factory: Error400Factory = new Error400Factory();
-
-/**
- * Check the validity of creating a new session
- */
-export const checkNewSession = async (req: Request, res: Response, next: NextFunction) => {
-  const { mapSize, characters, npcs, monsters } = req.body;
-
-  const minMapWidth = 10;
-  const minMapHeight = 10;
-  const maxMapWidth = 100;
-  const maxMapHeight = 100;
-
-  // Helper function to check if mapSize is valid
-  const isValidMapSize = (): boolean => {
-    return (
-      typeof mapSize === 'object' &&
-      mapSize !== null &&
-      typeof mapSize.width === 'number' &&
-      typeof mapSize.height === 'number' &&
-      mapSize.width >= minMapWidth &&
-      mapSize.width <= maxMapWidth &&
-      mapSize.height >= minMapHeight &&
-      mapSize.height <= maxMapHeight
-    );
-  };
-
-  // Check if mapSize is within the limits
-  if (!isValidMapSize())
-=======
 import { IAugmentedRequest } from '../interface/augmented_request';
 
 const error400Factory = new Error400Factory();
+const sessionRepository = new RepositoryFactory().sessionRepository();
 const characterRepository = new RepositoryFactory().characterRepository();
 const npcRepository = new RepositoryFactory().npcRepository();
 const monsterRepository = new RepositoryFactory().monsterRepository();
-
 
 // Check that the provided request body correctly defines a session.
 export const checkNewSession = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
@@ -54,7 +22,6 @@ export const checkNewSession = async (req: IAugmentedRequest, res: Response, nex
   // Check that mapSize is within the limits set for the map.
   if (body.mapSize.width > Session.maxMapSize.width || body.mapSize.width < Session.minMapSize.width ||
     body.mapSize.height > Session.maxMapSize.height || body.mapSize.height < Session.minMapSize.height)
->>>>>>> b284842dce05e26ef6a9cdc2e98a62ced5bf31aa
     return error400Factory.invalidMapSize().setStatus(res);
 
   /**
@@ -87,20 +54,35 @@ export const checkNewSession = async (req: IAugmentedRequest, res: Response, nex
   next();
 };
 
-// Check that `sessionId` points to an existing session.
-export const checkSessionId = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
-  const { sessionId } = req.params;
-  req.session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+// Check that the provided `sessionID` belongs to an existing session.
+export const checkSessionExists = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  req.sessionId = req.params.sessionId;
 
-  // Check if the session object was found in the repository.
+  // Check that the `sessionId` belongs to an existing session.
+  req.session = (await sessionRepository.getById(req.sessionId))!;
   if (!req.session)
-    return error400Factory.sessionNotFound(sessionId).setStatus(res);
+    return error400Factory.sessionNotFound(req.sessionId).setStatus(res);
+
+  next();
+};
+
+/**
+ * Check that the provided `entityID` belongs to a player of the given session.
+ * @precondition `checkSessionExists`.
+ */
+export const checkEntityExistsInSession = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  req.entityId = req.params.entityId ?? req.body.entityId as string;
+
+  // Check that the `entityId` is in the session.
+  if ([req.session?.characterUIDs, req.session?.npcUIDs, req.session?.monsterUIDs].every(it => !it?.includes(req.entityId!)))
+    return error400Factory.entityNotFoundInSession(req.entityId!, req.sessionId!).setStatus(res);
 
   next();
 };
 
 /**
  * Check if a session is in any of the specified statuses.
+ * @precondition `checkSessionExists`
  * @param statuses The session's required statuses.
  * @returns A middleware that checks if the session is in any of the `statuses` statuses.
  */

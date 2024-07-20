@@ -17,6 +17,7 @@ export interface IAugmentedRequest extends Request {
   token?: string;
   decodedToken?: CachedToken;
   sessionId?: string;
+  entityId?: string;
   userUID?: string;
   addresseeUIDs?: string[];
   session?: Session | null;

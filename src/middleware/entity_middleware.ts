@@ -171,7 +171,7 @@ export const checkEntityInSession = async (req: Request, res: Response, next: Ne
 
   // Check if the entityId exists in the battle
   if (!entityUIDsInTurn.includes(entityId))
-    return error400Factory.entityNotFound(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
 
   next();
 };
@@ -190,7 +190,7 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
 
   // Check if the entityId is in the session
   if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId)) 
-    return error400Factory.entityNotFound(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
 
   // Convert enum values to an array of strings
   const validEffect = Object.values(Effect) as string[];

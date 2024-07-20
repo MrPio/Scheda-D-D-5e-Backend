@@ -71,13 +71,13 @@ export class Error400Factory {
 
   invalidEffect = (value: string, list: string[]): ErrorProduct => new GenericClientError(`Invalid effect in the list: ${value}. The effect must be one of the following values: ${list.join(', ')}!`);
 
-  entityNotFound = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} is not in the battle!`);
+  entityNotFoundInSession = (entiyId: string, session: string): ErrorProduct => new GenericClientError(`The entity "${entiyId}" is not in the session "${session}"!`);
 
   noModification = (): ErrorProduct => new GenericClientError('You need to change at least one parameter.!');
 
   noNewSlot = (level: number): ErrorProduct => new GenericClientError(`The new value of level "${level}" slots exceeds your maximum number of slots for that level!`);
 
-  notYourTurn = (id: string): ErrorProduct => new GenericClientError(`It's not the turn of ${id}!`);
+  notYourTurn = (id: string): ErrorProduct => new GenericClientError(`It's not the turn of "${id}"!`);
 
   notYourTurnEnchantment = (): ErrorProduct => new GenericClientError('It is not your turn. You cannot cast an enchantment with a casting time other than reaction!');
 

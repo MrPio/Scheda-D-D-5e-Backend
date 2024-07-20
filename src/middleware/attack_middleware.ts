@@ -33,7 +33,7 @@ export const checkEnableReaction = async (req: Request, res: Response, next: Nex
   else if (session!.monsterUIDs?.includes(entityId))
     player = await new RepositoryFactory().monsterRepository().getById(sessionId);  
   else
-    return error400Factory.entityNotFound(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
 
   // Check if the reaction is activable for the entity
   if (!player?.isReactionActivable) 
@@ -55,7 +55,7 @@ export const checkGiveEffects = async (req: Request, res: Response, next: NextFu
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
 
   if (!session!.characterUIDs?.includes(entityId) && !session!.npcUIDs?.includes(entityId) && !session!.monsterUIDs?.includes(entityId) )
-    return error400Factory.entityNotFound(entityId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(entityId).setStatus(res);
 
   // Check if the element is a valid value based on the enum Effect and the effect list is not null. 
   if (effect) {
@@ -97,7 +97,7 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
     attacker = await new RepositoryFactory().monsterRepository().getById(attackerId);
     characterType = false;
   } else
-    return error400Factory.entityNotFound(attackerId).setStatus(res);
+    return error400Factory.entityNotFoundInSession(attackerId).setStatus(res);
 
   if (attackType === 'attack') {
     
@@ -107,7 +107,7 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
 
     // Check if the target entity is in the battle.
     if (!entityUIDsInTurn.includes(targetId))
-      return error400Factory.entityNotFound(targetId).setStatus(res);
+      return error400Factory.entityNotFoundInSession(targetId).setStatus(res);
 
     // Check if the entity possess the weapon
     if (!attacker?.weapons.includes(weapon))
@@ -155,7 +155,7 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
   
       // Check if the target entity is in the battle.
       if (!entityUIDsInTurn.includes(targetId))
-        return error400Factory.entityNotFound(targetId).setStatus(res);
+        return error400Factory.entityNotFoundInSession(targetId).setStatus(res);
 
       // Check if the category of the enchantment is correct
       if (enchantmentName?.category !== EnchantmentCategory.damage)
@@ -182,7 +182,7 @@ export const checkTryAttack = async (req: Request, res: Response, next: NextFunc
       // Check if all the entities are in the battle.
       for (const id of targetsId) {
         if (!entityUIDsInTurn.includes(id))
-          return error400Factory.entityNotFound(id).setStatus(res);
+          return error400Factory.entityNotFoundInSession(id).setStatus(res);
       }
 
     }
@@ -225,7 +225,7 @@ export const checkRequestSavingThrow = async (req: Request, res: Response, next:
   const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
   for (const id of entitiesId) {
     if (!entityUIDsInTurn.includes(id))
-      return error400Factory.entityNotFound(id).setStatus(res);
+      return error400Factory.entityNotFoundInSession(id).setStatus(res);
   }
 
   next();

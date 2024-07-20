@@ -44,14 +44,16 @@ import { RepositoryFactory } from '../repository/repository_factory';
 import { initializeSequelize } from '../db/sequelize';
 import { CachedToken } from '../model/cached_token';
 import express, { Response, json } from 'express';
-import { Session } from '../model/session';
+import { Session, SessionStatus } from '../model/session';
 import { checkJWT, checkSession, IConnectionFailError } from './middleware/websocket_middleware';
 import { checkHasToken } from '../middleware/jwt_middleware';
 import { checkIsAPIBackend, checkSessionExists, checkUsersOnline } from './middleware/api_middleware';
 import { generateJWT } from '../service/jwt_service';
 import { Error400Factory, Error500Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
-import { checkMandadoryParams } from '../middleware/parameters_middleware';
+import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, STRING } from '../middleware/parameters_middleware';
+import { Dice } from '../model/dice';
+import { checkSessionStatus } from '../middleware/session_middleware';
 
 
 
@@ -247,7 +249,7 @@ const hasPendingRequest = (sessionId: string) => Object.values(activeConnections
  *   "addresseeUIDs": [ "k9vc0kojNcO9JB9qVdf33F6h3eD2" ]
  * }
  */
-app.get('/sessions/:sessionId/requestDiceRoll', checkHasToken, checkIsAPIBackend, checkMandadoryParams(['diceList', 'addresseeUIDs']), checkSessionExists, checkUsersOnline, (req: IAugmentedRequest, res: Response) => {
+app.get('/sessions/:sessionId/requestDiceRoll', checkHasToken, checkIsAPIBackend, checkMandadoryParams(['diceList', 'addresseeUIDs']), checkParamsType({ diceList: ARRAY(ENUM(Dice)), addresseeUIDs: ARRAY(STRING) }), checkSessionExists, checkSessionStatus([SessionStatus.ongoing]), checkUsersOnline, (req: IAugmentedRequest, res: Response) => {
 
   // Check that the active connection stores the connection of interest. This should always be true.
   if (!(req.sessionId! in activeConnections) || req.addresseeUIDs?.some(uid => !(uid in activeConnections[req.sessionId!].users)))

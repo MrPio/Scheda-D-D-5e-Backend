@@ -1,65 +1,47 @@
-import { Request, Response, NextFunction } from 'express';
-import { RepositoryFactory } from '../repository/repository_factory';
+import { Response, NextFunction } from 'express';
 import { EntityTurn } from '../model/entity_turn';
-import { Error400Factory } from '../error/error_factory';
+import { Error400Factory, Error500Factory } from '../error/error_factory';
+import { IAugmentedRequest } from '../interface/augmented_request';
 
-const error400Factory: Error400Factory = new Error400Factory();
-
-// TODO: rivedere alla luce di una nuova gestione dell'ordine dei turni
+const error400Factory = new Error400Factory();
+const error500Factory = new Error500Factory();
 
 /**
- * Check if the the entity can end his turn
+ * Check if the the entity can start his turn after another entity
+ * @precondition `checkSessionExists`
+ * @precondition `checkEntityExistsInSession`
  */
-export const checkEndTurn = async (req: Request, res: Response, next: NextFunction) => {
+export const checkPostponeTurn = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  const { predecessorEntityId } = req.body;
 
-  const { sessionId } = req.params;
-  const { entityId } = req.body;
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+  // Check that the `predecessorEntityId` is not the current player.
+  if (predecessorEntityId === req.entityId)
+    return error400Factory.genericError('The postponed entity must specify a valid predecessor entity').setStatus(res);
 
-  // Extract the entityUIDs from the entityTurn objects
-  const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
+  // Check if it's the turn of `entityId`
+  if (req.session!.currentEntityUID !== req.entityId)
+    return error400Factory.notYourTurn(req.entityId!).setStatus(res);
 
-  if (!entityUIDsInTurn.includes(entityId))
-    return error400Factory.entityNotFound(entityId).setStatus(res);
+  // Check that the provided `predecessorEntityId` belongs to a player of the given session.
+  if ([req.session?.characterUIDs, req.session?.npcUIDs, req.session?.monsterUIDs].every(it => !it?.includes(predecessorEntityId!)))
+    return error400Factory.entityNotFoundInSession(predecessorEntityId, req.sessionId!).setStatus(res);
 
-  if (session!.currentEntityUID !== entityId)
-    return error400Factory.notYourTurn(entityId).setStatus(res);
+  // Check that session contains the required entities turns. This should always be true.
+  const entityUIDsInTurn = req.session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
+  if (!entityUIDsInTurn.includes(req.entityId!) || !entityUIDsInTurn.includes(predecessorEntityId))
+    return error500Factory.genericError().setStatus(res);
 
   next();
 };
 
 /**
- * Check if the the entity can start his turn after another entity
+ * Check if the entity can end his turn.
+ * @precondition `checkSessionExists`
+ * @precondition `checkEntityExistsInSession`
  */
-export const checkPostponeTurn = async (req: Request, res: Response, next: NextFunction) => {
+export const checkEndTurn = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  if (req.session!.currentEntityUID !== req.entityId)
+    return error400Factory.notYourTurn(req.entityId!).setStatus(res);
 
-  const { sessionId } = req.params;
-  const { entityId, predecessorEntityId } = req.body;
-
-  const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
-
-  // Extract the entityUIDs from the entityTurn objects
-  const entityUIDsInTurn = session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
-
-  if (!entityUIDsInTurn.includes(entityId))
-    return error400Factory.entityNotFound(entityId).setStatus(res);
-
-  if (session!.currentEntityUID !== entityId)
-    return error400Factory.notYourTurn(entityId).setStatus(res);
-
-  if (!entityUIDsInTurn.includes(predecessorEntityId)) {
-    return error400Factory.entityNotFound(predecessorEntityId).setStatus(res);
-  }
-  
-  // Check if the two ids are not the same and if it is possible to postpone the shift 
-  const indexEntity = entityUIDsInTurn.indexOf(entityId); 
-  const indexPredecessor = entityUIDsInTurn.indexOf(predecessorEntityId);
-
-  if (indexEntity === indexPredecessor)
-    return error400Factory.identicalId().setStatus(res);
-
-  if (indexEntity > indexPredecessor)
-    return error400Factory.postponeTurn().setStatus(res);
-  
   next();
 };

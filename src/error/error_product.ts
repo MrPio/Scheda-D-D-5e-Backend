@@ -50,14 +50,10 @@ export class GenericClientError extends ErrorProduct {
   constructor(message: string) { super(StatusCodes.BAD_REQUEST, message); }
 }
 
-<<<<<<< HEAD
-// Error class for cases where the client has made too many requests in a short period.
-=======
 export class WrongModelState extends ErrorProduct {
   constructor(model:string, instance:string, param:string, expectedValue:string) { super(StatusCodes.BAD_REQUEST, `${model} "${instance}"'s ${param} is not "${expectedValue}"!`); }
 }
 
->>>>>>> b284842dce05e26ef6a9cdc2e98a62ced5bf31aa
 export class TooManyRequests extends ErrorProduct {
   constructor(message: string) { super(StatusCodes.TOO_MANY_REQUESTS, message); }
 }
