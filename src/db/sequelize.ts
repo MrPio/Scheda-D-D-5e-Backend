@@ -56,15 +56,6 @@ const seedDatabase = async () => {
     campaignName: 'Desert Adventure',
   } as Session);
 
-  // Add a sample entity turn
-  await entityTurnRepository.create({
-    entityUID: 'EGUDW2EYaQhcPAheqUv0',
-    posX: 1,
-    posY: 3,
-    turnIndex: 0,
-    sessionId: session.id,
-  } as EntityTurn);
-
   // Add a sample monster
   const monster = await monsterRepository.create({
     _name: 'Orodrik',
@@ -111,4 +102,20 @@ const seedDatabase = async () => {
     value: 6,
     monsterId: monster.id,
   } as MonsterSkill);
+
+  // Add a sample entity turn
+  await entityTurnRepository.create({
+    entityUID: 'EGUDW2EYaQhcPAheqUv0',
+    posX: 1,
+    posY: 3,
+    turnIndex: 0,
+    sessionId: session.id,
+  } as EntityTurn);
+  await entityTurnRepository.create({
+    entityUID: monster.id,
+    posX: 7,
+    posY: 4,
+    turnIndex: 1,
+    sessionId: session.id,
+  } as EntityTurn);
 };

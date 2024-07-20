@@ -4,6 +4,7 @@ import { Session, SessionStatus } from '../model/session';
 import { Error400Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
 import { EntityType } from '../model/entity';
+import { findEntity } from '../service/utility/model_queries';
 
 const error400Factory = new Error400Factory();
 const sessionRepository = new RepositoryFactory().sessionRepository();
@@ -79,16 +80,10 @@ export const checkEntityExistsInSession = async (req: IAugmentedRequest, res: Re
   req.entityId = req.params.entityId ?? req.body.entityId as string;
 
   // Check that the `entityId` is in the session and retrieve the object from the repository.
-  if (req.session!.characterUIDs?.includes(req.entityId!)) {
-    req.entityType = EntityType.character;
-    req.entity = (await characterRepository.getById(req.entityId!))!;
-  } else if (req.session!.npcUIDs?.includes(req.entityId!)) {
-    req.entityType = EntityType.npc;
-    req.entity = (await npcRepository.getById(req.entityId!))!;
-  } else if (req.session!.monsterUIDs?.includes(req.entityId!)) {
-    req.entityType = EntityType.monster;
-    req.entity = (await monsterRepository.getById(req.entityId!))!;
-  } else return error400Factory.entityNotFoundInSession(req.entityId!, req.sessionId!).setStatus(res);
+  const entity = await findEntity(req.session!, req.entityId!);
+  if (!entity) return error400Factory.entityNotFoundInSession(req.entityId!, req.sessionId!).setStatus(res);
+  req.entityType = entity.entityType;
+  req.entity = entity.entity;
 
   next();
 };

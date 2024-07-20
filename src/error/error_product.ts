@@ -30,7 +30,7 @@ export class ModelNotFound extends ErrorProduct {
   ) { super(StatusCodes.NOT_FOUND, `Id "${id}" not found for model "${className}"!`); }
 }
 
-export class ModelNotFoundInSession extends ErrorProduct {
+export class EntityNotFoundInSession extends ErrorProduct {
   constructor(
     public entity: string,
     public session: string,

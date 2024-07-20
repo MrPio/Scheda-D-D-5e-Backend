@@ -1,52 +1,42 @@
-
-import { Response as Res } from 'express';
+import { Response } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
-import { findEntityTurn } from './utility/model_queries';
+import { findEntity, findEntityTurn, updateEntity } from './utility/model_queries';
 import { IAugmentedRequest } from '../interface/augmented_request';
 
-const sessionRepository = new RepositoryFactory().sessionRepository();
+const entityTurnRepository = new RepositoryFactory().entityTurnRepository();
 
-// TODO: rivedere alla luce di una nuova gestione dell'ordine dei turni
-
-export async function getTurnService(req: IAugmentedRequest, res: Res) {
-  const { sessionId } = req.params;
-  const session = await sessionRepository.getById(sessionId);
-  // Assume the current turn is the first in the sorted list
-  const currentTurn = session?.entityTurns[0];
-
-  // Respond with JSON containing the current turn
-  return res.status(200).json({ currentTurn });
+// Retrieves the current entity turn.
+export async function getTurnService(req: IAugmentedRequest, res: Response) {
+  return res.status(200).json(req.session?.sortedTurns[0]);
 }
 
-export async function postponeTurnService(req: IAugmentedRequest, res: Res) {
-  const { sessionId } = req.params;
-  const { entityId, predecessorEntityId } = req.body;
-
-  // Retrieve the session with entityTurn relationship
-  const session = await sessionRepository.getById(sessionId);
+export async function postponeTurnService(req: IAugmentedRequest, res: Response) {
+  const { predecessorEntityId } = req.body;
 
   // Find the entityTurn objects for entityId and predecessorEntityId
-  const entityTurnEntity = findEntityTurn(session!, entityId);
-  const predecessorEntityTurnEntity = findEntityTurn(session!, predecessorEntityId);
-
-  // Get the positions of entityId and predecessorEntityId in the array
-  const indexEntity = session!.entityTurns.indexOf(entityTurnEntity!);
-  const indexPredecessor = session!.entityTurns.indexOf(predecessorEntityTurnEntity!);
-
-  // Remove entityId's turn from its current position
-  session!.entityTurns.splice(indexEntity, 1);
-
-  // Insert entityId's turn after predecessorEntityId's turn
-  const newPosition = indexPredecessor + 1;
-  session!.entityTurns.splice(newPosition, 0, entityTurnEntity!);
+  const entityTurn = findEntityTurn(req.session!, req.entityId!);
+  const predecessorTurnIndex = findEntityTurn(req.session!, predecessorEntityId)?.turnIndex;
+  for (const turn of req.session!.sortedTurns)
+    if (turn.turnIndex <= predecessorTurnIndex!)
+      turn.turnIndex -= 1;
+  entityTurn!.turnIndex = predecessorTurnIndex!;
 
   // Update session in the database
-  await sessionRepository.update(session!.id, { entityTurns: session!.entityTurns });
-
-  return res.status(200).json({ message: `Turn of entity ${entityId} postponed after entity ${predecessorEntityId}` });
+  req.session?.entityTurns.forEach(it => entityTurnRepository.update(it.id, { turnIndex: it.turnIndex }));
+  return res.status(200).json({ message: `Turn of entity ${req.entity?._name} postponed after entity ${(await findEntity(req.session!, predecessorEntityId))?.entity._name}` });
 }
 
-export async function endTurnService(req: IAugmentedRequest, res: Res) {
-  // TODO: impostare currentUid e ordinare lista, in entityTurn[0]=newCurrentUid
-  // impostare anche reazione da false a true
+export async function endTurnService(req: IAugmentedRequest, res: Response) {
+
+  // Push the current entity to the end of the turns list
+  req.session!.sortedTurns[0].turnIndex = req.session!.entityTurns.length;
+  for (const turn of req.session!.sortedTurns)
+    turn.turnIndex -= 1;
+
+  // Set the reaction of the new playing entity to activatable
+  updateEntity(req.session!, req.session!.sortedTurns[0].entityUID, { isReactionActivable: true });
+
+  // Update session in the database
+  req.session?.entityTurns.forEach(it => entityTurnRepository.update(it.id, { turnIndex: it.turnIndex }));
+  return res.status(200).json({ message: `Turn of entity ${req.entity?._name} has ended successfully!` });
 }

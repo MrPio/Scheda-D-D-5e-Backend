@@ -38,8 +38,6 @@ export class Session extends Model<Session> {
 
   @Column declare campaignName?: string;
 
-  @Column declare currentEntityUID?: string;
-
   @Column declare sessionStatus?: SessionStatus;
 
   @Column(DataType.JSON) declare mapSize?: { width: number, height: number };
@@ -58,6 +56,22 @@ export class Session extends Model<Session> {
    * @returns An array of monster unique identifiers.
    */
   get monsterUIDs(): string[] {
-    return this.monsters.map(it => it.id);
+    return this.monsters.map(it => it.id.toString());
+  }
+
+  /**
+  * Returns the ID of the entity that is currently playing.
+  * @returns A string representing the entity that is currently playing.
+  */
+  get currentEntityUID(): string {
+    return this.sortedTurns[0].entityUID;
+  }
+
+  /**
+  * Returns the sorted list of the turns.
+  * @returns An array of EntityTurn, where the turn indexed 0 is the current turn.
+  */
+  get sortedTurns(): EntityTurn[] {
+    return this.entityTurns.sort((a, b) => a.turnIndex - b.turnIndex);
   }
 }

@@ -12,23 +12,23 @@ const error500Factory = new Error500Factory();
  * @precondition `checkEntityExistsInSession`
  */
 export const checkPostponeTurn = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
-  const { predecessorEntityId } = req.body;
+  const body: { predecessorEntityId: string } = req.body;
 
   // Check that the `predecessorEntityId` is not the current player.
-  if (predecessorEntityId === req.entityId)
+  if (body.predecessorEntityId === req.entityId)
     return error400Factory.genericError('The postponed entity must specify a valid predecessor entity').setStatus(res);
 
   // Check if it's the turn of `entityId`
   if (req.session!.currentEntityUID !== req.entityId)
-    return error400Factory.notYourTurn(req.entityId!).setStatus(res);
+    return error400Factory.notYourTurn(req.entity!._name).setStatus(res);
 
   // Check that the provided `predecessorEntityId` belongs to a player of the given session.
-  if ([req.session?.characterUIDs, req.session?.npcUIDs, req.session?.monsterUIDs].every(it => !it?.includes(predecessorEntityId!)))
-    return error400Factory.entityNotFoundInSession(predecessorEntityId, req.sessionId!).setStatus(res);
+  if ([req.session?.characterUIDs, req.session?.npcUIDs, req.session?.monsterUIDs].every(it => !it?.includes(body.predecessorEntityId!)))
+    return error400Factory.entityNotFoundInSession(body.predecessorEntityId, req.sessionId!).setStatus(res);
 
   // Check that session contains the required entities turns. This should always be true.
   const entityUIDsInTurn = req.session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
-  if (!entityUIDsInTurn.includes(req.entityId!) || !entityUIDsInTurn.includes(predecessorEntityId))
+  if (!entityUIDsInTurn.includes(req.entityId!) || !entityUIDsInTurn.includes(body.predecessorEntityId))
     return error500Factory.genericError().setStatus(res);
 
   next();
@@ -41,7 +41,7 @@ export const checkPostponeTurn = async (req: IAugmentedRequest, res: Response, n
  */
 export const checkEndTurn = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   if (req.session!.currentEntityUID !== req.entityId)
-    return error400Factory.notYourTurn(req.entityId!).setStatus(res);
+    return error400Factory.notYourTurn(req.entity!._name).setStatus(res);
 
   next();
 };

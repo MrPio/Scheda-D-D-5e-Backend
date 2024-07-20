@@ -1,5 +1,5 @@
 import { Session, SessionStatus } from '../model/session';
-import ErrorProduct, { AuthError, ClientDisconnected, GenericClientError, GenericServerError, InvalidNumber, InventoryAbscence, MissingMandatoryParamError, ModelNotFound, TimeoutError, WrongElementTypeError, WrongModelState, WrongParamTypeError, ModelNotFoundInSession, InvalidEnchantmentCategory, WrongTurn } from './error_product';
+import ErrorProduct, { AuthError, ClientDisconnected, GenericClientError, GenericServerError, InvalidNumber, InventoryAbscence, MissingMandatoryParamError, ModelNotFound, TimeoutError, WrongElementTypeError, WrongModelState, WrongParamTypeError, EntityNotFoundInSession, InvalidEnchantmentCategory, WrongTurn } from './error_product';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
@@ -61,7 +61,7 @@ export class Error400Factory {
 
   inventoryAbscence = (id: string, element: string, value: string): ErrorProduct => new InventoryAbscence(id, element, value);
 
-  entityNotFoundInSession = (entity: string, session: string): ErrorProduct => new ModelNotFoundInSession(entity, session);
+  entityNotFoundInSession = (entity: string, session: string): ErrorProduct => new EntityNotFoundInSession(entity, session);
 
   notYourTurn = (id: string): ErrorProduct => new WrongTurn(id);
 
