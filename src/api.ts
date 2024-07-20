@@ -14,7 +14,7 @@ import { initializeSequelize } from './db/sequelize';
 import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 import { checkDiceRoll } from './middleware/dice_middleware';
 import { IAugmentedRequest } from './interface/augmented_request';
-import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER } from './middleware/parameters_middleware';
+import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, STRING, BOOLEAN } from './middleware/parameters_middleware';
 import { checkEntityExistsInSession, checkNewSession, checkSessionExists, checkSessionStatus } from './middleware/session_middleware';
 import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
 import { checkTryAttack, checkRequestSavingThrow, checkGiveEffects, checkEnableReaction } from './middleware/attack_middleware';
@@ -22,6 +22,7 @@ import { checkAddEntity, checkEntityInSession } from './middleware/entity_middle
 import { Dice } from './model/dice';
 import { ActionType } from './model/history_message';
 import { SessionStatus } from './model/session';
+import { EntityType } from './model/entity';
 
 const requestTime = (req: IAugmentedRequest, res: Response, next: NextFunction) => {
   req.requestTime = Date.now();
@@ -49,7 +50,7 @@ app.get('/token', async (req: IAugmentedRequest, res: Response) => {
 
 // Session Routes ==============================================================================
 app.get('/sessions', checkHasToken, checkTokenIsValid, (req: IAugmentedRequest, res: Response) => getSessions(req, res));
-app.post('/sessions', checkHasToken, checkTokenIsValid, checkMandadoryParams(['name', 'masterUID', 'campaignName', 'mapSize']), checkNewSession, (req: IAugmentedRequest, res: Response) => createSession(req, res));
+app.post('/sessions', checkHasToken, checkTokenIsValid, checkMandadoryParams(['name', 'masterUID', 'campaignName', 'mapSize']), checkParamsType({ name: STRING, masterUID: STRING, campaignName: STRING/*, TODOmapSize:  */ }), checkNewSession, (req: IAugmentedRequest, res: Response) => createSession(req, res));
 app.get('/sessions/:sessionId', checkHasToken, checkTokenIsValid, checkSessionExists, (req: IAugmentedRequest, res: Response) => getSessionInfo(req, res));
 app.delete('/sessions/:sessionId', checkHasToken, checkTokenIsValid, checkSessionExists, (req: IAugmentedRequest, res: Response) => deleteSession(req, res));
 app.patch('/sessions/:sessionId/start', checkHasToken, checkTokenIsValid, checkSessionExists, checkSessionStatus([SessionStatus.created]), (req: IAugmentedRequest, res: Response) => startSession(req, res));
@@ -59,7 +60,7 @@ app.patch('/sessions/:sessionId/stop', checkHasToken, checkTokenIsValid, checkSe
 
 // Turn Routes =================================================================================
 app.get('/sessions/:sessionId/turn', checkHasToken, checkTokenIsValid, checkSessionExists, (req: IAugmentedRequest, res: Response) => getTurn(req, res));
-app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityExistsInSession, checkPostponeTurn, (req: IAugmentedRequest, res: Response) => postponeTurn(req, res));
+app.patch('/sessions/:sessionId/turn/postpone', checkHasToken, checkTokenIsValid, checkMandadoryParams(['predecessorEntityId']), checkParamsType({ predecessorEntityID: STRING }), checkSessionExists, checkEntityExistsInSession, checkPostponeTurn, (req: IAugmentedRequest, res: Response) => postponeTurn(req, res));
 app.patch('/sessions/:sessionId/turn/end', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityExistsInSession, checkEndTurn, (req: IAugmentedRequest, res: Response) => endTurn(req, res));
 
 // Attack Routes ===============================================================================
@@ -70,14 +71,15 @@ app.patch('/sessions/:sessionId/effect', checkHasToken, checkTokenIsValid, check
 app.patch('/sessions/:sessionId/reaction', checkHasToken, checkTokenIsValid, checkSessionExists, checkEnableReaction, (req: IAugmentedRequest, res: Response) => enableReaction(req, res));
 
 // Entity Routes ===============================================================================
-app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, checkMandadoryParams(['entityType', 'entityInfo']), checkSessionExists, checkAddEntity, (req: IAugmentedRequest, res: Response) => addEntity(req, res));
+
+app.patch('/sessions/:sessionId/entities', checkHasToken, checkTokenIsValid, checkMandadoryParams(['entityType', 'entityInfo']), checkParamsType({ entityType: ENUM(EntityType), name: STRING, maxHp: NUMBER, armorClass: NUMBER, isReactionActivable: BOOLEAN, speed: NUMBER, strength: NUMBER, dexterity: NUMBER, constitution: NUMBER, intelligence: NUMBER, wisdom: NUMBER, charisma: NUMBER, enchantments: ARRAY(STRING), weapons: ARRAY(STRING), effectImmunities: ARRAY(STRING) }), checkSessionExists, checkAddEntity, (req: IAugmentedRequest, res: Response) => addEntity(req, res));
 app.delete('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityInSession, (req: IAugmentedRequest, res: Response) => deleteEntity(req, res));
 app.get('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkEntityInSession, (req: IAugmentedRequest, res: Response) => getEntityInfo(req, res));
-app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['entityInfo']), checkEntityInSession, (req: IAugmentedRequest, res: Response) => updateEntityInfo(req, res));
+app.patch('/sessions/:sessionId/entities/:entityId', checkHasToken, checkTokenIsValid, checkSessionExists, checkMandadoryParams(['entityInfo']), checkParamsType({ predecessorEntityID: STRING }), checkEntityInSession, (req: IAugmentedRequest, res: Response) => updateEntityInfo(req, res));
 
 // History Routes ==============================================================================
 app.get('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, checkSessionExists, (req: IAugmentedRequest, res: Response) => getHistory(req, res));
-app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, checkMandadoryParams(['msg', 'actionType']), checkSessionExists, (req: IAugmentedRequest, res: Response) => updateHistory(req, res));
+app.post('/sessions/:sessionId/history', checkHasToken, checkTokenIsValid, checkMandadoryParams(['msg', 'actionType']), checkParamsType({ msg: STRING, actionType: ENUM(ActionType) }), checkSessionExists, (req: IAugmentedRequest, res: Response) => updateHistory(req, res));
 
 // Starts the express server
 (async () => {

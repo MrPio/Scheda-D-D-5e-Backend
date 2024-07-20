@@ -1,8 +1,9 @@
-
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { Error400Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
+import { EntityType } from '../model/entity';
+
 
 const errorFactory = new Error400Factory();
 const repositoryFactory = new RepositoryFactory();
@@ -21,11 +22,11 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
   const session = await sessionRepository.getById(sessionId);
 
   let entity;
-  if (entityType === 'monster') {
+  if (entityType === EntityType.Monster) {
     // Create a new monster entity and add it to the session's monsters list
     entity = await monsterRepository.create({ ...entityInfo, sessionId: sessionId });
     session?.monsters.push(entity);
-  } else if (entityType === 'npc') {
+  } else if (entityType === EntityType.Npc) {
     // Add an NPC entity to the session's NPC UID list
     entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
     session!.npcUIDs = session!.npcUIDs ? `${session!.npcUIDs},${entity.uid}` : entity.uid.toString();
@@ -43,7 +44,7 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
 In body:
 1) add a monster:
 {
-  "entityType": "monster",
+  "entityType": "Monster",
   "entityInfo": {
     "authorUID": "masterPio",
     "_name": "Orc",
@@ -54,7 +55,13 @@ In body:
     "isReactionActivable": true,
     "speed": 30,
     "weapons": ["axe"],
-    "effects": []
+    "effectsImmunities": []
+    'strength', 
+    'dexterity', 
+    'constitution', 
+    'intelligence',
+    'wisdom', 
+    'charisma'
   }
 }
 2) add other entity:

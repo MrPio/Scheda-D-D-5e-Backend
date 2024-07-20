@@ -3,6 +3,7 @@ import { Effect } from '../model/effect';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { Error400Factory } from '../error/error_factory';
 import { EntityTurn } from '../model/entity_turn';
+import { EntityType } from '../model/entity';
 
 const error400Factory: Error400Factory = new Error400Factory();
 
@@ -46,17 +47,19 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
   const { sessionId } = req.params;
   const { entityType } = req.body;
   const session = await new RepositoryFactory().sessionRepository().getById(sessionId);
+
+  // Convert enum values to an array of strings
+  const validEffect = Object.values(Effect) as string[];
+  const validEntityType = Object.values(EntityType) as string[];
     
   // Check if the entityType is correct
-  if (entityType !== 'npc' && entityType !== 'monster' && entityType !== 'character')
-    return error400Factory.wrongParameterType('entityType', 'character, npc, monster').setStatus(res);
+  if (!validEntityType.includes(entityType))
+    return error400Factory.wrongElementTypeError('entityType', entityType, validEntityType).setStatus(res);
 
   // Check if the entity is a Monster
-  if (entityType === 'monster') {
+  if (entityType === EntityType.Monster) {
     const { maxHp, armorClass, enchantments, weapons, effectImmunities, speed, strength, dexterity, intelligence, wisdom, charisma, constitution } = req.body;
 
-    // Convert enum values to an array of strings
-    const validEffect = Object.values(Effect) as string[];
 
     // Check maxHp
     if (!isPositiveInteger(maxHp))
@@ -128,7 +131,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
   }
 
   // Check if the entity is a Character
-  if (entityType === 'character') {
+  if (entityType === EntityType.Character) {
 
     const { uid } = req.body;
 
@@ -143,7 +146,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
   }
 
   // Check if the entity is a Npc
-  if (entityType === 'npc') {
+  if (entityType === EntityType.Npc) {
 
     const { uid } = req.body;
 
