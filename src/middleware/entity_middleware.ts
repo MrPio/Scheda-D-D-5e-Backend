@@ -138,7 +138,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
       return error400Factory.characterNotFound(uid).setStatus(res);
 
     if (session!.characterUIDs?.includes(uid))
-      return error400Factory.entityIsOnBattle(`The "${uid}" is already in the battle!`).setStatus(res);
+      return error400Factory.genericError(`The "${uid}" is already in the battle!`).setStatus(res);
     
   }
 
@@ -153,7 +153,7 @@ export const checkAddEntity = async (req: Request, res: Response, next: NextFunc
       return error400Factory.npcNotFound(uid).setStatus(res);
 
     if (session!.characterUIDs?.includes(uid))
-      return error400Factory.entityIsOnBattle(`The "${uid}" is already in the battle!`).setStatus(res);
+      return error400Factory.genericError(`The "${uid}" is already in the battle!`).setStatus(res);
   }
    
   next();
@@ -202,7 +202,7 @@ export const checkUpdateEntity = async (req: Request, res: Response, next: NextF
 
   // Check for any modification
   if (hp && !armorClass && !speed && !effects)
-    return error400Factory.noModification('You need to change at least one parameter.!').setStatus(res);
+    return error400Factory.genericError('You need to change at least one parameter.!').setStatus(res);
 
   // Check if the element is a valid value based on the enum Effect. 
   if (effects) {

@@ -82,16 +82,13 @@ export const checkEntityExistsInSession = async (req: IAugmentedRequest, res: Re
   if (req.session!.characterUIDs?.includes(req.entityId!)) {
     req.entityType = EntityType.character;
     req.entity = (await characterRepository.getById(req.entityId!))!;
-  }
-  else if (req.session!.npcUIDs?.includes(req.entityId!)) {
+  } else if (req.session!.npcUIDs?.includes(req.entityId!)) {
     req.entityType = EntityType.npc;
     req.entity = (await npcRepository.getById(req.entityId!))!;
-  }
-  else if (req.session!.monsterUIDs?.includes(req.entityId!)) {
+  } else if (req.session!.monsterUIDs?.includes(req.entityId!)) {
     req.entityType = EntityType.monster;
     req.entity = (await monsterRepository.getById(req.entityId!))!;
-  }
-  else return error400Factory.entityNotFoundInSession(req.entityId!, req.sessionId!).setStatus(res);
+  } else return error400Factory.entityNotFoundInSession(req.entityId!, req.sessionId!).setStatus(res);
 
   next();
 };

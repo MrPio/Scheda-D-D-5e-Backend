@@ -65,19 +65,7 @@ export class Error400Factory {
 
   notYourTurn = (id: string): ErrorProduct => new WrongTurn(id);
 
-  noModification = (message: string): ErrorProduct => new GenericClientError(message);
-
   reactionNotActivable = (id: string): ErrorProduct => new GenericClientError(`The entity ${id} has already used its reaction! They need to wait for the next turn!`);
-
-  notYourTurnEnchantment = (message: string): ErrorProduct => new GenericClientError(message);
-
-  entityIsOnBattle = (message: string): ErrorProduct => new GenericClientError(message);
-
-  invalidSlotCasting = (message: string): ErrorProduct => new GenericClientError(message);
-
-  noSlotAvaible = (message: string): ErrorProduct => new GenericClientError(message);
-
-  //noNewSlot = (message: string): ErrorProduct => new GenericClientError(message);
 }
 
 /**

@@ -33,7 +33,7 @@ export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next
 
     // Check that the entity possess the weapon
     if (body.weapon && !req.entity!.weapons.includes(body.weapon))
-      return error400Factory.weaponNotInInventory(req.entityId!, body.weapon).setStatus(res);
+      return error400Factory.inventoryAbscence(req.entityId!, 'weapon', body.weapon).setStatus(res);
   } else {
 
     // Check that the enchantment exists
@@ -43,24 +43,24 @@ export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next
 
     // Check that the attacker knows this enchantment
     if (!req.entity?.enchantments.includes(enchantment.name))
-      return error400Factory.enchantmentNotInInventory(req.entity!._name, enchantment.name).setStatus(res);
+      return error400Factory.inventoryAbscence(req.entityId!, 'enchantment', enchantment.name).setStatus(res);
 
     // Check that it is the turn of the attacker
     if (req.session!.currentEntityUID !== req.entityId && !enchantment.isReaction)
-      return error400Factory.notYourTurnEnchantment().setStatus(res);
+      return error400Factory.genericError('It is not your turn. You cannot cast an enchantment with a casting time other than reaction!').setStatus(res);
 
     // Check that the character has an enchantment level slot to be able to cast it
     if (req.entityType === EntityType.character && enchantment.level !== 0) {
       if (body.slotLevel < 1 || body.slotLevel > 9)
-        return error400Factory.invalidSlotLevel().setStatus(res);
+        return error400Factory.invalidNumber('slotLevel', 'an integer from 1 to 9, inclusive').setStatus(res);
 
       // Check that the chosen slot level is a valid one for the current enchantment
       if (body.slotLevel < enchantment.level)
-        return error400Factory.invalidSlotCasting(enchantment.level, body.slotLevel).setStatus(res);
+        return error400Factory.genericError(`You can't cast a level ${enchantment.level} enchantment with a slot of level ${body.slotLevel}!`).setStatus(res);
 
       // Check that the character has at least one free slot
       if ((req.entity as Character)?.slots[body.slotLevel - 1] <= 0)
-        return error400Factory.noSlotAvaible(enchantment.level).setStatus(res);
+        return error400Factory.genericError(`You don't have a slot of level ${enchantment.level} available!`).setStatus(res);
     }
 
     // Check if the category of the enchantment is correct
@@ -71,9 +71,9 @@ export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next
 
     // Check if DC is a non negative integer
     if (body.attackType === AttackType.savingThrowEnchantment && body.difficultyClass >= 0)
-      return error400Factory.invalidPositiveInteger('difficultyClass').setStatus(res);
+      return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
     next();
-  } 
+  }
 
 };
 
@@ -86,8 +86,8 @@ export const checkRequestSavingThrow = async (req: IAugmentedRequest, res: Respo
 
   // Check if DC is a non negative integer
   if (body.difficultyClass >= 0)
-    return error400Factory.invalidPositiveInteger('difficultyClass').setStatus(res);
-
+    return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
+  
   // Check if all the entities are in the battle.
   const entityUIDsInTurn = req.session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
   for (const targetId of body.entitiesId)
