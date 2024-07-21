@@ -45,7 +45,7 @@ TODO: Sezione apposita per Websocket
 * [📐 Class diagram](#Classdiagram)
 
 * [🪄 Patterns used](#Patternsused)
-  * [Middlewares: Chain of Responsability](#Middleware)
+  * [Middlewares: Chain of Responsability](#ChainofResponsability)
   * [Exceptions handling: Factory Method](#Factory)
   * [Data sources handling: Repository + Factory + Singleton](#RepFacSingleton)
   * [Websocket communication: Observer](#Observer)
@@ -205,15 +205,15 @@ The API server endpoints are listed in the following table. Blank lines separate
 
 Various software design patterns were used in the implementation to ensure a robust, maintainable and scalable code structure. The following are the patterns used:
 
-<a name="Middleware"></a>
-### Middleware
+<a name="ChainofResponsability"></a>
+### Chain of Responsability
 
-The middleware pattern is used extensively in this application to address various concerns such as validation, authentication and authorisation in a modular and systematic way.
+The Chain of Responsability pattern is used extensively in this application to address various concerns such as validation, authentication and authorisation in a modular and systematic way.
 
-**Why Middleware**?  
+**Why Chain of Responsability**?  
 - **Separation of concerns**: Allows for a clear separation of different concerns in the request processing pipeline. Each middleware function is responsible for a specific task - whether it's validating input parameters, checking user credentials or handling errors - making the codebase cleaner and easier to manage.
 - **Reusability**: Functions can be reused across multiple paths and endpoints. For example, validation middleware that checks for mandatory parameters and their types can be applied to different endpoints, reducing code duplication and promoting consistency.
-- **Flexibility** and extensibility: Middleware can be easily added, removed or modified without affecting other parts of the application. This flexibility supports modular feature development and simplifies testing and debugging.
+- **Flexibility** and extensibility: it can be easily added, removed or modified without affecting other parts of the application. This flexibility supports modular feature development and simplifies testing and debugging.
 
 In practice, at the dice roll endpoint, for example, middleware functions perform essential tasks such as verifying the presence of required parameters, validating their data types, and performing specific checks before the main dice roll logic is executed. This approach not only streamlines request handling, but also centralises logic for common operations.
 
