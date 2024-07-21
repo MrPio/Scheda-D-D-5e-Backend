@@ -57,13 +57,13 @@ TODO: Sezione apposita per Websocket
 <a name="Projectgoal"></a>
 ## 🎯 Project Goal
 
-### Complete Management of DnD Combat Sessions.
+### Complete Management of DnD Combat Sessions
 
 The backend is designed to offer complete management of combat sessions in "_Dungeons & Dragons 5e_", integrating directly with character created by players and npc sheets created by the master. These are created through the dedicated Flutter application, "_SchedaDnD5e_", which serves as the frontend for interaction with the system.
 
 ### Main Backend Features
 
-1. **Combat Session Management**.
+1. **Combat Session Management**
    - **Creation and Update**: Allows the creation of new combat sessions and the update of existing sessions. Each session includes attributes such as name, session status, map size, and participants (characters, NPCs, monsters).
    - **Status Monitoring**: Manages and updates session status (created, in progress, paused, ended), and maintains event history via historical messages.
 
@@ -82,7 +82,7 @@ The backend is designed to offer complete management of combat sessions in "_Dun
    - **Data Caching**: Implements a caching system through Redis to improve the performance of frequent requests and reduce the load on the database. Temporarily stores information for quick access without having to query Sequelize or Firestore each time.
    - **Error Management and Feedback**: Provides clear and detailed responses for common errors, such as entities not found or attempts at impermissible actions.
 
-6. **Persistence and Synchronization**.
+6. **Persistence and Synchronization**
    - **Data Persistence**: Ensures that all changes to entities and sessions are saved in the database. Uses Sequelize for data management, ensuring persistent and consistent updates.
    - **Synchronization with Frontend**: Maintains data synchronization between the backend and frontend, ensuring that changes to sessions and entities are reflected in real time in the user interface.
 
@@ -210,7 +210,7 @@ Various software design patterns were used in the implementation to ensure a rob
 
 The Chain of Responsability pattern is used extensively in this application to address various concerns such as validation, authentication and authorisation in a modular and systematic way.
 
-**Why Chain of Responsability**?  
+**Why Chain of Responsability?**  
 - **Separation of concerns**: Allows for a clear separation of different concerns in the request processing pipeline. Each middleware function is responsible for a specific task - whether it's validating input parameters, checking user credentials or handling errors - making the codebase cleaner and easier to manage.
 - **Reusability**: Functions can be reused across multiple paths and endpoints. For example, validation middleware that checks for mandatory parameters and their types can be applied to different endpoints, reducing code duplication and promoting consistency.
 - **Flexibility** and extensibility: it can be easily added, removed or modified without affecting other parts of the application. This flexibility supports modular feature development and simplifies testing and debugging.
