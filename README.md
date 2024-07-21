@@ -221,20 +221,20 @@ Data sources are handled using three patterns: Repository, Factory and Singleton
 ### HOF
 // TODO
 
-<a name="Classdiagram"></a>
+<a name="Technologiesused"></a>
 ## ⚙️ Technologies used
 
-- **Database**: Sequelize with support for PostgreSQL for entity and session management.
-- **Data Modeling**: Sequelize ORM for defining models and managing relationships between entities.
-- **Authentication**: JWT to ensure secure and authorized access.
-- **Caching**: Redis for cache management and performance improvement.
-- **API**: RESTful API for communication between the frontend and backend, managed with Express.
+- **Database**: _Sequelize_ with support for _PostgreSQL_ for entity and session management.
+- **Data Modeling**: _Sequelize ORM_ for defining models and managing relationships between entities.
+- **Authentication**: _JWT_ to ensure secure and authorized access.
+- **Caching**: _Redis_ for cache management and performance improvement.
+- **API**: _RESTful API_ for communication between the frontend and backend, managed with _Express_.
 - **WebSocket**: For real-time communication during combat sessions.
-- **Package Management**: NPM for package and dependency management.
-- **Containerization**: Docker for creating and managing isolated environments.
-- **Reactive Programming**: RxJS for handling data streams and asynchronous events.
-- **HTTP requests**: Axios for handling HTTP requests and interaction between the two API servers.
-- **Testing**: Postman for creating API requests used for testing.
+- **Package Management**: _NPM_ for package and dependency management.
+- **Containerization**: _Docker_ for creating and managing isolated environments.
+- **Reactive Programming**: _RxJS_ for handling data streams and asynchronous events.
+- **HTTP requests**: _Axios_ for handling HTTP requests and interaction between the two API servers.
+- **Testing**: _Postman_ for creating API requests used for testing.
 
 <a name="Authors"></a>
 ## 👨🏻‍💻 Authors
