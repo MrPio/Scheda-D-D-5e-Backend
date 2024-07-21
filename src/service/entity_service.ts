@@ -22,11 +22,11 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
   const session = await sessionRepository.getById(sessionId);
 
   let entity;
-  if (entityType === EntityType.Monster) {
+  if (entityType === EntityType.monster) {
     // Create a new monster entity and add it to the session's monsters list
     entity = await monsterRepository.create({ ...entityInfo, sessionId: sessionId });
     session?.monsters.push(entity);
-  } else if (entityType === EntityType.Npc) {
+  } else if (entityType === EntityType.npc) {
     // Add an NPC entity to the session's NPC UID list
     entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
     session!.npcUIDs = session!.npcUIDs ? `${session!.npcUIDs},${entity.uid}` : entity.uid.toString();
