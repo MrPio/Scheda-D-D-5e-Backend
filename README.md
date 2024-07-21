@@ -198,7 +198,7 @@ The API server endpoints are listed in the following table. Blank lines separate
 
 <a name="Classdiagram"></a>
 ## 📐 Class diagram
-<img src="png/Class Diagram.png" width="550rem">
+<img src="png/class Diagram.png" width="550rem">
 
 <a name="Patternsused"></a>
 ## 🪄 Patterns Used
