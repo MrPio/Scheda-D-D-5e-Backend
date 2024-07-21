@@ -175,6 +175,8 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     await sessionRepository.update(session!.id, session!);
     return res.status(200).json({ message: 'Character/NPC info updated successfully!' });
   }
+  // Se la vita è non pos. rimuvi il target dalla turnazione
+
 }
 /* sample body for update:
 {

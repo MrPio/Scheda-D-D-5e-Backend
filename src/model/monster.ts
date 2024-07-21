@@ -65,4 +65,12 @@ export class Monster extends Model<Monster> implements IEntity {
   get isDead(): boolean {
     return this._hp <= 0;
   }
+
+  /**
+   * Determines the modifiers for each of the monster's skills.
+   * The modifier value is calculated using the game formula.
+   */
+  get getSkillsModifier(): { [key: string]: number } {
+    return this.skills.reduce((acc, { skill, value }) => ({ ...acc, [skill]: Math.floor(value / 2) - 5 }), {});
+  }
 }

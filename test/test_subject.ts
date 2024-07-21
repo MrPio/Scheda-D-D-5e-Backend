@@ -1,16 +1,7 @@
 import { Subject } from "rxjs";
+import { Dice } from "../src/model/dice";
+import { randomInt } from "crypto";
 
-const subject = new Subject<string>();
-
-const subscription1 = subject.subscribe(value => {
-  console.log('First function received:', value);
-});
-
-subject.next('Hello');
-subject.unsubscribe();
-
-const subscription2 = subject.subscribe(value => {
-  console.log('Second function received:', value);
-});
-
-subject.next('World');
+console.log(
+  Object.values(Dice).filter(value => typeof value === 'number').flatMap(item => Array(10).fill(item))
+    .sort(() => 0.5 - Math.random()).slice(0, randomInt(1, 5)));

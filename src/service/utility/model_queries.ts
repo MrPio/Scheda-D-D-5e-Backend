@@ -21,6 +21,7 @@ export async function findEntity(session: Session, entityId: string): Promise<{ 
   else if (session.monsterUIDs?.includes(entityId))
     return { entityType: EntityType.monster, entity: (await monsterRepository.getById(entityId))! };
 }
+
 /**
  * Helper function to update an `Entity` by entityId in the session.
  * @param session The Session object containing the entityId.

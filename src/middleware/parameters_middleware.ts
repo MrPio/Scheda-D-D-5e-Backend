@@ -30,8 +30,14 @@ type Enum<E> = Record<keyof E, number | string> & { [k: number]: string };
  */
 export const STRING = (obj: object) => typeof obj === 'string';
 export const NUMBER = (obj: object) => typeof obj === 'number';
+export const INTEGER = (obj: object) => NUMBER(obj) && Number.isInteger(obj);
+export const POS_INTEGER = (obj: object) => INTEGER(obj) && obj > 0;
 export const BOOLEAN = (obj: object) => typeof obj === 'boolean';
 export const ENUM = <E>(e: Enum<E>) => (obj: object) => (STRING(obj) || NUMBER(obj)) && Object.keys(e).includes((obj as object).toString());
+export const NULLABLE =
+  (next: (arg0: object) => boolean) =>
+    (obj: object) =>
+      obj == null || next(obj);
 export const ARRAY =
   (next: (arg0: object) => boolean) =>
     (obj: object) =>

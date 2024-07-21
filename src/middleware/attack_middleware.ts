@@ -16,30 +16,41 @@ const error400Factory = new Error400Factory();
  * @precondition `checkSessionExists`
  * @precondition `checkEntityExistsInSession`
  */
-export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
-  const body: { attackType: AttackType, attackRoll: number, weapon?: string, enchantment?: string, targetsId: string[], difficultyClass: number, skill: Skill, slotLevel: number } = req.body;
+export const checkAttackAttempt = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  const body: {
+    attackType: AttackType,
+    attackInfo: {
+      targetsId: string[],
+      weapon: string,
+      attemptRoll?: number,
+      enchantment?: string,
+      difficultyClass?: number,
+      skill?: Skill,
+      slotLevel?: number
+    }
+  } = req.body;
   const entityUIDsInTurn = req.session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
   // Check that all the target entities are in the session.
-  for (const targetId of body.targetsId)
+  for (const targetId of body.attackInfo.targetsId)
     if (!entityUIDsInTurn.includes(targetId))
       return error400Factory.entityNotFoundInSession(targetId, req.session!.name).setStatus(res);
 
   if (body.attackType === AttackType.melee) {
 
     // Check that the attack is valid
-    if (body.attackRoll < 1)
+    if (body.attackInfo.attemptRoll! < 1)
       return error400Factory.genericError('attackRoll must be a valid dice roll result!').setStatus(res);
 
     // Check that the entity possess the weapon
-    if (body.weapon && !req.entity!.weapons.includes(body.weapon))
-      return error400Factory.inventoryAbscence(req.entityId!, 'weapon', body.weapon).setStatus(res);
+    if (body.attackInfo.weapon && !req.entity!.weapons.includes(body.attackInfo.weapon))
+      return error400Factory.inventoryAbscence(req.entityId!, 'weapon', body.attackInfo.weapon).setStatus(res);
   } else {
 
     // Check that the enchantment exists
-    const enchantment = await new RepositoryFactory().enchantmentRepository().getById(body.enchantment!);
+    const enchantment = await new RepositoryFactory().enchantmentRepository().getById(body.attackInfo.enchantment!);
     if (!enchantment)
-      return error400Factory.enchantmentNotFound(body.enchantment!).setStatus(res);
+      return error400Factory.enchantmentNotFound(body.attackInfo.enchantment!).setStatus(res);
 
     // Check that the attacker knows this enchantment
     if (!req.entity?.enchantments.includes(enchantment.name))
@@ -51,15 +62,15 @@ export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next
 
     // Check that the character has an enchantment level slot to be able to cast it
     if (req.entityType === EntityType.character && enchantment.level !== 0) {
-      if (body.slotLevel < 1 || body.slotLevel > 9)
+      if (body.attackInfo.slotLevel! < 1 || body.attackInfo.slotLevel! > 9)
         return error400Factory.invalidNumber('slotLevel', 'an integer from 1 to 9, inclusive').setStatus(res);
 
       // Check that the chosen slot level is a valid one for the current enchantment
-      if (body.slotLevel < enchantment.level)
-        return error400Factory.genericError(`You can't cast a level ${enchantment.level} enchantment with a slot of level ${body.slotLevel}!`).setStatus(res);
+      if (body.attackInfo.slotLevel! < enchantment.level)
+        return error400Factory.genericError(`You can't cast a level ${enchantment.level} enchantment with a slot of level ${body.attackInfo.slotLevel!}!`).setStatus(res);
 
       // Check that the character has at least one free slot
-      if ((req.entity as Character)?.slots[body.slotLevel - 1] <= 0)
+      if ((req.entity as Character)?.slots[body.attackInfo.slotLevel! - 1] <= 0)
         return error400Factory.genericError(`You don't have a slot of level ${enchantment.level} available!`).setStatus(res);
     }
 
@@ -70,7 +81,7 @@ export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next
       return error400Factory.invalidEnchantmentCategory(enchantment.name, enchantment.category).setStatus(res);
 
     // Check if DC is a non negative integer
-    if (body.attackType === AttackType.savingThrowEnchantment && body.difficultyClass < 0)
+    if (body.attackType === AttackType.savingThrowEnchantment && body.attackInfo.difficultyClass! < 0)
       return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
     next();
   }

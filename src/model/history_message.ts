@@ -6,7 +6,10 @@ import { Session } from './session';
 export enum ActionType {
   attackAttempt = 'attackAttempt',
   attackDamage = 'attackDamage',
+  descriptiveEnchantment = 'descriptiveEnchantment',
   movement = 'movement',
+  savingThrow = 'savingThrow',
+  died = 'died',
   chat = 'chat',
 }
 

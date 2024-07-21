@@ -272,7 +272,7 @@ const abortRequest = (sessionId: string, res: Response, isTimeout: boolean) => {
 app.post('/sessions/:sessionId/requestDiceRoll',
   checkHasToken,
   checkIsAPIBackend,
-  checkMandadoryParams(['diceList', 'addresseeUIDs', 'modifiers']),
+  checkMandadoryParams(['addresseeUIDs']),
   checkParamsType({ diceList: ARRAY(ENUM(Dice)), addresseeUIDs: ARRAY(STRING), modifiers: OBJECT_ARRAY(STRING, NUMBER) }),
   checkSessionExists,
   checkSessionStatus([SessionStatus.ongoing]),
@@ -289,7 +289,7 @@ app.post('/sessions/:sessionId/requestDiceRoll',
 
     // Request the players involved to roll the dice and update their pending status.
     for (const userUID of req.addresseeUIDs!) {
-      activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'diceRoll', modifier: req.body.modifiers[userUID] ?? 0, diceList: req.body.diceList as string[] }));
+      activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'diceRoll', modifier: req.body.modifiers[userUID] ?? null, diceList: req.body.diceList as string[] | null }));
       activeConnections[req.sessionId!].users[userUID].pendingRequest = true;
     }
 
@@ -301,7 +301,7 @@ app.post('/sessions/:sessionId/requestDiceRoll',
 
       // Check that the provided dice result is an integer.
       if (!Number.isInteger(Number(message)))
-        ws.send(JSON.stringify({ action: 'diceRoll', diceList: req.body.diceList as string[], error: `"${message}" is not an integer! Please retry.` }));
+        ws.send(JSON.stringify({ action: 'diceRoll', modifier: req.body.modifiers[userUID] ?? null, diceList: req.body.diceList as string[] | null, error: `"${message}" is not an integer! Please retry.` }));
       else {
         activeConnections[req.sessionId!].users[userUID].pendingRequest = false;
         requestResponses[userUID] = { diceRoll: Number.parseInt(message), answerTimestamp: Date.now() };
@@ -335,56 +335,90 @@ app.post('/sessions/:sessionId/requestDiceRoll',
  *   "addresseeUIDs": [ "k9vc0kojNcO9JB9qVdf33F6h3eD2" ]
  * }
  */
-app.post('/sessions/:sessionId/requestReaction', checkHasToken, checkIsAPIBackend, checkMandadoryParams(['addresseeUIDs']), checkParamsType({ addresseeUIDs: ARRAY(STRING) }), checkSessionExists, checkSessionStatus([SessionStatus.ongoing]), checkUsersOnline, (req: IAugmentedRequest, res: Response) => {
+app.post('/sessions/:sessionId/requestReaction',
+  checkHasToken,
+  checkIsAPIBackend,
+  checkMandadoryParams(['addresseeUIDs']),
+  checkParamsType({ addresseeUIDs: ARRAY(STRING) }),
+  checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
+  checkUsersOnline,
+  (req: IAugmentedRequest, res: Response) => {
 
-  // Check that the active connection stores the connection of interest. This should always be true.
-  if (!(req.sessionId! in activeConnections) || req.addresseeUIDs?.some(uid => !(uid in activeConnections[req.sessionId!].users)))
-    return error500Factory.genericError().setStatus(res);
+    // Check that the active connection stores the connection of interest. This should always be true.
+    if (!(req.sessionId! in activeConnections) || req.addresseeUIDs?.some(uid => !(uid in activeConnections[req.sessionId!].users)))
+      return error500Factory.genericError().setStatus(res);
 
-  // Check that the specified session does not already have a pending request.
-  if (hasPendingRequest(req.sessionId!))
-    return error400Factory.websocketRequestAlreadyPending(req.sessionId!).setStatus(res);
+    // Check that the specified session does not already have a pending request.
+    if (hasPendingRequest(req.sessionId!))
+      return error400Factory.websocketRequestAlreadyPending(req.sessionId!).setStatus(res);
 
-  // Request the players involved to roll the dice and update their pending status.
-  for (const userUID of req.addresseeUIDs!) {
-    activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'useReaction' }));
-    activeConnections[req.sessionId!].users[userUID].pendingRequest = true;
-  }
-
-  // When the player answer, send the HTTP response to the API backend.
-  activeConnections[req.sessionId!].subscription = activeConnections[req.sessionId!].subject.subscribe(({ ws, message, userUID }) => {
-
-    // Check that the sender had a pending request, otherwise ignore its message.  
-    if (!activeConnections[req.sessionId!].users[userUID].pendingRequest) return;
-
-    // Check that the provided dice result is an integer.
-    if (message != 'true' && message != 'false')
-      ws.send(JSON.stringify({ action: 'useReaction', error: `"${message}" is not a boolean! Please retry.` }));
-    else {
-      activeConnections[req.sessionId!].users[userUID].pendingRequest = false;
-      requestResponses[userUID] = { choice: message == 'true', answerTimestamp: Date.now() };
-
-      // If this was the last player to answer, send the result back to the API backend and unsubscribe this listner.
-      if (!hasPendingRequest(req.sessionId!)) {
-
-        // Cancel timeout emitter
-        cancelTimeout.next();
-        res.json(requestResponses);
-        requestResponses = {};
-        activeConnections[req.sessionId!].subscription?.unsubscribe();
-      }
+    // Request the players involved to roll the dice and update their pending status.
+    for (const userUID of req.addresseeUIDs!) {
+      activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'useReaction' }));
+      activeConnections[req.sessionId!].users[userUID].pendingRequest = true;
     }
+
+    // When the player answer, send the HTTP response to the API backend.
+    activeConnections[req.sessionId!].subscription = activeConnections[req.sessionId!].subject.subscribe(({ ws, message, userUID }) => {
+
+      // Check that the sender had a pending request, otherwise ignore its message.  
+      if (!activeConnections[req.sessionId!].users[userUID].pendingRequest) return;
+
+      // Check that the provided dice result is an integer.
+      if (message != 'true' && message != 'false')
+        ws.send(JSON.stringify({ action: 'useReaction', error: `"${message}" is not a boolean! Please retry.` }));
+      else {
+        activeConnections[req.sessionId!].users[userUID].pendingRequest = false;
+        requestResponses[userUID] = { choice: message == 'true', answerTimestamp: Date.now() };
+
+        // If this was the last player to answer, send the result back to the API backend and unsubscribe this listner.
+        if (!hasPendingRequest(req.sessionId!)) {
+
+          // Cancel timeout emitter
+          cancelTimeout.next();
+          res.json(requestResponses);
+          requestResponses = {};
+          activeConnections[req.sessionId!].subscription?.unsubscribe();
+        }
+      }
+    });
+
+    // Set a timeout to prevent starvation. It is used to prevent starvation when waiting for players responses.
+    timer(timeoutLimit)
+      .pipe(takeUntil(cancelTimeout))
+      .subscribe(() => abortSubject.next({ isTimeout: true }));
+
+    // Register the abort operation on the abort subject
+    if (abortSubscription) abortSubscription.unsubscribe();
+    abortSubscription = abortSubject.subscribe(({ isTimeout }) => abortRequest(req.sessionId!, res, isTimeout));
   });
 
-  // Set a timeout to prevent starvation. It is used to prevent starvation when waiting for players responses.
-  timer(timeoutLimit)
-    .pipe(takeUntil(cancelTimeout))
-    .subscribe(() => abortSubject.next({ isTimeout: true }));
+/**
+ * `broadcastMessage/` route.
+ * The request body is expected to be as follows.
+ * {
+ *   "message": "Entity1 has attacked Entity2 with Morning Star and dealt 12 damage!"
+ *   "actionType": "attackDamage"
+ * }
+ */
+app.post('/sessions/:sessionId/broadcast',
+  checkHasToken,
+  checkIsAPIBackend,
+  checkMandadoryParams(['actionType', 'message']),
+  checkParamsType({ actionType: ENUM(ActionType), message: STRING }),
+  checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
+  async (req: IAugmentedRequest, res: Response) => {
 
-  // Register the abort operation on the abort subject
-  if (abortSubscription) abortSubscription.unsubscribe();
-  abortSubscription = abortSubject.subscribe(({ isTimeout }) => abortRequest(req.sessionId!, res, isTimeout));
-});
+    // Request the players involved to roll the dice and update their pending status.
+    for (const userUID of req.session!.onlineUserUIDs!)
+      activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ actionType: req.body.actionType, message: req.body.message }));
+
+    // Save the message in the history
+    await historyRepository.create({ actionType: req.body.actionType, msg: req.body.message, sessionId: Number.parseInt(req.sessionId!) } as HistoryMessage);
+    res.status(200).json({ message: 'Message broadcasted and saved in history successfully!' });
+  });
 
 // Start websocket and API servers
 (async () => {
