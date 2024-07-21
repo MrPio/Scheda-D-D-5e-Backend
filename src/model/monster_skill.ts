@@ -14,10 +14,7 @@ export enum Skill {
 /**
  * Represents the skills associated with a monster.
  * Each monster has a value for each of the six skills defined in the `Skill` enum.
- * 
  * monster (0,6)<------>(1,1) monster_skills
- * 
- * Each `Monster` has a value for each of the six `Skill`.
  */
 @Table({
   tableName: 'monster_skills',

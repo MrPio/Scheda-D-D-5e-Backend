@@ -15,9 +15,6 @@ export enum ActionType {
  * This message could represent various actions performed during the session such as attacks,
  * movements, or chat messages.
  * session (0,N)<------>(1,1) history
- * 
- * A `HistoryMessage' is a message that is generated when a player moves and sent to all players
- * in the session.
  */
 @Table({
   tableName: 'history',
