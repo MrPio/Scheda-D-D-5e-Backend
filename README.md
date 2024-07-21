@@ -1,7 +1,6 @@
 # Scheda DnD 5e Backend
 
-TODO: Descrizione obiettivo
-TODO: Descrizione pattern (Error Factory, Reposito)
+TODO: Finire descrizione pattern
 TODO: Aggiustare class diagram
 TODO: Spiegare come testare soprattutto per le WS
 TODO: Sezione apposita per Websocket
@@ -18,9 +17,12 @@ TODO: Sezione apposita per Websocket
 [![Postman](https://img.shields.io/badge/Made%20with-Postman-FF6C37?style=plastic&logo=postman&logoColor=white)](https://www.postman.com/)
 [![Redis](https://img.shields.io/badge/Made%20with-Redis-FF6C37?style=plastic&logo=redis&logoColor=white)](https://redis.io/)
 [![RxJS](https://img.shields.io/badge/Made%20with-RxJS-FF6C37?style=plastic&logo=rxjs&logoColor=white)](https://rxjs.dev/)
+[![Axios](https://img.shields.io/badge/Made%20with-Axios-5A29E3?style=plastic&logo=axios&logoColor=white)](https://axios-http.com/)
 
 <a name="index"></a>
 ## 📘 Table of Contents
+
+* [🎯 Project Goal](#Projectgoal)
 
 * [📄 Use case diagram](#Usecasediagram)
   * [Actors](#Actors)
@@ -44,10 +46,45 @@ TODO: Sezione apposita per Websocket
 
 * [🪄 Patterns used](#Patternsused)
   * [Middlewares: Chain of Responsability](#ChainofResponsability)
-  * [Exceptions handling: Factory](#ChainofResponsability)
-  * [Data sources handling: Repository + Factory + Singleton](#ChainofResponsability)
-  * [Websocket communication: Observer](#ChainofResponsability)
-  * [HOF] (nel type checking e nei generatori di middleware)
+  * [Exceptions handling: Factory Method](#Factory)
+  * [Data sources handling: Repository + Factory + Singleton](#RepFacSingleton)
+  * [Websocket communication: Observer](#Observer)
+  * [HOF](#hof) (nel type checking e nei generatori di middleware)
+
+* [⚙️ Technologies used](#Technologiesused)
+* [👨🏻‍💻 Authors](#Authors)
+
+<a name="Projectgoal"></a>
+## 🎯 Project Goal
+
+### Complete Management of DnD Combat Sessions.
+
+The backend is designed to offer complete management of combat sessions in "_Dungeons & Dragons 5e_", integrating directly with character created by players and npc sheets created by the master. These are created through the dedicated Flutter application, "_SchedaDnD5e_", which serves as the frontend for interaction with the system.
+
+### Main Backend Features
+
+1. **Combat Session Management**.
+   - **Creation and Update**: Allows the creation of new combat sessions and the update of existing sessions. Each session includes attributes such as name, session status, map size, and participants (characters, NPCs, monsters).
+   - **Status Monitoring**: Manages and updates session status (created, in progress, paused, ended), and maintains event history via historical messages.
+
+2. **Entity Management**
+   - **Characters and Monsters**: Manages character and monster sheets and their variations during combat. Such variations can include, for example, decreased HP, spell castings with consumable slots, and much more allowed by the game rules. Each entity can also have a reaction status with respect to other entities that can be enabled or disabled during play.
+   - **Turn Management**: Monitors and updates the states and positions of entities during game turns, keeping track of their location on the map and turn index.
+
+3. **Real-Time Interaction**
+   - **WebSocket for Real-Time Updates**: Uses WebSocket to provide real-time updates during combat sessions. This includes handling dice rolls and other actions that require instant interactions between players and the master.
+   - **Synchronization**: Ensures that all changes made by player actions or status changes are synchronized in real time with the frontend, enhancing the interactive gaming experience.
+
+4. **Authentication and Security**
+   - **JWT for Authentication**: Uses JSON Web Tokens (JWT) to manage user authentication. This ensures that only authorized users can access and modify combat sessions and entities.
+
+5. **Performance and Caching**
+   - **Data Caching**: Implements a caching system through Redis to improve the performance of frequent requests and reduce the load on the database. Temporarily stores information for quick access without having to query Sequelize or Firestore each time.
+   - **Error Management and Feedback**: Provides clear and detailed responses for common errors, such as entities not found or attempts at impermissible actions.
+
+6. **Persistence and Synchronization**.
+   - **Data Persistence**: Ensures that all changes to entities and sessions are saved in the database. Uses Sequelize for data management, ensuring persistent and consistent updates.
+   - **Synchronization with Frontend**: Maintains data synchronization between the backend and frontend, ensuring that changes to sessions and entities are reflected in real time in the user interface.
 
 <a name="Usecasediagram"></a>
 ## 📄 Use case diagram
@@ -162,3 +199,48 @@ The API server endpoints are listed in the following table. Blank lines separate
 <a name="Classdiagram"></a>
 ## 📐 Class diagram
 <img src="png/Class Diagram.png" width="550rem">
+
+<a name="Patternsused"></a>
+## 🪄 Patterns Used
+
+Various software design patterns were used in the implementation to ensure a robust, maintainable and scalable code structure. The following are the patterns used:
+
+<a name="Middleware"></a>
+### Middleware
+Used extensively to handle a variety of concerns, including validation, authentication, and authorisation, in a modular way. Middleware functions are used to process requests and responses in a sequence, which makes the code more organised and reusable. For example, in the dice roll endpoint, middleware functions check for mandatory parameters, validate their types, and perform specific checks before executing the main logic.
+<a name="Factory*"></a>
+### Factory Method
+Used to create error objects, encapsulating the instantiation logic and providing a centralised way to generate different types of errors. It helps maintain a clean code structure and ensures consistent handling of errors across the application. Different factories are used to generate client-side and server-side errors, ensuring that errors are created in a standardised way based on their type and context.
+<a name="RepFacSingleton*"></a>
+### Repository + Factory + Singleton
+Data sources are handled using three patterns: Repository, Factory and Singleton. The Repository pattern abstracts the data layer, providing a clean API. The Factory pattern is used to create repositories, ensuring consistent build logic. The Singleton pattern ensures that a single instance of each repository is used, providing a single source of truth and reducing resource overhead. Together, these patterns facilitate efficient caching, data retrieval and persistence across different storage solutions such as Redis, Sequelize and Firestore.
+<a name="Observer*"></a>
+### Observer
+// TODO
+<a name="Hof*"></a>
+### HOF
+// TODO
+
+<a name="Classdiagram"></a>
+## ⚙️ Technologies used
+
+- **Database**: Sequelize with support for PostgreSQL for entity and session management.
+- **Data Modeling**: Sequelize ORM for defining models and managing relationships between entities.
+- **Authentication**: JWT to ensure secure and authorized access.
+- **Caching**: Redis for cache management and performance improvement.
+- **API**: RESTful API for communication between the frontend and backend, managed with Express.
+- **WebSocket**: For real-time communication during combat sessions.
+- **Package Management**: NPM for package and dependency management.
+- **Containerization**: Docker for creating and managing isolated environments.
+- **Reactive Programming**: RxJS for handling data streams and asynchronous events.
+- **HTTP requests**: Axios for handling HTTP requests and interaction between the two API servers.
+- **Testing**: Postman for creating API requests used for testing.
+
+<a name="Authors"></a>
+## 👨🏻‍💻 Authors
+
+| Name            | Email           | GitHub                        |
+|-----------------|-------------------------------|-------------------------------|
+| Valerio Morelli | s1118781@studenti.univpm.it    | [MrPio](https://github.com/MrPio) |
+| Enrico Maria Sardellini | s1120355@studenti.univpm.it | [Ems01](https://github.com/Ems01)|
+| Federico Staffolani | s1114954@studenti.univpm.it | [fedeStaffo](https://github.com/fedeStaffo) |
