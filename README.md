@@ -1,9 +1,10 @@
 # Scheda DnD 5e Backend
 
 TODO: Descrizione obiettivo
-TODO: Descrizione pattern
+TODO: Descrizione pattern (Error Factory, Reposito)
 TODO: Aggiustare class diagram
 TODO: Spiegare come testare soprattutto per le WS
+TODO: Sezione apposita per Websocket
 
 ######
 [![Postgres](https://img.shields.io/badge/Made%20with-postgres-%23316192.svg?style=plastic&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -41,11 +42,12 @@ TODO: Spiegare come testare soprattutto per le WS
   * [Connect To Session](#ConnectToSession)
 * [📐 Class diagram](#Classdiagram)
 
-<!-- * [🪄 Patterns used](#Patternsused)
+* [🪄 Patterns used](#Patternsused)
   * [Middlewares: Chain of Responsability](#ChainofResponsability)
   * [Exceptions handling: Factory](#ChainofResponsability)
   * [Data sources handling: Repository + Factory + Singleton](#ChainofResponsability)
-  * [Websocket communication: Observer](#ChainofResponsability) -->
+  * [Websocket communication: Observer](#ChainofResponsability)
+  * [HOF] (nel type checking e nei generatori di middleware)
 
 <a name="Usecasediagram"></a>
 ## 📄 Use case diagram

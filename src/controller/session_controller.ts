@@ -10,7 +10,6 @@ import { IAugmentedRequest } from '../interface/augmented_request';
  * These functions act as intermediaries between HTTP requests and the corresponding service functions.
  * They pass the request and response objects to the service layer and return the results to the client.
  */
-
 export const getSessions = (req: IAugmentedRequest, res: Res) => {
   return getAllSessionsService(req, res);
 };

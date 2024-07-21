@@ -24,3 +24,5 @@ services:
     volumes:
       - ./redis-data:/data
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+
+# TODO: depends on

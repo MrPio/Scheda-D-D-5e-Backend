@@ -172,15 +172,12 @@ export async function enableReactionService(req: IAugmentedRequest, res: Respons
 
       // Save the updated entity back to its repository
       if (entity instanceof Monster) {
-        await monsterRepository.update(entity.id, entity);
+        await monsterRepository.update(entity.id, { isReactionActivable: entity.isReactionActivable });
       } else if (entity instanceof Character) {
-        await characterRepository.update(entity.uid!, entity);
+        await characterRepository.update(entity.uid!, { isReactionActivable: entity.isReactionActivable });
       } else if (entity instanceof NPC) {
-        await npcRepository.update(entity.uid!, entity);
+        await npcRepository.update(entity.uid!, { isReactionActivable: entity.isReactionActivable });
       }
-
-      // Save the updated session
-      await sessionRepository.update(session!.id, session!);
 
       return res.status(200).json({ message: `Reaction enabled for entity ${entityId}!` });
     }

@@ -36,6 +36,7 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
     session!.characterUIDs = session!.characterUIDs ? `${session!.characterUIDs},${entity.uid}` : entity.uid.toString();
   }
   // Update the session with the new entity information
+  // FIXME: This update won't work
   await sessionRepository.update(session!.id, session!);
   return res.status(200).json({ message: `${entityType} added successfully!` });
 }
@@ -96,6 +97,7 @@ export async function deleteEntityService(req: IAugmentedRequest, res: Res) {
   }
 
   // Update the session with the new entity information
+  // FIXME: This update won't work
   await sessionRepository.update(session!.id, session!);
   return res.status(200).json({ message: 'Entity removed successfully from session!' });
 }
@@ -145,6 +147,7 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
 
     // Update entity turn information
     Object.assign(entityTurn, entityInfo);
+    // FIXME: This update won't work
     await sessionRepository.update(session!.id, session!);
     return res.status(200).json({ message: 'Entity info updated successfully!' });
   }
@@ -158,6 +161,7 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
 
     // Update monster information
     Object.assign(monster, entityInfo);
+    // FIXME: This update won't work
     await monsterRepository.update(monster.id, monster);
     return res.status(200).json({ message: 'Monster info updated successfully!' });
   }
@@ -167,6 +171,7 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
   if (entityTurnEntity) {
     // Update character or npc entity information
     Object.assign(entityTurnEntity, entityInfo);
+    // FIXME: This update won't work
     await sessionRepository.update(session!.id, session!);
     return res.status(200).json({ message: 'Character/NPC info updated successfully!' });
   }

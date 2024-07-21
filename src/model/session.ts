@@ -19,6 +19,7 @@ export enum SessionStatus {
   tableName: 'sessions',
   timestamps: true,
 })
+
 export class Session extends Model<Session> {
   static minMapSize = { height: 10, width: 10 };
 
