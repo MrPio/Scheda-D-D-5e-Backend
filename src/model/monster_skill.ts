@@ -20,15 +20,19 @@ export enum Skill {
   tableName: 'monster_skills',
 })
 export class MonsterSkill extends Model<MonsterSkill> {
+  // The skill type
   @PrimaryKey
   @Column declare skill: Skill;
 
+  // The skill value
   @Column declare value: number;
 
+  // The foreign key referencing the monster
   @PrimaryKey
   @ForeignKey(() => Monster)
   @Column declare monsterId: number;
 
+  // The monster to which the skill belongs
   @BelongsTo(() => Monster)
   declare monster: Monster;
 }
