@@ -167,7 +167,7 @@ export async function getSavingThrowService(req: IAugmentedRequest, res: Respons
   const entityNames: { [id: string]: string } = {};
   for (const entityId of body.entitiesId) {
     const entity = await findEntity(req.session!, entityId);
-    entityNames[entityId] = entity!.entity._name;
+    entityNames[entity!.entity.authorUID] = entity!.entity._name;
     diceRollReq.modifiers.push((entity?.entityType == EntityType.monster ?
       (entity.entity as Monster).getSkillsModifier[body.skill] :
       (entity?.entity as Character | NPC).skillsModifier[body.skill]) ?? 0);
