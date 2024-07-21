@@ -7,7 +7,7 @@ import { RepositoryFactory } from '../repository/repository_factory';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
-import { findEntity, findEntityTurn } from './utility/model_queries';
+import { findEntity, findEntityTurn, updateEntity } from './utility/model_queries';
 import { Skill } from '../model/monster_skill';
 import { IAugmentedRequest } from '../interface/augmented_request';
 import { EntityType } from '../model/entity';
@@ -147,43 +147,7 @@ export async function addEffectService(req: IAugmentedRequest, res: Response) {
  * It updates the entity's `isReactionActivable` property and saves the changes.
  */
 export async function enableReactionService(req: IAugmentedRequest, res: Response) {
-  const { sessionId } = req.params;
-  const { entityId } = req.body;
-
-  const session = await sessionRepository.getById(sessionId);
-
-  // Find the entity in the entityTurns list
-  const entityTurn = findEntityTurn(session!, entityId);
-  if (entityTurn) {
-    let entity;
-
-    // Check if the entity is a monster, character, or NPC
-    if (session!.monsterUIDs.includes(entityId)) {
-      entity = await monsterRepository.getById(entityId);
-    } else if (session!.characterUIDs!.includes(entityId)) {
-      entity = await characterRepository.getById(entityId);
-    } else if (session!.npcUIDs!.includes(entityId)) {
-      entity = await npcRepository.getById(entityId);
-    }
-
-    if (entity) {
-      // Update the entity's isReactionActivable property to false
-      entity.isReactionActivable = false;
-
-      // Save the updated entity back to its repository
-      if (entity instanceof Monster) {
-        await monsterRepository.update(entity.id, { isReactionActivable: entity.isReactionActivable });
-      } else if (entity instanceof Character) {
-        await characterRepository.update(entity.uid!, { isReactionActivable: entity.isReactionActivable });
-      } else if (entity instanceof NPC) {
-        await npcRepository.update(entity.uid!, { isReactionActivable: entity.isReactionActivable });
-      }
-
-      return res.status(200).json({ message: `Reaction enabled for entity ${entityId}!` });
-    }
-  }
-
-  // Return error if the entity is not found in the session
-  return res.status(404).json({ error: `Entity not found in session ${sessionId}!` });
+  updateEntity(req.session!, req.entityId!, { isReactionActivable: false });
+  return res.status(200).json({ message: `Reaction enabled for entity ${req.entity!._name}!` });
 }
 
