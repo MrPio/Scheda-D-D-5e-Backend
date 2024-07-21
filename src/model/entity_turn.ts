@@ -10,17 +10,23 @@ import { Session } from './session';
   timestamps: true,
 })
 export class EntityTurn extends Model<EntityTurn> {
+  // The unique identifier of the entity
   @Column declare entityUID: string;
 
+  // The turn index of the entity
   @Column declare turnIndex: number;
 
+  // The X position of the entity
   @Column declare posX: number;
 
+  // The Y position of the entity
   @Column declare posY: number;
 
+  // The foreign key referencing the session
   @ForeignKey(() => Session)
   @Column declare sessionId: number;
 
+  // The session to which the entity turn belongs
   @BelongsTo(() => Session)
   declare session: Session;
 }
