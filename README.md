@@ -217,7 +217,7 @@ The middleware pattern is used extensively in this application to address variou
 
 In practice, at the dice roll endpoint, for example, middleware functions perform essential tasks such as verifying the presence of required parameters, validating their data types, and performing specific checks before the main dice roll logic is executed. This approach not only streamlines request handling, but also centralises logic for common operations.
 
-<a name="Factory*"></a>
+<a name="Factory"></a>
 ### Factory Method
 
 The Factory Method pattern is used to create error objects, encapsulating the instantiation logic and providing a centralised way to generate different types of errors. This pattern helps to maintain a clean and organised code structure, ensuring that error handling is consistent and standardised across the application.
@@ -229,7 +229,7 @@ The Factory Method pattern is used to create error objects, encapsulating the in
 
 For example, different factory classes are used to generate client-side and server-side errors, allowing the application to handle different error scenarios in a structured way. This ensures that error responses are unambiguous and appropriately reflect the nature of the problem.
 
-<a name="RepFacSingleton*"></a>
+<a name="RepFacSingleton"></a>
 ### Repository + Factory + Singleton
 
 The data sources in the application are managed using a combination of the Repository, Factory and Singleton patterns. These patterns work together to abstract data access, manage the creation of data handling objects and ensure efficient resource management.
@@ -248,10 +248,10 @@ The data sources in the application are managed using a combination of the Repos
 
 Together, these patterns enable efficient data retrieval, management, and persistence across various storage solutions such as Redis, Sequelize, and Firestore.
 
-<a name="Observer*"></a>
+<a name="Observer"></a>
 ### Observer
 // TODO
-<a name="Hof*"></a>
+<a name="Hof"></a>
 ### HOF
 // TODO
 
