@@ -210,7 +210,7 @@ Various software design patterns were used in the implementation to ensure a rob
 
 The middleware pattern is used extensively in this application to address various concerns such as validation, authentication and authorisation in a modular and systematic way.
 
-**Why Middleware?  
+**Why Middleware**?  
 - **Separation of concerns**: Allows for a clear separation of different concerns in the request processing pipeline. Each middleware function is responsible for a specific task - whether it's validating input parameters, checking user credentials or handling errors - making the codebase cleaner and easier to manage.
 - **Reusability**: Functions can be reused across multiple paths and endpoints. For example, validation middleware that checks for mandatory parameters and their types can be applied to different endpoints, reducing code duplication and promoting consistency.
 - **Flexibility** and extensibility: Middleware can be easily added, removed or modified without affecting other parts of the application. This flexibility supports modular feature development and simplifies testing and debugging.
