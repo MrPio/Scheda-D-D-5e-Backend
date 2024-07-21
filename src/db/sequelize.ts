@@ -47,19 +47,19 @@ const seedDatabase = async () => {
 
   // Add a sample session
   const session = await sessionRepository.create({
-    name: 'Session1',
-    masterUID: 'k9vc0kojNcO9JB9qVdf33F6h3eD2',
+    name: 'La collina dell\'inferno',
+    masterUID: 'HbE4YvSXSx6tbdBxB9Sn',
     userUIDs: ['k9vc0kojNcO9JB9qVdf33F6h3eD2'],
     characterUIDs: ['EGUDW2EYaQhcPAheqUv0'],
     sessionStatus: SessionStatus.ongoing,
     mapSize: { width: 12, height: 10 },
-    campaignName: 'Desert Adventure',
+    campaignName: 'Avventura nel deserto',
   } as Session);
 
   // Add a sample monster
   const monster = await monsterRepository.create({
     _name: 'Orodrik',
-    authorUID: 'k9vc0kojNcO9JB9qVdf33F6h3eD2',
+    authorUID: 'HbE4YvSXSx6tbdBxB9Sn',
     _maxHp: 18,
     _hp: 12,
     armorClass: 16,

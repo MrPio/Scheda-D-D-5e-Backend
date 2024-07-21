@@ -27,7 +27,7 @@ export class FirestoreRepository<T extends JSONSerializable> extends Repository<
    * @param id - Unique identifier of the entity.
    * @returns The entity instance.
    */
-  override async getById(id: string): Promise<T> {
+  override async getById(id: string): Promise<T | null> {
     // Check if the object is in cache
     let item = await super.getById(id);
     if (item) return item;

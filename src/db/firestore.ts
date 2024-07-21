@@ -49,12 +49,11 @@ export class FirestoreManager {
   }
 
   // Get a document from a collection by its UID
-  async get<T extends IWithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T> {
+  async get<T extends IWithUID & JSONSerializable>(collectionName: string, uid: string, factory: (json: DocumentData) => T): Promise<T | null> {
     const docRef = this._database.collection(collectionName).doc(uid);
     const docSnap = await docRef.get();
-    if (!docSnap.exists) {
-      throw new Error('Document not found');
-    }
+    if (!docSnap.exists)
+      return null;
     const data = docSnap.data()!;
     const model = factory(data);
     (model as IWithUID).uid = uid;

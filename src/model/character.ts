@@ -67,8 +67,8 @@ export default class Character extends JSONSerializable implements IWithUID, IEn
       json.skills ?? Object.values(Skill).reduce((acc, key) => ({ ...acc, [key]: 0 }), {}),
       json.skillsModifier ?? Object.values(Skill).reduce((acc, key) => ({ ...acc, [key]: 0 }), {}),
       json.deathRolls ?? [],
-      json.slots ?? Array.from({ length: 9 }, (_, i) => ({ [i]: 0 })).reduce((acc, cur) => ({ ...acc, ...cur }), {}),
-      json.maxSlots ?? Array.from({ length: 9 }, (_, i) => ({ [i]: 0 })).reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+      json.slots ?? Array.from({ length: 9 }, (_, i) => ({ [i]: 1 })).reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+      json.maxSlots ?? Array.from({ length: 9 }, (_, i) => ({ [i]: 1 })).reduce((acc, cur) => ({ ...acc, ...cur }), {}),
       json.effects ?? [],
     );
   }

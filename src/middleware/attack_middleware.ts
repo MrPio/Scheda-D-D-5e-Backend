@@ -31,6 +31,13 @@ export const checkAttackAttempt = async (req: IAugmentedRequest, res: Response, 
   } = req.body;
   const entityUIDsInTurn = req.session!.entityTurns.map((turn: EntityTurn) => turn.entityUID);
 
+  // Check that there is at leat one target.
+  if (body.attackType !== AttackType.descriptiveEnchantment)
+    if (!body.attackInfo.targetsId || body.attackInfo.targetsId.length === 0)
+      return error400Factory.genericError('You must specify at least one target!').setStatus(res);
+    else if (body.attackInfo.targetsId.includes(req.entityId!))
+      return error400Factory.genericError('You cannot attack yourself!').setStatus(res);
+
   // Check that all the target entities are in the session.
   for (const targetId of body.attackInfo.targetsId)
     if (!entityUIDsInTurn.includes(targetId))
@@ -78,14 +85,14 @@ export const checkAttackAttempt = async (req: IAugmentedRequest, res: Response, 
     if (!((enchantment?.category == EnchantmentCategory.damage && body.attackType == AttackType.damageEnchantment) ||
       (enchantment?.category == EnchantmentCategory.descriptive && body.attackType == AttackType.descriptiveEnchantment) ||
       (enchantment?.category == EnchantmentCategory.savingThrow && body.attackType == AttackType.savingThrowEnchantment)))
-      return error400Factory.invalidEnchantmentCategory(enchantment.name, enchantment.category).setStatus(res);
+      return error400Factory.invalidEnchantmentCategory(enchantment.name, body.attackType).setStatus(res);
 
     // Check if DC is a non negative integer
     if (body.attackType === AttackType.savingThrowEnchantment && body.attackInfo.difficultyClass! < 0)
       return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
-    next();
   }
 
+  next();
 };
 
 /**

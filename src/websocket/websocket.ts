@@ -103,7 +103,7 @@ const server = new https.Server(serverOptions);
 const wss = new WebSocket.Server({ server });
 const activeConnections: Connections = {};
 const onOpenSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string, username: string }>();
-const onCloseSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string }>();
+const onCloseSubject = new Subject<{ ws: WebSocket, session: Session, userUID: string, username: string }>();
 const sessionRepository = new RepositoryFactory().sessionRepository();
 const historyRepository = new RepositoryFactory().historyRepository();
 const error500Factory: Error500Factory = new Error500Factory();
@@ -167,9 +167,7 @@ wss.on('connection', async (ws: WebSocket, req: IAugmentedIncomingMessage) => {
 
 // Subscribe connection opened listener
 onOpenSubject.subscribe(async ({ ws, session, userUID, username }) => {
-
-  // Answer the client about the success of the operation
-  ws.send(JSON.stringify({ message: `Welcome to session "${session.name}", ${username}!`, userUID: userUID }));
+  session = (await sessionRepository.getById(session.id, true))!;
 
   // Add userUID to session onlineUserUIDs list
   session.onlineUserUIDs ??= [];
@@ -202,17 +200,31 @@ onOpenSubject.subscribe(async ({ ws, session, userUID, username }) => {
   }
   activeConnections[session.id].users[userUID] = { webSocket: ws, pendingRequest: false };
 
+  // Answer the client about the success of the operation
+  Object.entries(activeConnections[session.id].users).forEach(user => {
+    if (user[0] != userUID)
+      user[1].webSocket.send(JSON.stringify({ message: `${username} joined the session!` }));
+    else ws.send(JSON.stringify({ message: `Welcome to session "${session.name}", ${username}!`, userUID: userUID }));
+  });
+
   // Notify listners on this new websocket connection events.
   ws.on('message', (message: string) => activeConnections[session.id].subject.next({ ws, session, userUID, message }));
-  ws.on('close', () => onCloseSubject.next({ ws, session, userUID }));
+  ws.on('close', () => onCloseSubject.next({ ws, session, userUID, username }));
 });
 
 // Subscribe connection closed listener
-onCloseSubject.subscribe(async ({ session, userUID }) => {
+onCloseSubject.subscribe(async ({ session, userUID, username }) => {
+  session = (await sessionRepository.getById(session.id, true))!;
 
   // Remove the client userUID from the list of online users for the session.
   session.onlineUserUIDs = session.onlineUserUIDs?.filter(item => item !== userUID);
   await sessionRepository.update(session.id, { onlineUserUIDs: session.onlineUserUIDs });
+
+  Object.entries(activeConnections[session.id].users).forEach(user => {
+    if (user[0] != userUID)
+      user[1].webSocket.send(JSON.stringify({ message: `${username} left the session!` }));
+  });
+
 
   // If the disconnected player was involved in a request operation, such as a dice roll, abort that operation
   if (activeConnections[session.id].users[userUID].pendingRequest) {
@@ -289,7 +301,7 @@ app.post('/sessions/:sessionId/requestDiceRoll',
 
     // Request the players involved to roll the dice and update their pending status.
     for (const userUID of req.addresseeUIDs!) {
-      activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'diceRoll', modifier: req.body.modifiers[userUID] ?? null, diceList: req.body.diceList as string[] | null }));
+      activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'diceRoll', modifier: 'modifiers' in req.body ? (req.body.modifiers[userUID] ?? null) : null, diceList: req.body.diceList as string[] | null }));
       activeConnections[req.sessionId!].users[userUID].pendingRequest = true;
     }
 
@@ -412,7 +424,7 @@ app.post('/sessions/:sessionId/broadcast',
   async (req: IAugmentedRequest, res: Response) => {
 
     // Request the players involved to roll the dice and update their pending status.
-    for (const userUID of req.session!.onlineUserUIDs!)
+    for (const userUID of req.session?.onlineUserUIDs ?? [])
       activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ actionType: req.body.actionType, message: req.body.message }));
 
     // Save the message in the history

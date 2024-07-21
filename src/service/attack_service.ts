@@ -14,7 +14,9 @@ import axios from 'axios';
 import { AttackType } from '../model/attack_type';
 import { ActionType } from '../model/history_message';
 import { RepositoryFactory } from '../repository/repository_factory';
+import { Error500Factory } from '../error/error_factory';
 
+const error500Factory = new Error500Factory();
 const entityTurnRepository = new RepositoryFactory().entityTurnRepository();
 
 /**
@@ -71,20 +73,22 @@ export async function makeAttackService(req: IAugmentedRequest, res: Response) {
 
     // Ask the attacker to roll the damage dice.
     try {
-      const results = (await httpPost(`/sessions/${req.sessionId!}/requestDiceRoll`, { addresseeUIDs: [req.entityId!] })) as { data: { [key: string]: { diceRoll: number } } };
-      const diceRoll = results.data[req.entityId!].diceRoll;
+      const results = (await httpPost(`/sessions/${req.sessionId!}/requestDiceRoll`, { addresseeUIDs: [req.entity!.authorUID!] })) as { data: { [key: string]: { diceRoll: number } } };
+      const diceRoll = results.data[req.entity!.authorUID!].diceRoll;
       for (const target of Object.entries(hitTargets)) {
         target[1]._hp -= diceRoll;
         await updateEntity(req.session!, target[0], { _hp: target[1]._hp });
-        if (target[1]._hp < 0)
+        if (target[1]._hp <= 0) {
           await entityTurnRepository.delete(req.session?.entityTurns.find(it => it.entityUID === target[0])?.id);
-        httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.died, message: `${target[1]._name} has died!` });
+          httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.died, message: `${target[1]._name} has died!` });
+        }
       }
-      httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.attackDamage, message: `${req.entity?._name} has dealt ${diceRoll} damage to ${Object.values(hitTargets).map(it => it._name).reduce((acc, name) => `${acc}, ${name}`)}!` });
+      httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.attackDamage, message: `${req.entity?._name} has dealt ${diceRoll} damage to ${Object.values(hitTargets).map(it => it._name).reduce((acc, name) => `${acc}, ${name}`)} with ${body.attackInfo.weapon}!` });
       return res.json({ message: `You have dealt ${diceRoll} damage to your enemies!` });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response)
         return res.json(error.response.data);
+      return error500Factory.genericError().setStatus(res);
     }
   } else if (body.attackType === AttackType.savingThrowEnchantment) {
     const diceRollReq: { diceList: Dice[], addresseeUIDs: string[], modifiers: number[] } = { diceList: [Dice.d20], addresseeUIDs: [], modifiers: [] };
@@ -99,44 +103,49 @@ export async function makeAttackService(req: IAugmentedRequest, res: Response) {
         (entity?.entity as Character | NPC).skillsModifier[body.attackInfo.skill!]) ?? 0);
       diceRollReq.addresseeUIDs.push(entity!.entity.authorUID);
 
-      // Ask the targest to roll a D20 to determine who will take the damage.
+      // Ask the targets to roll a D20 to determine who will take the damage.
       try {
         const results = (await httpPost(`/sessions/${req.sessionId!}/requestDiceRoll`, diceRollReq)) as { data: { [key: string]: { diceRoll: number } } };
         const hitTargets: { [key: string]: IEntity } = {};
         for (const result of Object.entries(results.data)) {
-          if (result[1].diceRoll >= body.attackInfo.difficultyClass!)
-            hitTargets[result[0]] = targets[result[0]];
+          const target = Object.values(targets).find(it => it.authorUID == result[0])!;
+          if (result[1].diceRoll < body.attackInfo.difficultyClass!)
+            hitTargets[result[0]] = target;
 
           // Create a new HistoryMessage and broadcast it to all the players.
-          httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.savingThrow, message: `${targets[result[0]]._name} has ${hitTargets[result[0]] ? 'succedeed' : 'failed'} the saving throw!` });
+          httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.savingThrow, message: `${target._name} has ${result[0] in hitTargets ? 'failed' : 'succedeed'} the saving throw!` });
         }
 
         // Check if at least one entity has been hit and create a new hitory message.
-        if (Object.keys(hitTargets.data).length === 0) {
+        if (Object.keys(hitTargets).length === 0) {
           httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.attackAttempt, message: `${req.entity?._name} hasn\'t hit any of their targets!` });
           return res.status(200).json({ message: 'You haven\'t hit any of the entities!' });
         }
 
         // Ask the attacker to roll the damage dice.
         try {
-          const damageResults = (await httpPost(`/sessions/${req.sessionId!}/requestDiceRoll`, { addresseeUIDs: [req.entityId!] })) as { data: { [key: string]: { diceRoll: number } } };
-          const diceRoll = damageResults.data[req.entityId!].diceRoll;
+          const damageResults = (await httpPost(`/sessions/${req.sessionId!}/requestDiceRoll`, { addresseeUIDs: [req.entity!.authorUID!] })) as { data: { [key: string]: { diceRoll: number } } };
+          const diceRoll = damageResults.data[req.entity!.authorUID!].diceRoll;
           for (const target of Object.entries(hitTargets)) {
             target[1]._hp -= diceRoll;
-            await updateEntity(req.session!, target[0], { _hp: target[1]._hp });
-            if (target[1]._hp < 0)
-              await entityTurnRepository.delete(req.session?.entityTurns.find(it => it.entityUID === target[0])?.id);
-            httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.died, message: `${target[1]._name} has died!` });
+            const targetEntityId = 'id' in target[1] ? (target[1] as Monster).id.toString() : (target[1] as Character | NPC).uid;
+            await updateEntity(req.session!, targetEntityId, { _hp: target[1]._hp });
+            if (target[1]._hp <= 0) {
+              await entityTurnRepository.delete(req.session?.entityTurns.find(it => it.entityUID === targetEntityId)?.id);
+              httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.died, message: `${target[1]._name} has died!` });
+            }
           }
           httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.attackDamage, message: `${req.entity?._name} has dealt ${diceRoll} damage to ${Object.values(hitTargets).map(it => it._name).reduce((acc, name) => `${acc}, ${name}`)}!` });
           return res.json({ message: `You have dealt ${diceRoll} damage to your enemies!` });
         } catch (error) {
           if (axios.isAxiosError(error) && error.response)
             return res.json(error.response.data);
+          return error500Factory.genericError().setStatus(res);
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response)
           return res.json(error.response.data);
+        return error500Factory.genericError().setStatus(res);
       }
     }
   } else if (body.attackType === AttackType.descriptiveEnchantment) {
@@ -179,6 +188,7 @@ export async function getSavingThrowService(req: IAugmentedRequest, res: Respons
   } catch (error) {
     if (axios.isAxiosError(error) && error.response)
       return res.json(error.response.data);
+    return error500Factory.genericError().setStatus(res);
   }
 }
 

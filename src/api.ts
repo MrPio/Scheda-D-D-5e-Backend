@@ -143,10 +143,15 @@ app.get('/diceRoll',
 app.patch('/sessions/:sessionId/attack',
   checkHasToken,
   checkTokenIsValid,
-  checkMandadoryParams(['attackType', 'attackInfo']),
-  checkParamsType({ attackType: ENUM(AttackType), attackInfo: OBJECT({ 'targetsId': ARRAY(STRING), 'weapon': STRING, 'attemptRoll': INTEGER, 
-    'enchantment': STRING, 'difficultyClass': POS_INTEGER, 'skill': ENUM(Skill), 'slotLevel': INTEGER }) }),
+  checkMandadoryParams(['entityId', 'attackType', 'attackInfo']),
+  checkParamsType({
+    entityId: STRING, attackType: ENUM(AttackType), attackInfo: OBJECT({
+      'targetsId': ARRAY(STRING), 'weapon': STRING, 'attemptRoll': INTEGER,
+      'enchantment': STRING, 'difficultyClass': POS_INTEGER, 'skill': ENUM(Skill), 'slotLevel': INTEGER
+    }),
+  }),
   checkSessionExists,
+  checkEntityExistsInSession,
   checkAttackAttempt,
   (req: IAugmentedRequest, res: Response) => makeAttack(req, res));
 
