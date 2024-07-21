@@ -182,7 +182,7 @@ export async function enableReactionService(req: IAugmentedRequest, res: Respons
       // Save the updated session
       await sessionRepository.update(session!.id, session!);
 
-      return res.status(200).json({ message: `Reaction enabled for entity ${entityId}!`, entity });
+      return res.status(200).json({ message: `Reaction enabled for entity ${entityId}!` });
     }
   }
 

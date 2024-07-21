@@ -170,6 +170,7 @@ app.patch('/sessions/:sessionId/reaction',
   checkHasToken,
   checkTokenIsValid,
   checkSessionExists,
+  checkEntityExistsInSession,
   checkEnableReaction,
   (req: IAugmentedRequest, res: Response) => enableReaction(req, res));
 
