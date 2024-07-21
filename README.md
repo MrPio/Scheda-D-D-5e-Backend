@@ -207,13 +207,47 @@ Various software design patterns were used in the implementation to ensure a rob
 
 <a name="Middleware"></a>
 ### Middleware
-Used extensively to handle a variety of concerns, including validation, authentication, and authorisation, in a modular way. Middleware functions are used to process requests and responses in a sequence, which makes the code more organised and reusable. For example, in the dice roll endpoint, middleware functions check for mandatory parameters, validate their types, and perform specific checks before executing the main logic.
+
+The middleware pattern is used extensively in this application to address various concerns such as validation, authentication and authorisation in a modular and systematic way.
+
+**Why Middleware?  
+- **Separation of concerns**: Allows for a clear separation of different concerns in the request processing pipeline. Each middleware function is responsible for a specific task - whether it's validating input parameters, checking user credentials or handling errors - making the codebase cleaner and easier to manage.
+- **Reusability**: Functions can be reused across multiple paths and endpoints. For example, validation middleware that checks for mandatory parameters and their types can be applied to different endpoints, reducing code duplication and promoting consistency.
+- **Flexibility** and extensibility: Middleware can be easily added, removed or modified without affecting other parts of the application. This flexibility supports modular feature development and simplifies testing and debugging.
+
+In practice, at the dice roll endpoint, for example, middleware functions perform essential tasks such as verifying the presence of required parameters, validating their data types, and performing specific checks before the main dice roll logic is executed. This approach not only streamlines request handling, but also centralises logic for common operations.
+
 <a name="Factory*"></a>
 ### Factory Method
-Used to create error objects, encapsulating the instantiation logic and providing a centralised way to generate different types of errors. It helps maintain a clean code structure and ensures consistent handling of errors across the application. Different factories are used to generate client-side and server-side errors, ensuring that errors are created in a standardised way based on their type and context.
+
+The Factory Method pattern is used to create error objects, encapsulating the instantiation logic and providing a centralised way to generate different types of errors. This pattern helps to maintain a clean and organised code structure, ensuring that error handling is consistent and standardised across the application.
+
+**Why Factory Method?** 
+- **Encapsulating the creation logic**: By using factory methods to create error objects, the instantiation logic is encapsulated within dedicated classes. This approach hides the complexity of error creation and provides a simple interface for error creation.
+- **Consistency and standardisation**: Factory methods ensure that errors are created in a consistent manner, following a standardised format and structure. This consistency is essential for effective bug handling and debugging.
+- **Centralised error management**: With factory methods, bug creation is managed from a single location, making it easier to handle different types of bugs consistently. This centralisation simplifies maintenance and makes it easier to update the error handling logic.
+
+For example, different factory classes are used to generate client-side and server-side errors, allowing the application to handle different error scenarios in a structured way. This ensures that error responses are unambiguous and appropriately reflect the nature of the problem.
+
 <a name="RepFacSingleton*"></a>
 ### Repository + Factory + Singleton
-Data sources are handled using three patterns: Repository, Factory and Singleton. The Repository pattern abstracts the data layer, providing a clean API. The Factory pattern is used to create repositories, ensuring consistent build logic. The Singleton pattern ensures that a single instance of each repository is used, providing a single source of truth and reducing resource overhead. Together, these patterns facilitate efficient caching, data retrieval and persistence across different storage solutions such as Redis, Sequelize and Firestore.
+
+The data sources in the application are managed using a combination of the Repository, Factory and Singleton patterns. These patterns work together to abstract data access, manage the creation of data handling objects and ensure efficient resource management.
+
+**Repository Pattern**:  
+- **Abstraction of data access**: The Repository Pattern abstracts the data layer, providing a clean API for interacting with different data sources. This abstraction separates the data access logic from the business logic, making the code more modular and easier to maintain.
+- Caching and Efficiency**: Repositories include caching functionality (e.g. using Redis) to improve performance by reducing redundant data retrieval operations. This caching mechanism helps to speed up access to frequently used data.
+
+- **Factory Pattern**:  
+- **Centralised repository creation**: The factory pattern is used to create repository instances for different models. This centralised creation logic ensures that repositories are built consistently and simplifies the management of different data stores.
+- **Flexibility and Scalability**: By using a factory to build repositories, the system can easily adapt to changes in data store technologies or requirements without significant changes to the code base.
+
+**Singleton Pattern**:  
+- **Single Source of Truth**: The singleton pattern ensures that only one instance of each repository is used throughout the application. This guarantees a single source of truth for data access and reduces the overhead associated with multiple instances.
+- **Resource Management**: Managing a single instance of a repository helps to conserve resources and maintain a consistent state across the application. It also simplifies the handling of connections and transactions.
+
+Together, these patterns enable efficient data retrieval, management, and persistence across various storage solutions such as Redis, Sequelize, and Firestore.
+
 <a name="Observer*"></a>
 ### Observer
 // TODO
