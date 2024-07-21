@@ -7,5 +7,5 @@ RUN npm install --location=global
 RUN npm install --location=global nodemon
 RUN npm install --location=global typescript
 RUN npm install --location=global ts-node
-RUN npm
+RUN npm install
 CMD ["nodemon", "src/websocket/websocket.ts"]

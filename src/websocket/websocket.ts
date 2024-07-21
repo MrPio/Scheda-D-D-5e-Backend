@@ -51,7 +51,7 @@ import { checkIsAPIBackend, checkUsersOnline } from './middleware/api_middleware
 import { generateJWT } from '../service/jwt_service';
 import { Error400Factory, Error500Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
-import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, STRING } from '../middleware/parameters_middleware';
+import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, OBJECT_ARRAY, STRING } from '../middleware/parameters_middleware';
 import { Dice } from '../model/dice';
 import { checkSessionExists, checkSessionStatus } from '../middleware/session_middleware';
 import { ActionType, HistoryMessage } from '../model/history_message';
@@ -265,59 +265,68 @@ const abortRequest = (sessionId: string, res: Response, isTimeout: boolean) => {
  * The request body is expected to be as follows.
  * {
  *   "diceList": [ "d10", "d4", "d6" ],   
- *   "addresseeUIDs": [ "k9vc0kojNcO9JB9qVdf33F6h3eD2" ]
+ *   "addresseeUIDs": [ "k9vc0kojNcO9JB9qVdf33F6h3eD2" ],
+ *   "modifiers": "[ { "k9vc0kojNcO9JB9qVdf33F6h3eD2" : 2 } ]"
  * }
  */
-app.get('/sessions/:sessionId/requestDiceRoll', checkHasToken, checkIsAPIBackend, checkMandadoryParams(['diceList', 'addresseeUIDs']), checkParamsType({ diceList: ARRAY(ENUM(Dice)), addresseeUIDs: ARRAY(STRING) }), checkSessionExists, checkSessionStatus([SessionStatus.ongoing]), checkUsersOnline, (req: IAugmentedRequest, res: Response) => {
+app.post('/sessions/:sessionId/requestDiceRoll',
+  checkHasToken,
+  checkIsAPIBackend,
+  checkMandadoryParams(['diceList', 'addresseeUIDs', 'modifiers']),
+  checkParamsType({ diceList: ARRAY(ENUM(Dice)), addresseeUIDs: ARRAY(STRING), modifiers: OBJECT_ARRAY(STRING, NUMBER) }),
+  checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
+  checkUsersOnline,
+  (req: IAugmentedRequest, res: Response) => {
 
-  // Check that the active connection stores the connection of interest. This should always be true.
-  if (!(req.sessionId! in activeConnections) || req.addresseeUIDs?.some(uid => !(uid in activeConnections[req.sessionId!].users)))
-    return error500Factory.genericError().setStatus(res);
+    // Check that the active connection stores the connection of interest. This should always be true.
+    if (!(req.sessionId! in activeConnections) || req.addresseeUIDs?.some(uid => !(uid in activeConnections[req.sessionId!].users)))
+      return error500Factory.genericError().setStatus(res);
 
-  // Check that the specified session does not already have a pending request.
-  if (hasPendingRequest(req.sessionId!))
-    return error400Factory.websocketRequestAlreadyPending(req.sessionId!).setStatus(res);
+    // Check that the specified session does not already have a pending request.
+    if (hasPendingRequest(req.sessionId!))
+      return error400Factory.websocketRequestAlreadyPending(req.sessionId!).setStatus(res);
 
-  // Request the players involved to roll the dice and update their pending status.
-  for (const userUID of req.addresseeUIDs!) {
-    activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'diceRoll', diceList: req.body.diceList as string[] }));
-    activeConnections[req.sessionId!].users[userUID].pendingRequest = true;
-  }
-
-  // When the player answer, send the HTTP response to the API backend.
-  activeConnections[req.sessionId!].subscription = activeConnections[req.sessionId!].subject.subscribe(({ ws, message, userUID }) => {
-
-    // Check that the sender had a pending request, otherwise ignore its message.  
-    if (!activeConnections[req.sessionId!].users[userUID].pendingRequest) return;
-
-    // Check that the provided dice result is an integer.
-    if (!Number.isInteger(Number(message)))
-      ws.send(JSON.stringify({ action: 'diceRoll', diceList: req.body.diceList as string[], error: `"${message}" is not an integer! Please retry.` }));
-    else {
-      activeConnections[req.sessionId!].users[userUID].pendingRequest = false;
-      requestResponses[userUID] = { diceRoll: Number.parseInt(message), answerTimestamp: Date.now() };
-
-      // If this was the last player to answer, send the result back to the API backend and unsubscribe this listner.
-      if (!hasPendingRequest(req.sessionId!)) {
-
-        // Cancel timeout emitter
-        cancelTimeout.next();
-        res.json(requestResponses);
-        requestResponses = {};
-        activeConnections[req.sessionId!].subscription?.unsubscribe();
-      }
+    // Request the players involved to roll the dice and update their pending status.
+    for (const userUID of req.addresseeUIDs!) {
+      activeConnections[req.sessionId!].users[userUID].webSocket.send(JSON.stringify({ action: 'diceRoll', modifier: req.body.modifiers[userUID] ?? 0, diceList: req.body.diceList as string[] }));
+      activeConnections[req.sessionId!].users[userUID].pendingRequest = true;
     }
+
+    // When the player answer, send the HTTP response to the API backend.
+    activeConnections[req.sessionId!].subscription = activeConnections[req.sessionId!].subject.subscribe(({ ws, message, userUID }) => {
+
+      // Check that the sender had a pending request, otherwise ignore its message.  
+      if (!activeConnections[req.sessionId!].users[userUID].pendingRequest) return;
+
+      // Check that the provided dice result is an integer.
+      if (!Number.isInteger(Number(message)))
+        ws.send(JSON.stringify({ action: 'diceRoll', diceList: req.body.diceList as string[], error: `"${message}" is not an integer! Please retry.` }));
+      else {
+        activeConnections[req.sessionId!].users[userUID].pendingRequest = false;
+        requestResponses[userUID] = { diceRoll: Number.parseInt(message), answerTimestamp: Date.now() };
+
+        // If this was the last player to answer, send the result back to the API backend and unsubscribe this listner.
+        if (!hasPendingRequest(req.sessionId!)) {
+
+          // Cancel timeout emitter
+          cancelTimeout.next();
+          res.json(requestResponses);
+          requestResponses = {};
+          activeConnections[req.sessionId!].subscription?.unsubscribe();
+        }
+      }
+    });
+
+    // Set a timeout to prevent starvation. It is used to prevent starvation when waiting for players responses.
+    timer(timeoutLimit)
+      .pipe(takeUntil(cancelTimeout))
+      .subscribe(() => abortSubject.next({ isTimeout: true }));
+
+    // Register the abort operation on the abort subject
+    if (abortSubscription) abortSubscription.unsubscribe();
+    abortSubscription = abortSubject.subscribe(({ isTimeout }) => abortRequest(req.sessionId!, res, isTimeout));
   });
-
-  // Set a timeout to prevent starvation. It is used to prevent starvation when waiting for players responses.
-  timer(timeoutLimit)
-    .pipe(takeUntil(cancelTimeout))
-    .subscribe(() => abortSubject.next({ isTimeout: true }));
-
-  // Register the abort operation on the abort subject
-  if (abortSubscription) abortSubscription.unsubscribe();
-  abortSubscription = abortSubject.subscribe(({ isTimeout }) => abortRequest(req.sessionId!, res, isTimeout));
-});
 
 /**
  * `requestReaction/` route.
@@ -326,7 +335,7 @@ app.get('/sessions/:sessionId/requestDiceRoll', checkHasToken, checkIsAPIBackend
  *   "addresseeUIDs": [ "k9vc0kojNcO9JB9qVdf33F6h3eD2" ]
  * }
  */
-app.get('/sessions/:sessionId/requestReaction', checkHasToken, checkIsAPIBackend, checkMandadoryParams(['addresseeUIDs']), checkParamsType({ addresseeUIDs: ARRAY(STRING) }), checkSessionExists, checkSessionStatus([SessionStatus.ongoing]), checkUsersOnline, (req: IAugmentedRequest, res: Response) => {
+app.post('/sessions/:sessionId/requestReaction', checkHasToken, checkIsAPIBackend, checkMandadoryParams(['addresseeUIDs']), checkParamsType({ addresseeUIDs: ARRAY(STRING) }), checkSessionExists, checkSessionStatus([SessionStatus.ongoing]), checkUsersOnline, (req: IAugmentedRequest, res: Response) => {
 
   // Check that the active connection stores the connection of interest. This should always be true.
   if (!(req.sessionId! in activeConnections) || req.addresseeUIDs?.some(uid => !(uid in activeConnections[req.sessionId!].users)))
@@ -385,5 +394,5 @@ app.get('/sessions/:sessionId/requestReaction', checkHasToken, checkIsAPIBackend
     seed: (process.env.NODE_ENV ?? 'prod') === 'dev',
   });
   server.listen(8080, () => console.log('Server WSS is running on port 8080'));
-  app.listen(3000, () => console.log('Server API is running on port 3000'));
+  app.listen(3001, () => console.log('Server API is running on port 3001'));
 })();

@@ -70,7 +70,7 @@ export const checkTryAttack = async (req: IAugmentedRequest, res: Response, next
       return error400Factory.invalidEnchantmentCategory(enchantment.name, enchantment.category).setStatus(res);
 
     // Check if DC is a non negative integer
-    if (body.attackType === AttackType.savingThrowEnchantment && body.difficultyClass >= 0)
+    if (body.attackType === AttackType.savingThrowEnchantment && body.difficultyClass < 0)
       return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
     next();
   }
@@ -85,7 +85,7 @@ export const checkRequestSavingThrow = async (req: IAugmentedRequest, res: Respo
   const body: { entitiesId: string[], difficultyClass: number, skill: Skill } = req.body;
 
   // Check if DC is a non negative integer
-  if (body.difficultyClass >= 0)
+  if (body.difficultyClass <= 0)
     return error400Factory.invalidNumber('difficultyClass', 'a positive integer').setStatus(res);
 
   // Check if all the entities are in the battle.

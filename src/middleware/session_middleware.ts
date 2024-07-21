@@ -3,7 +3,6 @@ import { RepositoryFactory } from '../repository/repository_factory';
 import { Session, SessionStatus } from '../model/session';
 import { Error400Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
-import { EntityType } from '../model/entity';
 import { findEntity } from '../service/utility/model_queries';
 
 const error400Factory = new Error400Factory();

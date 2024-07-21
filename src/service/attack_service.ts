@@ -1,5 +1,5 @@
 
-import { Response as Res } from 'express';
+import { Response } from 'express';
 import { Dice } from '../model/dice';
 import { randomInt } from 'crypto';
 import { Effect } from '../model/effect';
@@ -7,9 +7,12 @@ import { RepositoryFactory } from '../repository/repository_factory';
 import { Monster } from '../model/monster';
 import NPC from '../model/npc';
 import Character from '../model/character';
-import { findEntityTurn } from './utility/model_queries';
-import { MonsterSkill } from '../model/monster_skill';
+import { findEntity, findEntityTurn } from './utility/model_queries';
+import { Skill } from '../model/monster_skill';
 import { IAugmentedRequest } from '../interface/augmented_request';
+import { EntityType } from '../model/entity';
+import { httpPost } from './utility/axios_requests';
+import axios from 'axios';
 
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
@@ -22,7 +25,7 @@ const npcRepository = repositoryFactory.npcRepository();
  * The dice to be rolled and the modifier are provided in the request body.
  * It calculates the total result by summing the dice rolls and adding the modifier.
  */
-export async function diceRollService(req: IAugmentedRequest, res: Res) {
+export async function diceRollService(req: IAugmentedRequest, res: Response) {
   const body: { diceList: string[], modifier?: number } = req.body;
 
   // Parse the diceList to get the numerical values of each dice
@@ -33,9 +36,7 @@ export async function diceRollService(req: IAugmentedRequest, res: Res) {
   return res.json({ result: rollResult });
 }
 
-
-
-export async function makeAttackService(req: IAugmentedRequest, res: Res) {
+export async function makeAttackService(req: IAugmentedRequest, res: Response) {
   // TODO MrPio
 }
 
@@ -44,68 +45,35 @@ export async function makeAttackService(req: IAugmentedRequest, res: Res) {
  * It checks each entity's saving throw against a difficulty class.
  * The result for each entity is computed based on its type and skill, and the results are returned.
  */
-export async function getSavingThrowService(req: IAugmentedRequest, res: Res) {
-  const { entitiesId, difficultyClass, skill } = req.body;
+export async function getSavingThrowService(req: IAugmentedRequest, res: Response) {
+  const body: { entitiesId: string[], difficultyClass: number, skill: Skill } = req.body;
+  const diceRollReq: { diceList: Dice[], addresseeUIDs: string[], modifiers: number[] } = { diceList: [Dice.d20], addresseeUIDs: [], modifiers: [] };
 
-  // Initialize results array to store saving throw results
-  const results = [];
-
-  for (const entityId of entitiesId) {
-    // Retrieve entity by ID, checking each repository
-    let entity: Monster | Character | NPC | null = await monsterRepository.getById(entityId);
-
-    if (!entity) {
-      entity = await characterRepository.getById(entityId);
-    }
-
-    if (!entity) {
-      entity = await npcRepository.getById(entityId);
-    }
-
-    if (entity) {
-      // Roll a d20 for the saving throw
-      const rollResult = randomInt(1, 20);
-
-      let saveRoll: number;
-      if (entity instanceof Monster) {
-        // Get the skill value from the Monster's skills
-        const monsterSkill = entity.skills.find((s: MonsterSkill) => s.skill === skill);
-        saveRoll = rollResult + (monsterSkill ? monsterSkill.value : 0);
-      } else if (entity instanceof Character) {
-        // Get the skill modifier from the Character's skillsModifier
-        saveRoll = rollResult + (entity.skillsModifier[skill] || 0);
-      } else if (entity instanceof NPC) {
-        // Get the skill modifier from the NPC's skillsModifier
-        saveRoll = rollResult + (entity.skillsModifier[skill] || 0);
-      } else {
-        // Skip if entity type is unexpected
-        continue;
-      }
-
-      // Determine if the saving throw is successful
-      const isSuccess = saveRoll >= difficultyClass;
-
-      // Add the result to the results array
-      results.push({
-        entityId,
-        rollResult,
-        saveRoll,
-        isSuccess,
-      });
-    } else {
-      // Return error if no entity is found
-      return res.status(404).json({ error: 'Entity not found' });
-    }
+  // Determine the modifier for each adressee entity.
+  for (const entityId of body.entitiesId) {
+    const entity = await findEntity(req.session!, entityId);
+    diceRollReq.modifiers.push((entity?.entityType == EntityType.monster ?
+      (entity.entity as Monster).skills.find(it => it.skill == body.skill)?.value :
+      (entity?.entity as Character | NPC).skillsModifier[body.skill]) ?? 0);
+    diceRollReq.addresseeUIDs.push(entity!.entity.authorUID);
   }
 
-  // Return the results of saving throws
-  return res.json({ results });
+  // Send request to websocket container's API server.
+  try {
+    const results = (await httpPost(`/sessions/${req.sessionId!}/requestDiceRoll`, diceRollReq)) as { data: { [key: string]: { diceRoll: number } } };
+    const response: { [key: string]: boolean } = {};
+    for (const result of Object.entries(results.data))
+      response[result[0]] = result[1].diceRoll >= body.difficultyClass;
+    return res.json(response);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response)
+      return res.json(error.response.data);
+  }
 }
-
 
 // TODO MrPio
 // TODO broadcast an History Message at the end of some routes
-export async function addEffectService(req: IAugmentedRequest, res: Res) {
+export async function addEffectService(req: IAugmentedRequest, res: Response) {
   const { sessionId } = req.params;
   const { entitiesId, effect } = req.body;
 
@@ -178,7 +146,7 @@ export async function addEffectService(req: IAugmentedRequest, res: Res) {
  * the request parameters and body.
  * It updates the entity's `isReactionActivable` property and saves the changes.
  */
-export async function enableReactionService(req: IAugmentedRequest, res: Res) {
+export async function enableReactionService(req: IAugmentedRequest, res: Response) {
   const { sessionId } = req.params;
   const { entityId } = req.body;
 
@@ -221,3 +189,4 @@ export async function enableReactionService(req: IAugmentedRequest, res: Res) {
   // Return error if the entity is not found in the session
   return res.status(404).json({ error: `Entity not found in session ${sessionId}!` });
 }
+

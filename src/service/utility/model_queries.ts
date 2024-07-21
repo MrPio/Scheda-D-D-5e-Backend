@@ -27,13 +27,13 @@ export async function findEntity(session: Session, entityId: string): Promise<{ 
  * @param entityId The entityId to search for.
  * @param newEntity The updated fields.
  */
-export async function updateEntity(session: Session, entityId: string, newEntity: Partial<IEntity>): Promise<{ entityType: EntityType; entity: IEntity; } | undefined> {
+export async function updateEntity(session: Session, entityId: string, newEntity: Partial<IEntity>): Promise<void> {
   if (session.characterUIDs?.includes(entityId))
-    characterRepository.update(entityId, newEntity)
+    characterRepository.update(entityId, newEntity);
   else if (session.npcUIDs?.includes(entityId))
-    npcRepository.update(entityId, newEntity)
+    npcRepository.update(entityId, newEntity);
   else if (session.monsterUIDs?.includes(entityId))
-    monsterRepository.update(entityId, newEntity)
+    monsterRepository.update(entityId, newEntity);
 }
 
 /**
