@@ -45,7 +45,7 @@ TODO: Sezione apposita per Websocket
 * [📐 Class diagram](#Classdiagram)
 
 * [🪄 Patterns used](#Patternsused)
-  * [Middlewares: Chain of Responsability](#ChainofResponsability)
+  * [Middlewares: Chain of Responsability](#Middleware)
   * [Exceptions handling: Factory Method](#Factory)
   * [Data sources handling: Repository + Factory + Singleton](#RepFacSingleton)
   * [Websocket communication: Observer](#Observer)
@@ -236,9 +236,9 @@ The data sources in the application are managed using a combination of the Repos
 
 **Repository Pattern**:  
 - **Abstraction of data access**: The Repository Pattern abstracts the data layer, providing a clean API for interacting with different data sources. This abstraction separates the data access logic from the business logic, making the code more modular and easier to maintain.
-- Caching and Efficiency**: Repositories include caching functionality (e.g. using Redis) to improve performance by reducing redundant data retrieval operations. This caching mechanism helps to speed up access to frequently used data.
+- **Caching and Efficiency**: Repositories include caching functionality (e.g. using Redis) to improve performance by reducing redundant data retrieval operations. This caching mechanism helps to speed up access to frequently used data.
 
-- **Factory Pattern**:  
+**Factory Pattern**:  
 - **Centralised repository creation**: The factory pattern is used to create repository instances for different models. This centralised creation logic ensures that repositories are built consistently and simplifies the management of different data stores.
 - **Flexibility and Scalability**: By using a factory to build repositories, the system can easily adapt to changes in data store technologies or requirements without significant changes to the code base.
 
