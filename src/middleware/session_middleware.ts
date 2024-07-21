@@ -88,6 +88,25 @@ export const checkEntityExistsInSession = async (req: IAugmentedRequest, res: Re
 };
 
 /**
+ * Check that the provided `entitiesId` belongs to a player of the given session.
+ * @precondition `checkSessionExists`.
+ * @postcondition `req.entitiesId`, `req.entities`.
+ */
+export const checkEntitiesExistsInSession = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  req.entitiesId = req.body.entitiesId;
+  req.entities = [];
+
+  // Check that the `entitiesId` are all in the session and retrieve their objects from the repository.
+  for (const entityId of req.entitiesId!) {
+    const entity = await findEntity(req.session!, entityId);
+    if (!entity) return error400Factory.entityNotFoundInSession(entityId, req.sessionId!).setStatus(res);
+    req.entities.push(entity.entity);
+  }
+
+  next();
+};
+
+/**
  * Check if a session is in any of the specified statuses.
  * @precondition `checkSessionExists`
  * @param statuses The session's required statuses.

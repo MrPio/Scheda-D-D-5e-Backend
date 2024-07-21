@@ -9,6 +9,7 @@ export enum ActionType {
   descriptiveEnchantment = 'descriptiveEnchantment',
   movement = 'movement',
   savingThrow = 'savingThrow',
+  reaction = 'reaction',
   died = 'died',
   chat = 'chat',
 }

@@ -8,7 +8,7 @@ import Character from '../model/character';
 import { findEntity, updateEntity } from './utility/model_queries';
 import { Skill } from '../model/monster_skill';
 import { IAugmentedRequest } from '../interface/augmented_request';
-import IEntity, { EntityType } from '../model/entity';
+import IEntity, { EntityType, getEntityId } from '../model/entity';
 import { httpPost } from './utility/axios_requests';
 import axios from 'axios';
 import { AttackType } from '../model/attack_type';
@@ -128,8 +128,7 @@ export async function makeAttackService(req: IAugmentedRequest, res: Response) {
           const diceRoll = damageResults.data[req.entity!.authorUID!].diceRoll;
           for (const target of Object.entries(hitTargets)) {
             target[1]._hp -= diceRoll;
-            const targetEntityId = 'id' in target[1] ? (target[1] as Monster).id.toString() : (target[1] as Character | NPC).uid;
-            await updateEntity(req.session!, targetEntityId, { _hp: target[1]._hp });
+            await updateEntity(req.session!, getEntityId(target[1]), { _hp: target[1]._hp });
             if (target[1]._hp <= 0) {
               await entityTurnRepository.delete(req.session?.entityTurns.find(it => it.entityUID === targetEntityId)?.id);
               httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.died, message: `${target[1]._name} has died!` });
@@ -210,8 +209,24 @@ export async function addEffectService(req: IAugmentedRequest, res: Response) {
  * It updates the entity's `isReactionActivable` property and saves the changes.
  */
 export async function enableReactionService(req: IAugmentedRequest, res: Response) {
-  updateEntity(req.session!, req.entityId!, { isReactionActivable: false });
-  return res.status(200).json({ message: `Reaction enabled for entity ${req.entity!._name}!` });
-}
 
-// TODO broadcast an History Message at the end of some routes
+  // Send request to websocket container's API server.
+  try {
+    const results = (await httpPost(`/sessions/${req.sessionId!}/requestReaction`, { addresseeUIDs: req.entities!.map(it => it.authorUID) })) as { data: { [key: string]: { choice: boolean } } };
+    const response: { [key: string]: boolean } = {};
+    for (const result of Object.entries(results.data)) {
+      response[result[0]] = result[1].choice;
+      const entity = req.entities!.find(it => it.authorUID == result[0]);
+      if (result[1].choice)
+        updateEntity(req.session!, getEntityId(entity!), { isReactionActivable: false });
+
+      // Create a new HistoryMessage and broadcast it to all the players.
+      httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.reaction, message: `${entity?._name} has ${response[result[0]] ? 'accepted' : 'refused'} to use the reaction!` });
+    }
+    return res.json(response);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response)
+      return res.json(error.response.data);
+    return error500Factory.genericError().setStatus(res);
+  }
+}

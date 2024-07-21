@@ -117,10 +117,11 @@ export const checkRequestSavingThrow = async (req: IAugmentedRequest, res: Respo
 /**
  * Checks if the entity's reaction can be activated.
  * @precondition `checkSessionExists`
- * @precondition `checkEntityExistsInSession`
+ * @precondition `checkEntitiesExistsInSession`
  */
 export const checkEnableReaction = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
-  if (!req.entity!.isReactionActivable)
-    return error400Factory.reactionNotActivable(req.entityId!).setStatus(res);
+  for (const entity of req.entities!)
+    if (!entity.isReactionActivable)
+      return error400Factory.reactionNotActivable(entity._name).setStatus(res);
   next();
 };

@@ -16,7 +16,7 @@ import { checkHasToken, checkTokenIsValid } from './middleware/jwt_middleware';
 import { checkDiceRoll } from './middleware/dice_middleware';
 import { IAugmentedRequest } from './interface/augmented_request';
 import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, OBJECT, STRING, BOOLEAN, OBJECT_ARRAY, NULLABLE, INTEGER, POS_INTEGER } from './middleware/parameters_middleware';
-import { checkEntityExistsInSession, checkNewSession, checkSessionExists, checkSessionStatus } from './middleware/session_middleware';
+import { checkEntitiesExistsInSession, checkEntityExistsInSession, checkNewSession, checkSessionExists, checkSessionStatus } from './middleware/session_middleware';
 import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
 import { checkAttackAttempt, checkRequestSavingThrow, checkEnableReaction } from './middleware/attack_middleware';
 import { checkAddEntity } from './middleware/entity_middleware';
@@ -147,7 +147,7 @@ app.patch('/sessions/:sessionId/attack',
   checkParamsType({
     entityId: STRING, attackType: ENUM(AttackType), attackInfo: OBJECT({
       'targetsId': ARRAY(STRING), 'weapon': STRING, 'attemptRoll': INTEGER,
-      'enchantment': STRING, 'difficultyClass': POS_INTEGER, 'skill': ENUM(Skill), 'slotLevel': INTEGER
+      'enchantment': STRING, 'difficultyClass': POS_INTEGER, 'skill': ENUM(Skill), 'slotLevel': INTEGER,
     }),
   }),
   checkSessionExists,
@@ -175,10 +175,10 @@ app.patch('/sessions/:sessionId/effect',
 app.patch('/sessions/:sessionId/reaction',
   checkHasToken,
   checkTokenIsValid,
-  checkMandadoryParams(['entityId']),
-  checkParamsType({ entityId: STRING }),
+  checkMandadoryParams(['entitiesId']),
+  checkParamsType({ entitiesId: ARRAY(STRING) }),
   checkSessionExists,
-  checkEntityExistsInSession,
+  checkEntitiesExistsInSession,
   checkEnableReaction,
   (req: IAugmentedRequest, res: Response) => enableReaction(req, res));
 
@@ -187,7 +187,15 @@ app.patch('/sessions/:sessionId/entities',
   checkHasToken,
   checkTokenIsValid,
   checkMandadoryParams(['entityType', 'entityInfo']),
-  checkParamsType({ entityType: ENUM(EntityType), entityInfo: OBJECT({ 'name': STRING, 'maxHp': POS_INTEGER, 'armorClass': POS_INTEGER, 'isReactionActivable': BOOLEAN, 'speed': NUMBER, 'skills': OBJECT_ARRAY(ENUM(Skill), POS_INTEGER), 'enchantments': ARRAY(STRING), 'weapons': ARRAY(STRING), 'effectImmunities': ARRAY(ENUM(Effect)), 'uid': STRING }) }),
+  checkParamsType({
+    entityType: ENUM(EntityType), entityInfo: OBJECT({
+      'authorUID': STRING,
+      'name': STRING, 'hp': INTEGER, 'maxHp': POS_INTEGER, 'armorClass': POS_INTEGER,
+      'isReactionActivable': BOOLEAN, 'speed': NUMBER, 'skills': OBJECT_ARRAY(ENUM(Skill), POS_INTEGER),
+      'enchantments': ARRAY(STRING), 'weapons': ARRAY(STRING), 'effectImmunities': ARRAY(ENUM(Effect)),
+      'effects': ARRAY(ENUM(Effect)), 'uid': STRING,
+    }),
+  }),
   checkSessionExists,
   checkAddEntity,
   (req: IAugmentedRequest, res: Response) => addEntity(req, res));

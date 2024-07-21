@@ -1,4 +1,7 @@
+import Character from './character';
 import { Effect } from './effect';
+import { Monster } from './monster';
+import NPC from './npc';
 
 // Interface defining the attributes of an entity
 export default interface IEntity {
@@ -14,6 +17,10 @@ export default interface IEntity {
   effects?: Effect[];
   get isDead(): boolean;
 }
+
+// Utility function to retrieve the id of an entity
+export const getEntityId = (entity:IEntity)=>
+  'id' in entity ? (entity as Monster).id.toString() : (entity as Character | NPC).uid;
 
 // The three possible types of entity
 export enum EntityType {

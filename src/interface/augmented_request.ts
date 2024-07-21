@@ -21,6 +21,8 @@ export interface IAugmentedRequest extends Request {
   entityId?: string;
   entity?: IEntity;
   entityType?: EntityType;
+  entitiesId?: string[];
+  entities?: IEntity[];
   userUID?: string;
   addresseeUIDs?: string[];
   session?: Session | null;

@@ -4,14 +4,13 @@ import { Error400Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
 import { EntityType } from '../model/entity';
 
-
 const errorFactory = new Error400Factory();
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
 const monsterRepository = repositoryFactory.monsterRepository();
 
 /**
- * This function adds an entity to a session based on the sessionId provided in the request parameters.
+ * Adds an entity to a session based on the sessionId provided in the request parameters.
  * The entity type and details are specified in the request body.
  * Depending on the entity type, it updates the session accordingly.
  */
@@ -130,7 +129,6 @@ export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
   // Return an error if the entity is not found in either list
   errorFactory.genericError(`Entity "${entityId}" not found in session "${sessionId}"`).setStatus(res);
 }
-
 
 // TODO: rivedere alla luce di una nuova gestione dell'ordine dei turni
 export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) {

@@ -41,7 +41,7 @@ export class Error400Factory {
 
   userNotInSession = (sessionId: string, userUID: string): ErrorProduct => new GenericClientError(`User "${userUID}" is not a player nor the master of session "${sessionId}"!`);
 
-  userNotOnline = (sessionId: string, userUID: string): ErrorProduct => new GenericClientError(`User "${userUID}" is not online in "${sessionId}" at the moment!`);
+  userNotOnline = (sessionName: string, userUID: string): ErrorProduct => new GenericClientError(`User "${userUID}" is not online in session "${sessionName}" at the moment!`);
 
   websocketRequestAlreadyPending = (sessionId: string): ErrorProduct => new GenericClientError(`A websocket request is already pending for session "${sessionId}"!`);
 

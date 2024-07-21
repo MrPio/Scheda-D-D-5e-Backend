@@ -30,7 +30,7 @@ export const checkUsersOnline = async (req: IAugmentedRequest, res: Response, ne
 
     // Check that the user is online in the session at the moment
     if (!req.session!.onlineUserUIDs?.includes(userUID))
-      return error400Factory.userNotOnline(req.sessionId!, userUID!).setStatus(res);
+      return error400Factory.userNotOnline(req.session!.name, userUID!).setStatus(res);
   }
 
   // All the checks succedeed.
