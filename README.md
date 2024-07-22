@@ -279,7 +279,7 @@ This is implemented in the [`/src/websocket/websocket.ts`](/src/websocket/websoc
 
 The project is containerized using Docker and Docker Compose. In particular, the `docker.api` file contains the instructions for containerizing the API server, while the `docker.websocket` file outlines the process of containerizing the WebSocket server. Additionally, the `docker-compose.yml` file contains also instructions for creating containers dedicated to the Postgres and Redis databases. These containers are based on public images sourced from Docker Hub.
 
-### The following commands are to be used to start the four containers:
+### The following commands are used to start the four containers:
 - Build API container with image tag **api_img**: `docker build -t api_img -f .\Dockerfile.api .`
 - Build Websocket containerwith image tag **websocket_img**: `docker build -t websocket_img -f .\Dockerfile.websocket .`
 - Start all four containers: `docker-compose up -d`
