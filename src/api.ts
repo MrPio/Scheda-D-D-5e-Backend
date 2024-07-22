@@ -111,6 +111,7 @@ app.get('/sessions/:sessionId/turn',
   checkHasToken,
   checkTokenIsValid,
   checkSessionExists,
+  checkSessionStatus([SessionStatus.created, SessionStatus.ongoing, SessionStatus.paused]),
   (req: IAugmentedRequest, res: Response) => getTurn(req, res));
 
 app.patch('/sessions/:sessionId/turn/postpone',
@@ -119,6 +120,7 @@ app.patch('/sessions/:sessionId/turn/postpone',
   checkMandadoryParams(['entityId', 'predecessorEntityId']),
   checkParamsType({ entityId: STRING, predecessorEntityID: STRING }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
   checkEntityExistsInSession,
   checkPostponeTurn,
   (req: IAugmentedRequest, res: Response) => postponeTurn(req, res));
@@ -129,6 +131,7 @@ app.patch('/sessions/:sessionId/turn/end',
   checkMandadoryParams(['entityId']),
   checkParamsType({ entityId: STRING }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
   checkEntityExistsInSession,
   checkEndTurn,
   (req: IAugmentedRequest, res: Response) => endTurn(req, res));
@@ -151,6 +154,7 @@ app.patch('/sessions/:sessionId/attack',
     }),
   }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
   checkEntityExistsInSession,
   checkAttackAttempt,
   (req: IAugmentedRequest, res: Response) => makeAttack(req, res));
@@ -161,15 +165,17 @@ app.get('/sessions/:sessionId/savingThrow',
   checkMandadoryParams(['entitiesId', 'difficultyClass', 'skill']),
   checkParamsType({ entitiesId: ARRAY(STRING), difficultyClass: POS_INTEGER, skill: ENUM(Skill) }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
   checkRequestSavingThrow,
   (req: IAugmentedRequest, res: Response) => getSavingThrow(req, res));
 
 app.patch('/sessions/:sessionId/effect',
   checkHasToken,
   checkTokenIsValid,
-  checkSessionExists,
   checkMandadoryParams(['entitiesId', 'effect']),
   checkParamsType({ entitiesId: ARRAY(STRING), effect: NULLABLE(ENUM(Effect)) }),
+  checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
   (req: IAugmentedRequest, res: Response) => addEffect(req, res));
 
 app.patch('/sessions/:sessionId/reaction',
@@ -178,6 +184,7 @@ app.patch('/sessions/:sessionId/reaction',
   checkMandadoryParams(['entitiesId']),
   checkParamsType({ entitiesId: ARRAY(STRING) }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
   checkEntitiesExistsInSession,
   checkEnableReaction,
   (req: IAugmentedRequest, res: Response) => enableReaction(req, res));
@@ -197,6 +204,7 @@ app.patch('/sessions/:sessionId/entities',
     }),
   }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.created, SessionStatus.ongoing, SessionStatus.paused]),
   checkAddEntity,
   (req: IAugmentedRequest, res: Response) => addEntity(req, res));
 
@@ -204,6 +212,7 @@ app.delete('/sessions/:sessionId/entities/:entityId',
   checkHasToken,
   checkTokenIsValid,
   checkSessionExists,
+  checkSessionStatus([SessionStatus.created, SessionStatus.ongoing, SessionStatus.paused]),
   checkEntityExistsInSession,
   (req: IAugmentedRequest, res: Response) => deleteEntity(req, res));
 
@@ -211,6 +220,7 @@ app.get('/sessions/:sessionId/entities/:entityId',
   checkHasToken,
   checkTokenIsValid,
   checkSessionExists,
+  checkSessionStatus([SessionStatus.created, SessionStatus.ongoing, SessionStatus.paused]),
   checkEntityExistsInSession,
   (req: IAugmentedRequest, res: Response) => getEntityInfo(req, res));
 
@@ -219,6 +229,7 @@ app.patch('/sessions/:sessionId/entities/:entityId',
   checkTokenIsValid,
   checkParamsType({ 'hp': INTEGER, 'armorClass': POS_INTEGER, 'speed': NUMBER, 'effects': ARRAY(ENUM(Effect)), 'slots': ARRAY(INTEGER) }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.created, SessionStatus.ongoing, SessionStatus.paused]),
   checkEntityExistsInSession,
   (req: IAugmentedRequest, res: Response) => updateEntityInfo(req, res));
 
@@ -235,6 +246,7 @@ app.post('/sessions/:sessionId/history',
   checkMandadoryParams(['msg', 'actionType']),
   checkParamsType({ msg: STRING, actionType: ENUM(ActionType) }),
   checkSessionExists,
+  checkSessionStatus([SessionStatus.ongoing]),
   (req: IAugmentedRequest, res: Response) => updateHistory(req, res));
 
 // Starts the express server
