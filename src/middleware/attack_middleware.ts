@@ -122,7 +122,8 @@ export const checkAddEffect = async (req: IAugmentedRequest, res: Response, next
   const body: { entitiesId: string[], effect?: Effect } = req.body;
   for (const entityId of body.entitiesId) {
     const entity = await findEntity(req.session!, entityId);
-    if (body.effect && entity!.entityType === EntityType.monster && (entity!.entity as Monster).effectImmunities?.includes(body.effect))
+    console.log((entity!.entity as Monster).effectImmunities, body.effect);
+    if (body.effect && entity!.entityType === EntityType.monster && (entity!.entity as Monster).effectImmunities!.includes(body.effect))
       return error400Factory.genericError(`Monster ${entity?.entity._name} is immune to effect ${body.effect}!`).setStatus(res);
   }
   next();

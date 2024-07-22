@@ -106,7 +106,6 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
     _hp: req.body.hp ?? req.entity?._hp,
     armorClass: req.body.armorClass ?? req.entity?.armorClass,
     speed: req.body.speed ?? req.entity?.speed,
-    effects: req.body.effects ?? req.entity?.effects,
   });
   const entity = await findEntity(req.session!, req.entityId!);
   if (req.body.slots && entity?.entityType == EntityType.character)

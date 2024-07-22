@@ -13,7 +13,7 @@ export class SequelizeRepository<T extends Model> extends Repository<T> {
    * @param relatedModel - Array of related models to include in queries.
    * @param ttl - Time-to-live (TTL) for cached items, in seconds.
    */
-  constructor(private model: ModelCtor<T>, private relatedModel: ModelCtor<Model>[], ttl: number) {
+  constructor(private model: ModelCtor<T>, private relatedModel: ModelCtor<Model>[], ttl: number, private noCache: boolean = false) {
     super(model.name, ttl);
   }
 
@@ -25,8 +25,11 @@ export class SequelizeRepository<T extends Model> extends Repository<T> {
    */
   override async getById(id: string, noCache: boolean = false): Promise<T | null> {
     // Check if the object is in cache
-    let item = await super.getById(id, noCache);
-    if (item) return item;
+    let item;
+    if (!this.noCache) {
+      item = await super.getById(id, noCache);
+      if (item) return item;
+    }
 
     // Otherwise retrieve it with Sequelize ORM
     item = await this.model.findByPk(id, { include: this.relatedModel });
