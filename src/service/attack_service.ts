@@ -18,6 +18,7 @@ import { Error500Factory } from '../error/error_factory';
 
 const error500Factory = new Error500Factory();
 const entityTurnRepository = new RepositoryFactory().entityTurnRepository();
+const characterRepository = new RepositoryFactory().characterRepository();
 
 /**
  * This function simulates rolling a list of dice and applies a modifier to the result.
@@ -150,6 +151,12 @@ export async function makeAttackService(req: IAugmentedRequest, res: Response) {
   } else if (body.attackType === AttackType.descriptiveEnchantment) {
     httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.descriptiveEnchantment, message: `${req.entity?._name} has cast ${body.attackInfo.enchantment}!` });
     return res.json({ message: `Descriptive enchantment ${body.attackInfo.enchantment} casted successfully!` });
+  }
+
+  // Update the character's available slots if an enchantment has been cast
+  if ([AttackType.damageEnchantment, AttackType.savingThrowEnchantment, AttackType.descriptiveEnchantment].includes(body.attackType) && req.entityType == EntityType.character) {
+    (req.entity as Character).slots[body.attackInfo.slotLevel! - 1] -= 1;
+    characterRepository.update(req.entityId!, { slots: (req.entity as Character).slots });
   }
 }
 
