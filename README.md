@@ -1,4 +1,4 @@
-# Scheda DnD 5e Backend
+[SchedaDnD5eBackend.postman_collection.json](https://github.com/user-attachments/files/16337126/SchedaDnD5eBackend.postman_collection.json)# Scheda DnD 5e Backend
 
 ######
 [![Postgres](https://img.shields.io/badge/Made%20with-postgres-%23316192.svg?style=plastic&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -288,12 +288,11 @@ In _compose up_ **-d option**, or _detached mode_, enables the creation and init
 
 ### How to refresh containers with latest changes:
 
-These commands, executed sequentially, copy the contents of the src directory to the _/usr/src/app/_ directory of both the API and Websocket containers, and then restart the two containers to apply any changes to the copied files.
+These commands, executed sequentially, copy the contents of the src directory to the _/usr/src/app/_ directory of both the API and Websocket containers, and then restart the two containers to apply any changes to the source code.
 - `docker cp .\src\ api:/usr/src/app/;` 
 - `docker cp .\src\ websocket:/usr/src/app/;`
 - `docker-compose restart api;`
 - `docker-compose restart websocket`
-
 
 <a name="Technologiesused"></a>
 ## ⚙️ Technologies used
