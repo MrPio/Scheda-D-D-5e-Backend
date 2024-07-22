@@ -23,25 +23,25 @@ export class RepositoryFactory {
    * Creates a repository for `Session` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `Session`.
    */
-  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, [Monster, HistoryMessage, EntityTurn], 1);
+  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, [Monster, HistoryMessage, EntityTurn], 30);
 
   /**
    * Creates a repository for `Monster` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `Monster`.
    */
-  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, [MonsterSkill, Session], 5);
+  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, [MonsterSkill, Session], 30);
 
   /**
    * Creates a repository for `EntityTurn` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `EntityTurn`.
    */
-  entityTurnRepository = (): Repository<EntityTurn> => new SequelizeRepository(EntityTurn, [Session], 10);
+  entityTurnRepository = (): Repository<EntityTurn> => new SequelizeRepository(EntityTurn, [Session], 30);
 
   /**
    * Creates a repository for `MonsterSkill` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `MonsterSkill`.
    */
-  monsterSkillRepository = (): Repository<MonsterSkill> => new SequelizeRepository(MonsterSkill, [Monster], 3);
+  monsterSkillRepository = (): Repository<MonsterSkill> => new SequelizeRepository(MonsterSkill, [Monster], 30);
 
   /**
    * Creates a repository for `HistoryMessage` entities with Sequelize.
@@ -59,13 +59,13 @@ export class RepositoryFactory {
    * Creates a repository for `Character` entities with Firestore.
    * @returns A `FirestoreRepository` instance for `Character`.
    */
-  characterRepository = (): Repository<Character> => new FirestoreRepository('characters', Character.fromJSON, 15);
+  characterRepository = (): Repository<Character> => new FirestoreRepository('characters', Character.fromJSON, 60);
 
   /**
    * Creates a repository for `NPC` entities with Firestore.
    * @returns A `FirestoreRepository` instance for `NPC`.
    */
-  npcRepository = (): Repository<NPC> => new FirestoreRepository('npcs', NPC.fromJSON, 15);
+  npcRepository = (): Repository<NPC> => new FirestoreRepository('npcs', NPC.fromJSON, 60);
 
   /**
    * Creates a repository for `Enchantment` entities with Firestore.

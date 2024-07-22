@@ -29,9 +29,8 @@ export abstract class Repository<T> {
    * @param id - The unique identifier of the item to invalidate in the cache.
    */
   protected async invalidateCache(id: string) {
-    if ((process.env.USE_REDIS ?? 'true') == 'true') {
+    if ((process.env.USE_REDIS ?? 'true') == 'true')
       await redis!.del(`${this.modelName}:${id}`);
-    }
   }
 
   /**
@@ -41,9 +40,9 @@ export abstract class Repository<T> {
    * @returns The item if found in the cache; otherwise, null.
    */
   async getById(id: string, noCache: boolean = false): Promise<T | null> {
-    if ((process.env.USE_REDIS ?? 'true') != 'true' || noCache) {
+    if ((process.env.USE_REDIS ?? 'true') != 'true' || noCache)
       return null;
-    }
+
     // Check if the object is in cache
     const item = await redis!.get(`${this.modelName}:${id}`);
     if (item) {

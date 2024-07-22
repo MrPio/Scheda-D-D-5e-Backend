@@ -28,13 +28,13 @@ export async function postponeTurnService(req: IAugmentedRequest, res: Response)
 
 export async function endTurnService(req: IAugmentedRequest, res: Response) {
 
+  // Set the reaction of the new playing entity to activatable
+  updateEntity(req.session!, req.session!.sortedTurns[0].entityUID, { isReactionActivable: true });
+
   // Push the current entity to the end of the turns list
   req.session!.sortedTurns[0].turnIndex = req.session!.entityTurns.length;
   for (const turn of req.session!.sortedTurns)
     turn.turnIndex -= 1;
-
-  // Set the reaction of the new playing entity to activatable
-  updateEntity(req.session!, req.session!.sortedTurns[0].entityUID, { isReactionActivable: true });
 
   // Update session in the database
   req.session?.entityTurns.forEach(it => entityTurnRepository.update(it.id, { turnIndex: it.turnIndex }));
