@@ -1,10 +1,5 @@
 # Scheda DnD 5e Backend
 
-TODO: Finire descrizione pattern
-TODO: Aggiustare class diagram
-TODO: Spiegare come testare soprattutto per le WS
-TODO: Sezione apposita per Websocket
-
 ######
 [![Postgres](https://img.shields.io/badge/Made%20with-postgres-%23316192.svg?style=plastic&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![NPM](https://img.shields.io/badge/Made%20with-NPM-%23CB3837.svg?style=plastic&logo=npm&logoColor=white)](https://www.npmjs.com/)
