@@ -23,13 +23,13 @@ export class RepositoryFactory {
    * Creates a repository for `Session` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `Session`.
    */
-  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, [Monster, HistoryMessage, EntityTurn], 30);
+  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, [Monster, HistoryMessage, EntityTurn], 0);
 
   /**
    * Creates a repository for `Monster` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `Monster`.
    */
-  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, [MonsterSkill, Session], 30);
+  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, [MonsterSkill, Session], 0);
 
   /**
    * Creates a repository for `EntityTurn` entities with Sequelize.

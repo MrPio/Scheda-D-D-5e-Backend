@@ -23,7 +23,6 @@ TODO: Sezione apposita per Websocket
 ## 📘 Table of Contents
 
 * [🎯 Project Goal](#Projectgoal)
-
 * [📄 Use case diagram](#Usecasediagram)
   * [Actors](#Actors)
   * [Session management](#Sessionmanagement)
@@ -43,14 +42,12 @@ TODO: Sezione apposita per Websocket
   * [Enable Reaction](#EnableReaction)
   * [Connect To Session](#ConnectToSession)
 * [📐 Class diagram](#Classdiagram)
-
 * [🪄 Patterns used](#Patternsused)
   * [Middlewares: Chain of Responsability](#ChainofResponsability)
   * [Exceptions handling: Factory Method](#Factory)
   * [Data sources handling: Repository + Factory + Singleton](#RepFacSingleton)
   * [Websocket communication: Observer](#Observer)
   * [HOF](#hof) (nel type checking e nei generatori di middleware)
-
 * [⚙️ Technologies used](#Technologiesused)
 * [👨🏻‍💻 Authors](#Authors)
 
@@ -61,9 +58,16 @@ TODO: Sezione apposita per Websocket
 
 The backend is designed to offer complete management of combat sessions in "_Dungeons & Dragons 5e_", integrating directly with character created by players and npc sheets created by the master. These are created through the dedicated Flutter application, "_SchedaDnD5e_", which serves as the frontend for interaction with the system.
 
+> ### [📱 Scheda D&D 5E - The mobile app](https://github.com/MrPio/Scheda_DnD_5e/tree/master)
+
+
 ### Main Backend Features
 
-1. **Combat Session Management**
+The requirements for this project are detailed in the following document, unfortunately in 🇮🇹 language.
+
+> ### [📄 Scheda D&D 5E Backend - Requirements](/doc/Scheda%20DnD%205E%20Requirements.docx)
+
+<!-- 1. **Combat Session Management**
    - **Creation and Update**: Allows the creation of new combat sessions and the update of existing sessions. Each session includes attributes such as name, session status, map size, and participants (characters, NPCs, monsters).
    - **Status Monitoring**: Manages and updates session status (created, in progress, paused, ended), and maintains event history via historical messages.
 
@@ -84,7 +88,7 @@ The backend is designed to offer complete management of combat sessions in "_Dun
 
 6. **Persistence and Synchronization**
    - **Data Persistence**: Ensures that all changes to entities and sessions are saved in the database. Uses Sequelize for data management, ensuring persistent and consistent updates.
-   - **Synchronization with Frontend**: Maintains data synchronization between the backend and frontend, ensuring that changes to sessions and entities are reflected in real time in the user interface.
+   - **Synchronization with Frontend**: Maintains data synchronization between the backend and frontend, ensuring that changes to sessions and entities are reflected in real time in the user interface. -->
 
 <a name="Usecasediagram"></a>
 ## 📄 Use case diagram
@@ -203,57 +207,76 @@ The API server endpoints are listed in the following table. Blank lines separate
 <a name="Patternsused"></a>
 ## 🪄 Patterns Used
 
-Various software design patterns were used in the implementation to ensure a robust, maintainable and scalable code structure. The following are the patterns used:
+The following patterns have been used in the development of solutions for the most critical aspects of the project. 
 
+---
 <a name="ChainofResponsability"></a>
 ### Chain of Responsability
 
-The Chain of Responsability pattern is used extensively in this application to address various concerns such as validation, authentication and authorisation in a modular and systematic way.
+The adoption of the Model-View-Controller architectural pattern makes it possible to decouple the management of the business logic, which is handled by the model, from the routing, which is handled by the controller.
 
-**Why Chain of Responsability?**  
-- **Separation of concerns**: Allows for a clear separation of different concerns in the request processing pipeline. Each middleware function is responsible for a specific task - whether it's validating input parameters, checking user credentials or handling errors - making the codebase cleaner and easier to manage.
-- **Reusability**: Functions can be reused across multiple paths and endpoints. For example, validation middleware that checks for mandatory parameters and their types can be applied to different endpoints, reducing code duplication and promoting consistency.
-- **Flexibility** and extensibility: it can be easily added, removed or modified without affecting other parts of the application. This flexibility supports modular feature development and simplifies testing and debugging.
+However, the introduction of middleware in conjunction with the Chain of Responsability pattern allows the request validation phase to be decoupled from the response generation phase. In essence, the controller is only reached if all the middleware succeeds.
 
-In practice, at the dice roll endpoint, for example, middleware functions perform essential tasks such as verifying the presence of required parameters, validating their data types, and performing specific checks before the main dice roll logic is executed. This approach not only streamlines request handling, but also centralises logic for common operations.
+Middleware is natively supported by [_Express_](https://github.com/expressjs/express), and each can be thought of as a validator for a single aspect of the client request, independent of all others. This allows them to be reused across multiple routes in a very elegant way.
 
+---
+<a name="Hof"></a>
+### Higher Order Functions
+
+To generalize the middleware, higher order functions were used.
+
+For example, _body parameter type validation_ has been separated from the per-route middleware and delegated to the standalone `checkMandadoryParams` middleware.
+
+```[typescript]
+app.get('/diceRoll',
+  checkMandadoryParams(['diceList']),
+  checkParamsType({ diceList: ARRAY(ENUM(Dice)), modifier: INTEGER }),
+  ...
+```
+
+`checkParamsType` is a higher order function that takes as input an object where the keys are the body parameters and the value is the type checker function, and returns the middleware for that particular type check validation.
+
+The type checker functions may be themselves higher order functions. For example, `ARRAY` takes a type checker function as input and returns a type checker function that checks that the object provided is an array and then applies the latter to all the elements of the array.
+
+```[typescript]
+export const ARRAY =
+  (next: (arg0: object) => boolean) =>
+    (obj: object) =>
+      Array.isArray(obj) && obj.every(it => next(it));
+```
+
+---
 <a name="Factory"></a>
 ### Factory Method
 
-The Factory Method pattern is used to create error objects, encapsulating the instantiation logic and providing a centralised way to generate different types of errors. This pattern helps to maintain a clean and organised code structure, ensuring that error handling is consistent and standardised across the application.
+The factory method pattern has been used to centralize both client-side and server-side exceptions that may arise when handling the client request. It provides a **lever of abstraction** that helps the client code to ignore the actual error response generation, instead only requiring it to specify which [`ErrorProduct`](/src/error/error_product.ts) to use.
 
-**Why Factory Method?** 
-- **Encapsulating the creation logic**: By using factory methods to create error objects, the instantiation logic is encapsulated within dedicated classes. This approach hides the complexity of error creation and provides a simple interface for error creation.
-- **Consistency and standardisation**: Factory methods ensure that errors are created in a consistent manner, following a standardised format and structure. This consistency is essential for effective bug handling and debugging.
-- **Centralised error management**: With factory methods, bug creation is managed from a single location, making it easier to handle different types of bugs consistently. This centralisation simplifies maintenance and makes it easier to update the error handling logic.
+This is implemented in the [`/src/error`](/src/error/) directory.
 
-For example, different factory classes are used to generate client-side and server-side errors, allowing the application to handle different error scenarios in a structured way. This ensures that error responses are unambiguous and appropriately reflect the nature of the problem.
-
+---
 <a name="RepFacSingleton"></a>
-### Repository + Factory + Singleton
+### Repository
 
-The data sources in the application are managed using a combination of the Repository, Factory and Singleton patterns. These patterns work together to abstract data access, manage the creation of data handling objects and ensure efficient resource management.
+In this project, three different data sources are used:
+- `Firebase Firestore`: Stores the mobile app objects, such as **players**, **characters**, **enchantments** and **npc**.
+- `PostgreSQL`: Stores the combat session related information, such as **sessions** and **monsters**.
+- `Redis`: Implements an abstraction layer on top of the other two. Also caches the **Firebase JWT** with a short TTL to help reduce validation calls to the Firebase API (necessary because Firebase Auth uses a rolling public key, which is needed to validate the JWT signature).
 
-**Repository Pattern**:  
-- **Abstraction of data access**: The Repository Pattern abstracts the data layer, providing a clean API for interacting with different data sources. This abstraction separates the data access logic from the business logic, making the code more modular and easier to maintain.
-- **Caching and Efficiency**: Repositories include caching functionality (e.g. using Redis) to improve performance by reducing redundant data retrieval operations. This caching mechanism helps to speed up access to frequently used data.
+As different objects are stored in different places, the repository pattern comes in very handy for decoupling from the location of the data.
 
-**Factory Pattern**:  
-- **Centralised repository creation**: The factory pattern is used to create repository instances for different models. This centralised creation logic ensures that repositories are built consistently and simplifies the management of different data stores.
-- **Flexibility and Scalability**: By using a factory to build repositories, the system can easily adapt to changes in data store technologies or requirements without significant changes to the code base.
+Thanks to the repository pattern, client code can ignore not only which database the object is stored in, but also the caching policy, which is handled entirely by the repository itself.
 
-**Singleton Pattern**:  
-- **Single Source of Truth**: The singleton pattern ensures that only one instance of each repository is used throughout the application. This guarantees a single source of truth for data access and reduces the overhead associated with multiple instances.
-- **Resource Management**: Managing a single instance of a repository helps to conserve resources and maintain a consistent state across the application. It also simplifies the handling of connections and transactions.
-
-Together, these patterns enable efficient data retrieval, management, and persistence across various storage solutions such as Redis, Sequelize, and Firestore.
+This is implemented in the [`/src/repository`](/src/repository/) directory.
 
 <a name="Observer"></a>
 ### Observer
-// TODO
-<a name="Hof"></a>
-### HOF
-// TODO
+The websocket server makes extensive use of the observer design pattern using the [_RxJS_](https://rxjs.dev/) library.
+
+Callback functions are subscribed to `Subject` objects, which are called repeatedly by the `open`, `message` and `close` websocket events.
+
+The `timer` observable is used to prevent starvation when waiting for a player response through websocket. If the player answers or disconnects instead, the timer is interrupted using the `takeUntil` function, which interrupts the timer emission before it reaches the abort `Subject`.
+
+This is implemented in the [`/src/websocket/websocket.ts`](/src/websocket/websocket.ts) directory.
 
 <a name="Technologiesused"></a>
 ## ⚙️ Technologies used
