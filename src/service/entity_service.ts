@@ -1,13 +1,17 @@
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
-import { Error400Factory } from '../error/error_factory';
 import { IAugmentedRequest } from '../interface/augmented_request';
 import { EntityType } from '../model/entity';
+import { MonsterSkill } from '../model/monster_skill';
+import { Effect } from '../model/effect';
+import { deleteEntity, findEntity, updateEntity } from './utility/model_queries';
+import { Monster } from '../model/monster';
 
-const errorFactory = new Error400Factory();
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
+const characterRepository = repositoryFactory.characterRepository();
 const monsterRepository = repositoryFactory.monsterRepository();
+const monsterSkillRepository = repositoryFactory.monsterSkillRepository();
 
 /**
  * Adds an entity to a session based on the sessionId provided in the request parameters.
@@ -15,180 +19,81 @@ const monsterRepository = repositoryFactory.monsterRepository();
  * Depending on the entity type, it updates the session accordingly.
  */
 export async function addEntityService(req: IAugmentedRequest, res: Res) {
-  const { sessionId } = req.params;
-  const { entityType, entityInfo } = req.body;
-
-  const session = await sessionRepository.getById(sessionId);
-
-  let entity;
-  if (entityType === EntityType.monster) {
-    // Create a new monster entity and add it to the session's monsters list
-    entity = await monsterRepository.create({ ...entityInfo, sessionId: sessionId });
-    session?.monsters.push(entity);
-  } else if (entityType === EntityType.npc) {
-    // Add an NPC entity to the session's NPC UID list
-    entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
-    session!.npcUIDs = session!.npcUIDs ? `${session!.npcUIDs},${entity.uid}` : entity.uid.toString();
-  } else {
-    // Add a character entity to the session's character UID list
-    entity = { uid: entityInfo.uid }; // Assuming other entities only need UID
-    session!.characterUIDs = session!.characterUIDs ? `${session!.characterUIDs},${entity.uid}` : entity.uid.toString();
+  const body: {
+    entityType: EntityType,
+    entityInfo: {
+      authorUID?: string,
+      name?: string,
+      hp?: number,
+      maxHp?: number,
+      armorClass?: number,
+      isReactionActivable?: boolean,
+      speed?: number,
+      skills?: { [key: string]: number },
+      enchantments?: string[],
+      weapons?: string[],
+      effectImmunities?: Effect[],
+      effects?: Effect[],
+      uid?: string
+    }
+  } = req.body;
+  if (body.entityType === EntityType.monster) {
+    const monster = await monsterRepository.create({
+      authorUID: body.entityInfo.authorUID!,
+      _name: body.entityInfo.name!,
+      _hp: body.entityInfo.hp!,
+      _maxHp: body.entityInfo.maxHp!,
+      armorClass: body.entityInfo.armorClass!,
+      isReactionActivable: body.entityInfo.isReactionActivable!,
+      speed: body.entityInfo.speed!,
+      enchantments: body.entityInfo.enchantments!,
+      weapons: body.entityInfo.weapons!,
+      effectImmunities: body.entityInfo.effectImmunities!,
+      effects: body.entityInfo.effects!,
+      sessionId: Number.parseInt(req.sessionId!),
+    } as Monster);
+    for (const skill of Object.entries(body.entityInfo.skills!))
+      monsterSkillRepository.create({ skill: skill[0], value: skill[1], monsterId: monster.id } as MonsterSkill);
+  } else if (body.entityType === EntityType.npc) {
+    req.session!.npcUIDs = (req.session!.npcUIDs ?? []).concat(body.entityInfo.uid!);
+    sessionRepository.update(req.sessionId!, { npcUIDs: req.session!.npcUIDs });
+  } else if (body.entityType === EntityType.character) {
+    req.session!.characterUIDs = (req.session!.characterUIDs ?? []).concat(body.entityInfo.uid!);
+    sessionRepository.update(req.sessionId!, { characterUIDs: req.session!.characterUIDs });
   }
-  // Update the session with the new entity information
-  // FIXME: This update won't work
-  await sessionRepository.update(session!.id, session!);
-  return res.status(200).json({ message: `${entityType} added successfully!` });
+  return res.status(200).json({ message: `${body.entityType} added successfully!` });
 }
-
-/*
-In body:
-1) add a monster:
-{
-  "entityType": "Monster",
-  "entityInfo": {
-    "authorUID": "masterPio",
-    "name": "Orc",
-    "maxHp": 30,
-    "hp": 30,
-    "armorClass": 13,
-    "enchantments": [],
-    "isReactionActivable": true,
-    "speed": 30,
-    "weapons": ["axe"],
-    "effectsImmunities": []
-    "skills": {[key:Skill]:number}
-    
-  }
-}
-2) add other entity:
-{
-  "entityType": "character",
-  "entityInfo": {
-    "uid": "character123"
-  }
-*/
 
 /**
- * This function removes an entity from a session based on the sessionId and entityId 
+ * Removes an entity from a session based on the sessionId and entityId 
  * provided in the request parameters. It updates the session by removing references to
  * the entity and deletes the entity from the appropriate repository.
  */
 export async function deleteEntityService(req: IAugmentedRequest, res: Res) {
-  const { sessionId, entityId } = req.params;
-
-  const session = await sessionRepository.getById(sessionId);
-
-  // Try to find the entity in entityTurn
-  const entityTurnIndex = session!.entityTurns.findIndex(e => e.entityUID === entityId);
-  session!.entityTurns.splice(entityTurnIndex, 1);
-
-  // Remove the entity from the appropriate UID list
-  await monsterRepository.delete(entityId);
-  session!.monsters = session!.monsters?.filter(monster => monster.id !== entityId);
-  session!.characterUIDs = session!.characterUIDs?.filter(uid => uid !== entityId);
-  session!.npcUIDs = session!.npcUIDs?.filter(uid => uid !== entityId);
-
-  // If it's a monster, also remove it from the monsters table
-  const monsterIndex = session!.monsters.findIndex(m => m.id === parseInt(entityId));
-  if (monsterIndex !== -1) {
-    const [removedMonster] = session!.monsters.splice(monsterIndex, 1);
-    await monsterRepository.delete(removedMonster.id);
-  }
-
-  // Update the session with the new entity information
-  // FIXME: This update won't work
-  await sessionRepository.update(session!.id, session!);
-  return res.status(200).json({ message: 'Entity removed successfully from session!' });
+  deleteEntity(req.session!, req.entityId!);
+  return res.status(200).json({ message: `${req.entity!._name} removed successfully from session!` });
 }
 
 /**
- * This function retrieves detailed information about an entity within a session.
+ * Retrieves information about an entity within a session.
  * The entity is identified by the entityId provided in the request parameters.
  * It first checks if the entity is a monster, then if it is in the entityTurns list.
  * If the entity is not found, an error is returned.
  */
 export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
-  const { sessionId, entityId } = req.params;
-
-  const session = await sessionRepository.getById(sessionId);
-
-  // Try to find the entity in the monsters list
-  const monster = session!.monsters.find(m => m.id === parseInt(entityId));
-  if (monster) {
-    // Return the monster details if found
-    return res.status(200).json(monster);
-  }
-
-  // Try to find the entity in the entityTurns list
-  const entityTurn = session!.entityTurns.find(e => e.entityUID === entityId);
-  if (entityTurn) {
-    // Return the entity turn details if found
-    return res.status(200).json(entityTurn);
-  }
-
-  // Return an error if the entity is not found in either list
-  errorFactory.genericError(`Entity "${entityId}" not found in session "${sessionId}"`).setStatus(res);
+  return res.status(200).json(req.entity);
 }
 
-// TODO: rivedere alla luce di una nuova gestione dell'ordine dei turni
+// Updates information about an entity within a session.
 export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) {
-  const { sessionId, entityId } = req.params;
-  const entityInfo = req.body;
-
-  const session = await sessionRepository.getById(sessionId);
-
-  // If posX or posY
-  // Try to find the entity in entityTurn
-  const entityTurnIndex = session!.entityTurns.findIndex(e => e.entityUID === entityId);
-  if (entityTurnIndex !== -1) {
-    const entityTurn = session!.entityTurns[entityTurnIndex];
-
-    // Update entity turn information
-    Object.assign(entityTurn, entityInfo);
-    // FIXME: This update won't work
-    await sessionRepository.update(session!.id, session!);
-    return res.status(200).json({ message: 'Entity info updated successfully!' });
-  }
-
-
-  // Assuming monster skill are not part of the request body
-  // Try to find the entity in monsters
-  const monsterIndex = session!.monsters.findIndex(m => m.id === parseInt(entityId));
-  if (monsterIndex !== -1) {
-    const monster = session!.monsters[monsterIndex];
-
-    // Update monster information
-    Object.assign(monster, entityInfo);
-    // FIXME: This update won't work
-    await monsterRepository.update(monster.id, monster);
-    return res.status(200).json({ message: 'Monster info updated successfully!' });
-  }
-
-  // Try to find the entity in characterUIDs or npcUIDs
-  const entityTurnEntity = session!.entityTurns.find(e => e.entityUID === entityId);
-  if (entityTurnEntity) {
-    // Update character or npc entity information
-    Object.assign(entityTurnEntity, entityInfo);
-    // FIXME: This update won't work
-    await sessionRepository.update(session!.id, session!);
-    return res.status(200).json({ message: 'Character/NPC info updated successfully!' });
-  }
-  // Se la vita è non pos. rimuvi il target dalla turnazione
-
+  updateEntity(req.session!, req.entityId!, {
+    _hp: req.body.entityInfo.hp ?? req.entity?._hp,
+    armorClass: req.body.entityInfo.armorClass ?? req.entity?.armorClass,
+    speed: req.body.entityInfo.speed ?? req.entity?.speed,
+    effects: req.body.entityInfo.effects ?? req.entity?.effects,
+  });
+  const entity = await findEntity(req.session!, req.entityId!);
+  if (req.body.entityInfo.slots && entity?.entityType == EntityType.character)
+    characterRepository.update(req.entityId!, { slots: req.body.entityInfo.slots });
+  res.json({ messag: `${req.entity!._name} updated successfully!` });
 }
-/* sample body for update:
-{
-  "_name": "Updated Name",
-  "_maxHp": 50,
-  "_hp": 40,
-  "armorClass": 18,
-  "enchantments": ["Enchantment 1", "Enchantment 2"],
-  "isReactionActivable": true,
-  "speed": 30,
-  "weapons": ["Weapon 1", "Weapon 2"],
-  "effects": [
-    {"name": "Effect 1", "description": "Description of Effect 1"},
-    {"name": "Effect 2", "description": "Description of Effect 2"}
-  ]
-}
-*/

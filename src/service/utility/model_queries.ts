@@ -3,9 +3,11 @@ import { EntityTurn } from '../../model/entity_turn';
 import { Session } from '../../model/session';
 import { RepositoryFactory } from '../../repository/repository_factory';
 
+const sessionRepository = new RepositoryFactory().sessionRepository();
 const characterRepository = new RepositoryFactory().characterRepository();
 const npcRepository = new RepositoryFactory().npcRepository();
 const monsterRepository = new RepositoryFactory().monsterRepository();
+const entityTurnRepository = new RepositoryFactory().entityTurnRepository();
 
 /**
  * Helper function to find an `Entity` by entityId in the session.
@@ -35,6 +37,21 @@ export async function updateEntity(session: Session, entityId: string, newEntity
     npcRepository.update(entityId, newEntity);
   else if (session.monsterUIDs?.includes(entityId))
     monsterRepository.update(entityId, newEntity);
+}
+
+/**
+ * Helper function to delete an `Entity` by entityId in the session.
+ * @param session The Session object containing the entityId.
+ * @param entityId The entityId to search for.
+ */
+export async function deleteEntity(session: Session, entityId: string): Promise<void> {
+  if (session.characterUIDs?.includes(entityId))
+    sessionRepository.update(session.id, { characterUIDs: session.characterUIDs.filter(it => it !== entityId) });
+  else if (session.npcUIDs?.includes(entityId))
+    sessionRepository.update(session.id, { npcUIDs: session.npcUIDs.filter(it => it !== entityId) });
+  else if (session.monsterUIDs?.includes(entityId))
+    monsterRepository.delete(entityId);
+  entityTurnRepository.delete(session.entityTurns.find(it => it.entityUID == entityId)?.id);
 }
 
 /**
