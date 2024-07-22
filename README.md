@@ -18,6 +18,8 @@
 ## 📘 Table of Contents
 
 * [🎯 Project Goal](#Projectgoal)
+* [🐋 Docker](#Docker)
+* [✅ How to test with Postman](#Test)
 * [📄 Use case diagram](#Usecasediagram)
   * [Actors](#Actors)
   * [Session management](#Sessionmanagement)
@@ -43,7 +45,6 @@
   * [Exceptions handling: Factory Method](#Factory)
   * [Data sources handling: Repository](#RepFacSingleton)
   * [Websocket communication: Observer](#Observer)
-* [🐋 Docker](#Docker)
 * [⚙️ Technologies used](#Technologiesused)
 * [👨🏻‍💻 Authors](#Authors)
 
@@ -85,6 +86,52 @@ The requirements for this project are detailed in the following document, unfort
 6. **Persistence and Synchronization**
    - **Data Persistence**: Ensures that all changes to entities and sessions are saved in the database. Uses Sequelize for data management, ensuring persistent and consistent updates.
    - **Synchronization with Frontend**: Maintains data synchronization between the backend and frontend, ensuring that changes to sessions and entities are reflected in real time in the user interface. -->
+
+<a name="Docker"></a>
+## 🐋 Docker
+
+The project is containerized using Docker and Docker Compose. In particular, the `docker.api` file contains the instructions for containerizing the API server, while the `docker.websocket` file outlines the process of containerizing the WebSocket server. Additionally, the `docker-compose.yml` file contains also instructions for creating containers dedicated to the Postgres and Redis databases. These containers are based on public images sourced from Docker Hub.
+
+### The following commands are used to start the four containers:
+- Build API container with image tag **api_img**: `docker build -t api_img -f .\Dockerfile.api .`
+- Build Websocket container with image tag **websocket_img**: `docker build -t websocket_img -f .\Dockerfile.websocket .`
+- Start all four containers: `docker-compose up -d`
+
+In _compose up_ **-d option**, or _detached mode_, enables the creation and initiation of containers that run in the background, freeing up the terminal for other tasks.
+
+### How to refresh containers with latest changes:
+
+These commands, executed sequentially, copy the contents of the src directory to the _/usr/src/app/_ directory of both the API and Websocket containers, and then restart the two containers to apply any changes to the copied files.
+- `docker cp .\src\ api:/usr/src/app/;` 
+- `docker cp .\src\ websocket:/usr/src/app/;`
+- `docker-compose restart api;`
+- `docker-compose restart websocket`
+
+<a name="Test"></a>
+## ✅ How to test with Postman
+
+Before testing, make sure you extract the following archive to the root directory. It contains unversioned files such as `.env`, `.dev.env`, websocket private key and firebase secrets.
+
+### [🤐 Secrets.zip](/Secrets.zip)
+
+The password to decrypt the archive can be requested to the authors.
+
+The postman collection created for testing the routes is:
+
+### [🗃️ Postman Collection.json](/doc/SchedaDnD5eBackend.postman_collection.json)
+
+When started, the API server automatically seeds the PostgreSQL database with a test session. In this session there is a character controlled by a player and a monster controlled by the master.
+
+To test the `/attack`, `/savingThrow` and `/reaction`, which require the players to be connected, it is also needed to create two websockets in Postman, one for the master and one for the player.
+
+Before creating the websocket, ensure that `.env` file contains the row `NODE_ENV= dev`. This, in conjunction with `USE_JWT= false` in the `.dev.env` file, allows token validation to be bypassed and allows the same player to handle multiple websocket connections.
+
+The player websocket should be created as follows:
+- The connection URL is `wss://localhost:8080/sessions/1`.
+
+The master websocket should be created as follows:
+- The connection URL is `wss://localhost:8080/sessions/1`.
+- In `Headers` section, add a `token` entry with value `HbE4YvSXSx6tbdBxB9Sn`, which is the identifier of the master player. This only works in development mode.
 
 <a name="Usecasediagram"></a>
 ## 📄 Use case diagram
@@ -273,27 +320,6 @@ Callback functions are subscribed to `Subject` objects, which are called repeate
 The `timer` observable is used to prevent starvation when waiting for a player response through websocket. If the player answers or disconnects instead, the timer is interrupted using the `takeUntil` function, which interrupts the timer emission before it reaches the abort `Subject`.
 
 This is implemented in the [`/src/websocket/websocket.ts`](/src/websocket/websocket.ts) directory.
-
-<a name="Docker"></a>
-## 🐋 Docker
-
-The project is containerized using Docker and Docker Compose. In particular, the `docker.api` file contains the instructions for containerizing the API server, while the `docker.websocket` file outlines the process of containerizing the WebSocket server. Additionally, the `docker-compose.yml` file contains also instructions for creating containers dedicated to the Postgres and Redis databases. These containers are based on public images sourced from Docker Hub.
-
-### The following commands are used to start the four containers:
-- Build API container with image tag **api_img**: `docker build -t api_img -f .\Dockerfile.api .`
-- Build Websocket container with image tag **websocket_img**: `docker build -t websocket_img -f .\Dockerfile.websocket .`
-- Start all four containers: `docker-compose up -d`
-
-In _compose up_ **-d option**, or _detached mode_, enables the creation and initiation of containers that run in the background, freeing up the terminal for other tasks.
-
-### How to refresh containers with latest changes:
-
-These commands, executed sequentially, copy the contents of the src directory to the _/usr/src/app/_ directory of both the API and Websocket containers, and then restart the two containers to apply any changes to the copied files.
-- `docker cp .\src\ api:/usr/src/app/;` 
-- `docker cp .\src\ websocket:/usr/src/app/;`
-- `docker-compose restart api;`
-- `docker-compose restart websocket`
-
 
 <a name="Technologiesused"></a>
 ## ⚙️ Technologies used

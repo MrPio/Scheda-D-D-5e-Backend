@@ -176,6 +176,7 @@ app.patch('/sessions/:sessionId/effect',
   checkParamsType({ entitiesId: ARRAY(STRING), effect: NULLABLE(ENUM(Effect)) }),
   checkSessionExists,
   checkSessionStatus([SessionStatus.ongoing]),
+  checkEntitiesExistsInSession,
   checkAddEffect,
   (req: IAugmentedRequest, res: Response) => addEffect(req, res));
 
