@@ -60,7 +60,7 @@ The backend is designed to offer complete management of combat sessions in "_Dun
 
 The requirements for this project are detailed in the following document, unfortunately in 🇮🇹 language.
 
-> ### [📄 Scheda D&D 5E Backend - Requirements](/doc/Scheda%20DnD%205E%20Requirements.docx)
+> ### [📘 Scheda D&D 5E Backend - Requirements](/doc/Scheda%20DnD%205E%20Requirements.docx)
 
 <!-- 1. **Combat Session Management**
    - **Creation and Update**: Allows the creation of new combat sessions and the update of existing sessions. Each session includes attributes such as name, session status, map size, and participants (characters, NPCs, monsters).
