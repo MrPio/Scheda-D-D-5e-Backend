@@ -6,12 +6,15 @@ import { MonsterSkill } from '../model/monster_skill';
 import { Effect } from '../model/effect';
 import { deleteEntity, findEntity, updateEntity } from './utility/model_queries';
 import { Monster } from '../model/monster';
+import { randomInt } from 'crypto';
+import { EntityTurn } from '../model/entity_turn';
 
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
 const characterRepository = repositoryFactory.characterRepository();
 const monsterRepository = repositoryFactory.monsterRepository();
 const monsterSkillRepository = repositoryFactory.monsterSkillRepository();
+const entityTurnRepository = repositoryFactory.entityTurnRepository();
 
 /**
  * Adds an entity to a session based on the sessionId provided in the request parameters.
@@ -37,6 +40,7 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
       uid?: string
     }
   } = req.body;
+  let entityId;
   if (body.entityType === EntityType.monster) {
     const monster = await monsterRepository.create({
       authorUID: body.entityInfo.authorUID!,
@@ -52,15 +56,25 @@ export async function addEntityService(req: IAugmentedRequest, res: Res) {
       effects: body.entityInfo.effects!,
       sessionId: Number.parseInt(req.sessionId!),
     } as Monster);
+    entityId = monster.id;
     for (const skill of Object.entries(body.entityInfo.skills!))
       monsterSkillRepository.create({ skill: skill[0], value: skill[1], monsterId: monster.id } as MonsterSkill);
   } else if (body.entityType === EntityType.npc) {
+    entityId = body.entityInfo.uid!;
     req.session!.npcUIDs = (req.session!.npcUIDs ?? []).concat(body.entityInfo.uid!);
     sessionRepository.update(req.sessionId!, { npcUIDs: req.session!.npcUIDs });
   } else if (body.entityType === EntityType.character) {
+    entityId = body.entityInfo.uid!;
     req.session!.characterUIDs = (req.session!.characterUIDs ?? []).concat(body.entityInfo.uid!);
     sessionRepository.update(req.sessionId!, { characterUIDs: req.session!.characterUIDs });
   }
+  entityTurnRepository.create({
+    entityUID: entityId,
+    turnIndex: req.session!.sortedTurns[req.session!.entityTurns.length - 1].turnIndex + 1,
+    posX: randomInt(req.session!.mapSize!.width),
+    posY: randomInt(req.session!.mapSize!.height),
+    sessionId: req.session!.id,
+  } as EntityTurn);
   return res.status(200).json({ message: `${body.entityType} added successfully!` });
 }
 

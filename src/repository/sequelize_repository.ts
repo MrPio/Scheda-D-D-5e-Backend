@@ -49,8 +49,8 @@ export class SequelizeRepository<T extends Model> extends Repository<T> {
    */
   async create(item: T): Promise<T> {
     const itemWithId = await this.model.create(item as MakeNullishOptional<T>);
-    // Optionally cache the created item if needed
     // await super.setCache(itemWithId.id, itemWithId);
+
     return itemWithId;
   }
 
