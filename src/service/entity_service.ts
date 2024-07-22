@@ -8,6 +8,8 @@ import { deleteEntity, findEntity, updateEntity } from './utility/model_queries'
 import { Monster } from '../model/monster';
 import { randomInt } from 'crypto';
 import { EntityTurn } from '../model/entity_turn';
+import { ActionType } from '../model/history_message';
+import { httpPost } from './utility/axios_requests';
 
 const repositoryFactory = new RepositoryFactory();
 const sessionRepository = repositoryFactory.sessionRepository();
@@ -109,5 +111,11 @@ export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) 
   const entity = await findEntity(req.session!, req.entityId!);
   if (req.body.slots && entity?.entityType == EntityType.character)
     characterRepository.update(req.entityId!, { slots: req.body.slots });
+
+  // Check if the entity has died
+  if (req.body.hp <= 0) {
+    await entityTurnRepository.delete(req.session?.entityTurns.find(it => it.entityUID === req.entityId!)?.id);
+    httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.died, message: `${entity?.entity._name} has died!` });
+  }
   res.json({ messag: `${req.entity!._name} updated successfully!` });
 }
