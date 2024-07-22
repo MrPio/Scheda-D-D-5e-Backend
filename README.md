@@ -43,6 +43,7 @@
   * [Exceptions handling: Factory Method](#Factory)
   * [Data sources handling: Repository](#RepFacSingleton)
   * [Websocket communication: Observer](#Observer)
+* [🐋 Docker](#Docker)
 * [⚙️ Technologies used](#Technologiesused)
 * [👨🏻‍💻 Authors](#Authors)
 
@@ -272,6 +273,18 @@ Callback functions are subscribed to `Subject` objects, which are called repeate
 The `timer` observable is used to prevent starvation when waiting for a player response through websocket. If the player answers or disconnects instead, the timer is interrupted using the `takeUntil` function, which interrupts the timer emission before it reaches the abort `Subject`.
 
 This is implemented in the [`/src/websocket/websocket.ts`](/src/websocket/websocket.ts) directory.
+
+<a name="Docker"></a>
+## 🐋 Docker
+
+The project is containerized using Docker and Docker Compose. In particular, the `docker.api` file contains the instructions for containerizing the API server, while the `docker.websocket` file outlines the process of containerizing the WebSocket server. Additionally, the `docker-compose.yml` file contains also instructions for creating containers dedicated to the Postgres and Redis databases. These containers are based on public images sourced from Docker Hub.
+
+### The following commands are to be used to start the four containers:
+- Build API container with image tag **api_img**: `docker build -t api_img -f .\Dockerfile.api .`
+- Build Websocket containerwith image tag **websocket_img**: `docker build -t websocket_img -f .\Dockerfile.websocket .`
+- `docker-compose up -d`
+
+In the `compose up` **-d option**, or "detached" mode, enables the creation and initiation of containers that run in the background, thus freeing up the terminal for other tasks.
 
 <a name="Technologiesused"></a>
 ## ⚙️ Technologies used
