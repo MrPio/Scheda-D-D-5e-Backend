@@ -32,14 +32,14 @@
   * [Entity](#EntityRoutes)
   * [History](#HistoryRoutes)
 * [⏱ Sequence diagram](#Sequencediagram)
-  * [Create Session](#CreatSession)
+  * [Create Session](#CreateSession)
   * [Start Session](#StartSession)
   * [Enable Reaction](#EnableReaction)
   * [Connect To Session](#ConnectToSession)
 * [📐 Class diagram](#Classdiagram)
 * [🪄 Patterns used](#Patternsused)
   * [Middlewares: Chain of Responsability](#ChainofResponsability)
-  * [Higher Order Functions](#hof)
+  * [Higher Order Functions](#Hof)
   * [Exceptions handling: Factory Method](#Factory)
   * [Data sources handling: Repository](#RepFacSingleton)
   * [Websocket communication: Observer](#Observer)
@@ -94,7 +94,7 @@ The player roles can be mapped as follows. Note that although the client must be
 
 <img src="png/Actors.png" width="450rem">
 
-<a name="Actors"></a>
+<a name="Sessionmanagement"></a>
 ### Session management
 <img src="png/Session Management.png" width="550rem">
 
@@ -222,7 +222,7 @@ To generalize the middleware, higher order functions were used.
 
 For example, _body parameter type validation_ has been separated from the per-route middleware and delegated to the standalone `checkMandadoryParams` middleware.
 
-```[typescript]
+```typescript
 app.get('/diceRoll',
   checkMandadoryParams(['diceList']),
   checkParamsType({ diceList: ARRAY(ENUM(Dice)), modifier: INTEGER }),
@@ -233,7 +233,7 @@ app.get('/diceRoll',
 
 The type checker functions may be themselves higher order functions. For example, `ARRAY` takes a type checker function as input and returns a type checker function that checks that the object provided is an array and then applies the latter to all the elements of the array.
 
-```[typescript]
+```typescript
 export const ARRAY =
   (next: (arg0: object) => boolean) =>
     (obj: object) =>
