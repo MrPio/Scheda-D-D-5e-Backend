@@ -20,7 +20,7 @@ const sequelize = new Sequelize({
   username: process.env.PG_USERNAME,
   password: process.env.PG_PASSWORD,
   port: +(process.env.PG_PORT ?? 5432),
-  host: 'localhost',
+  host: process.env.PG_CONTAINER_NAME ?? 'localhost',
   logging: false,
 });
 sequelize.addModels([Session, EntityTurn, Monster, MonsterSkill, HistoryMessage]);

@@ -9,3 +9,4 @@ src/websocket_keys/server.key
 .env
 .dev.env
 redis-data/
+postgres-data/

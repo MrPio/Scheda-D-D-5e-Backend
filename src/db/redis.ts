@@ -2,7 +2,7 @@ import { Redis } from 'ioredis';
 
 // Initialize Redis connection if environment variable USE_REDIS is set to 'true'
 export const redis = ((process.env.USE_REDIS ?? 'true') == 'true') ? new Redis({
-  host: process.env.REDIS_HOST ?? 'localhost',
+  host: process.env.REDIS_CONTAINER_NAME ?? 'localhost',
   password: process.env.REDIS_PASSWORD ?? 'toor',
   port: +(process.env.REDIS_PORT ?? 6379),
 }) : undefined;
