@@ -281,10 +281,10 @@ The project is containerized using Docker and Docker Compose. In particular, the
 
 ### The following commands are used to start the four containers:
 - Build API container with image tag **api_img**: `docker build -t api_img -f .\Dockerfile.api .`
-- Build Websocket containerwith image tag **websocket_img**: `docker build -t websocket_img -f .\Dockerfile.websocket .`
+- Build Websocket container with image tag **websocket_img**: `docker build -t websocket_img -f .\Dockerfile.websocket .`
 - Start all four containers: `docker-compose up -d`
 
-In _compose up_ **-d option**, or _detached mode_, enables the creation and initiation of containers that run in the background, thus freeing up the terminal for other tasks.
+In _compose up_ **-d option**, or _detached mode_, enables the creation and initiation of containers that run in the background, freeing up the terminal for other tasks.
 
 ### How to refresh containers with latest changes:
 
