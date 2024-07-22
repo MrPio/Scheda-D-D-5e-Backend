@@ -73,7 +73,7 @@ export const checkAttackAttempt = async (req: IAugmentedRequest, res: Response, 
         return error400Factory.invalidNumber('slotLevel', 'an integer from 1 to 9, inclusive').setStatus(res);
 
       // Check that the chosen slot level is a valid one for the current enchantment
-      if (body.attackInfo.slotLevel! < enchantment.level)
+      if (body.attackInfo.slotLevel! >= enchantment.level)
         return error400Factory.genericError(`You can't cast a level ${enchantment.level} enchantment with a slot of level ${body.attackInfo.slotLevel!}!`).setStatus(res);
 
       // Check that the character has at least one free slot
