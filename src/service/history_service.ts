@@ -1,9 +1,9 @@
-
 import { Response as Res } from 'express';
 import { RepositoryFactory } from '../repository/repository_factory';
 import { ActionType, HistoryMessage } from '../model/history_message';
 import { StatusCodes } from 'http-status-codes';
 import { IAugmentedRequest } from '../interface/augmented_request';
+import { httpPost } from './utility/axios_requests';
 
 const historyRepository = new RepositoryFactory().historyRepository();
 
@@ -23,14 +23,14 @@ export async function getHistoryService(req: IAugmentedRequest, res: Res) {
  * The new message, along with its actionType, is then created and saved to the history.
  */
 export async function updateHistoryService(req: IAugmentedRequest, res: Res) {
-  const body: { msg, actionType } = req.body;
+  const body: { msg: string, actionType: ActionType } = req.body;
 
   // Create and save the new history message
   await historyRepository.create({
-    msg,
-    actionType,
-    sessionId: session?.id,
+    msg: body.msg,
+    actionType: body.actionType,
+    sessionId: req.session?.id,
   } as HistoryMessage);
-
+  httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: body.actionType, message: body.msg });
   return res.status(StatusCodes.CREATED).json({ message: 'Message created successfully!' });
 }
