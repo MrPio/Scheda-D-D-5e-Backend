@@ -3,20 +3,20 @@
  * Each effect represents a specific condition or debuff applied to a character.
  */
 export enum Effect {
-  blinded = 'cieco',
-  charmed = 'affascinato',
-  deafened = 'assordato',
-  frightened = 'spaventato',
-  grappled = 'afferrato',
-  incapacitated = 'incapacitato',
-  invisible = 'invisibile',
-  paralyzed = 'paralizzato',
-  petrified = 'pietrificato',
-  poisoned = 'avvelenato',
-  prone = 'prono',
-  restrained = 'trattenuto',
-  stunned = 'stordito',
-  unconscious = 'privoDiSensi',
+  blinded = 'blinded',
+  charmed = 'charmed',
+  deafened = 'deafened',
+  frightened = 'frightened',
+  grappled = 'grappled',
+  incapacitated = 'incapacitated',
+  invisible = 'invisible',
+  paralyzed = 'paralyzed',
+  petrified = 'petrified',
+  poisoned = 'poisoned',
+  prone = 'prone',
+  restrained = 'restrained',
+  stunned = 'stunned',
+  unconscious = 'unconscious',
 }
 
 /**
