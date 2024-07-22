@@ -12,23 +12,6 @@ export enum EnchantmentCategory {
 }
 
 /**
- * Enum representing the levels of enchantments.
- * Levels range from 0 to 9, indicating the power or complexity of the enchantment.
- */
-export enum Level {
-  level0 = 0,
-  level1 = 1,
-  level2 = 2,
-  level3 = 3,
-  level4 = 4,
-  level5 = 5,
-  level6 = 6,
-  level7 = 7,
-  level8 = 8,
-  level9 = 9,
-}
-
-/**
  * Enum representing different types of ranges for enchantments.
  * Each type describes how the enchantment's range is measured or applied.
  */
@@ -76,7 +59,7 @@ export default class Enchantment extends JSONSerializable {
    */
   constructor(
     public name: string,
-    public level: Level,
+    public level: number,
     public range: number,
     public rangeType: RangeType,
     public isCharmer: boolean,
@@ -92,7 +75,7 @@ export default class Enchantment extends JSONSerializable {
   static fromJSON(json: DocumentData): Enchantment {
     return new Enchantment(
       json.name,
-      json.level as Level,
+      Number.parseInt(json.level.toString().split('level')[1]),
       rangeConversion[json.range] ?? 0,
       json.rangeType as RangeType,
       json.isCharmer,
