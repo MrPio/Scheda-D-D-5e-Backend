@@ -286,6 +286,13 @@ The project is containerized using Docker and Docker Compose. In particular, the
 
 In _compose up_ **-d option**, or _detached mode_, enables the creation and initiation of containers that run in the background, thus freeing up the terminal for other tasks.
 
+These commands, executed sequentially, copy the contents of the src directory to the _/usr/src/app/_ directory of both the API and Websocket containers, and then restart the two containers to apply any changes to the copied files.
+- `docker cp .\src\ api:/usr/src/app/;` 
+- `docker cp .\src\ websocket:/usr/src/app/;`
+- `docker-compose restart api;`
+- `docker-compose restart websocket`
+
+
 <a name="Technologiesused"></a>
 ## ⚙️ Technologies used
 
