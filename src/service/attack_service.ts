@@ -130,7 +130,7 @@ export async function makeAttackService(req: IAugmentedRequest, res: Response) {
             target[1]._hp -= diceRoll;
             await updateEntity(req.session!, getEntityId(target[1]), { _hp: target[1]._hp });
             if (target[1]._hp <= 0) {
-              await entityTurnRepository.delete(req.session?.entityTurns.find(it => it.entityUID === targetEntityId)?.id);
+              await entityTurnRepository.delete(req.session?.entityTurns.find(it => it.entityUID === getEntityId(target[1]))?.id);
               httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.died, message: `${target[1]._name} has died!` });
             }
           }
