@@ -69,11 +69,11 @@ export async function makeAttackService(req: IAugmentedRequest, res: Response) {
       httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.attackAttempt, message: `${req.entity?._name} hasn\'t hit any of their targets!` });
       return res.status(200).json({ message: 'You haven\'t hit any of the entities!' });
     }
-    httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.attackAttempt, message: `${req.entity?._name} has attacked ${Object.values(hitTargets).map(it => it._name).reduce((acc, name) => `${acc}, ${name}`)}!` });
 
     // Ask the attacker to roll the damage dice.
     try {
       const results = (await httpPost(`/sessions/${req.sessionId!}/requestDiceRoll`, { addresseeUIDs: [req.entity!.authorUID!] })) as { data: { [key: string]: { diceRoll: number } } };
+      httpPost(`/sessions/${req.sessionId!}/broadcast`, { actionType: ActionType.attackAttempt, message: `${req.entity?._name} has attacked ${Object.values(hitTargets).map(it => it._name).reduce((acc, name) => `${acc}, ${name}`)}!` });
       const diceRoll = results.data[req.entity!.authorUID!].diceRoll;
       for (const target of Object.entries(hitTargets)) {
         target[1]._hp -= diceRoll;

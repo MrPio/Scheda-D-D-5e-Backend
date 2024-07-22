@@ -87,13 +87,13 @@ export async function getEntityInfoService(req: IAugmentedRequest, res: Res) {
 // Updates information about an entity within a session.
 export async function updateEntityInfoService(req: IAugmentedRequest, res: Res) {
   updateEntity(req.session!, req.entityId!, {
-    _hp: req.body.entityInfo.hp ?? req.entity?._hp,
-    armorClass: req.body.entityInfo.armorClass ?? req.entity?.armorClass,
-    speed: req.body.entityInfo.speed ?? req.entity?.speed,
-    effects: req.body.entityInfo.effects ?? req.entity?.effects,
+    _hp: req.body.hp ?? req.entity?._hp,
+    armorClass: req.body.armorClass ?? req.entity?.armorClass,
+    speed: req.body.speed ?? req.entity?.speed,
+    effects: req.body.effects ?? req.entity?.effects,
   });
   const entity = await findEntity(req.session!, req.entityId!);
-  if (req.body.entityInfo.slots && entity?.entityType == EntityType.character)
-    characterRepository.update(req.entityId!, { slots: req.body.entityInfo.slots });
+  if (req.body.slots && entity?.entityType == EntityType.character)
+    characterRepository.update(req.entityId!, { slots: req.body.slots });
   res.json({ messag: `${req.entity!._name} updated successfully!` });
 }
