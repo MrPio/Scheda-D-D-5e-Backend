@@ -5,11 +5,12 @@ import { IAugmentedRequest } from '../interface/augmented_request';
 
 const entityTurnRepository = new RepositoryFactory().entityTurnRepository();
 
-// Retrieves the current entity turn.
+// Retrieves the current entity turn
 export async function getTurnService(req: IAugmentedRequest, res: Response) {
   return res.status(200).json(req.session?.sortedTurns[0]);
 }
 
+// Postpone the turn of an entity after another
 export async function postponeTurnService(req: IAugmentedRequest, res: Response) {
   const { predecessorEntityId } = req.body;
 
@@ -26,6 +27,7 @@ export async function postponeTurnService(req: IAugmentedRequest, res: Response)
   return res.status(200).json({ message: `Turn of entity ${req.entity?._name} postponed after entity ${(await findEntity(req.session!, predecessorEntityId))?.entity._name}` });
 }
 
+// End the turn of an entity
 export async function endTurnService(req: IAugmentedRequest, res: Response) {
 
   // Set the reaction of the new playing entity to activatable
