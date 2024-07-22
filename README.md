@@ -39,10 +39,10 @@
 * [📐 Class diagram](#Classdiagram)
 * [🪄 Patterns used](#Patternsused)
   * [Middlewares: Chain of Responsability](#ChainofResponsability)
+  * [Higher Order Functions](#hof)
   * [Exceptions handling: Factory Method](#Factory)
-  * [Data sources handling: Repository + Factory + Singleton](#RepFacSingleton)
+  * [Data sources handling: Repository](#RepFacSingleton)
   * [Websocket communication: Observer](#Observer)
-  * [HOF](#hof) (nel type checking e nei generatori di middleware)
 * [⚙️ Technologies used](#Technologiesused)
 * [👨🏻‍💻 Authors](#Authors)
 
