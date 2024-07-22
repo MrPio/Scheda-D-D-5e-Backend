@@ -18,7 +18,7 @@ import { IAugmentedRequest } from './interface/augmented_request';
 import { ARRAY, checkMandadoryParams, checkParamsType, ENUM, NUMBER, OBJECT, STRING, BOOLEAN, OBJECT_ARRAY, NULLABLE, INTEGER, POS_INTEGER } from './middleware/parameters_middleware';
 import { checkEntitiesExistsInSession, checkEntityExistsInSession, checkNewSession, checkSessionExists, checkSessionStatus } from './middleware/session_middleware';
 import { checkEndTurn, checkPostponeTurn } from './middleware/turn_middleware';
-import { checkAttackAttempt, checkRequestSavingThrow, checkEnableReaction } from './middleware/attack_middleware';
+import { checkAttackAttempt, checkRequestSavingThrow, checkEnableReaction, checkAddEffect } from './middleware/attack_middleware';
 import { checkAddEntity } from './middleware/entity_middleware';
 import { Dice } from './model/dice';
 import { SessionStatus } from './model/session';
@@ -176,6 +176,7 @@ app.patch('/sessions/:sessionId/effect',
   checkParamsType({ entitiesId: ARRAY(STRING), effect: NULLABLE(ENUM(Effect)) }),
   checkSessionExists,
   checkSessionStatus([SessionStatus.ongoing]),
+  checkAddEffect,
   (req: IAugmentedRequest, res: Response) => addEffect(req, res));
 
 app.patch('/sessions/:sessionId/reaction',

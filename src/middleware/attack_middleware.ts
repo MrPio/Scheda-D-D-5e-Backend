@@ -8,6 +8,9 @@ import { IAugmentedRequest } from '../interface/augmented_request';
 import { AttackType } from '../model/attack_type';
 import Character from '../model/character';
 import { EntityType } from '../model/entity';
+import { Effect } from '../model/effect';
+import { findEntity } from '../service/utility/model_queries';
+import { Monster } from '../model/monster';
 
 const error400Factory = new Error400Factory();
 
@@ -111,6 +114,17 @@ export const checkRequestSavingThrow = async (req: IAugmentedRequest, res: Respo
   for (const targetId of body.entitiesId)
     if (!entityUIDsInTurn.includes(targetId))
       return error400Factory.entityNotFoundInSession(targetId, req.session!.name).setStatus(res);
+  next();
+};
+
+// Check if the effect can be assigned to an entity
+export const checkAddEffect = async (req: IAugmentedRequest, res: Response, next: NextFunction) => {
+  const body: { entitiesId: string[], effect?: Effect } = req.body;
+  for (const entityId of body.entitiesId) {
+    const entity = await findEntity(req.session!, entityId);
+    if (body.effect && entity!.entityType === EntityType.monster && (entity!.entity as Monster).effectImmunities?.includes(body.effect))
+      return error400Factory.genericError(`Monster ${entity?.entity._name} is immune to effect ${body.effect}!`).setStatus(res);
+  }
   next();
 };
 
