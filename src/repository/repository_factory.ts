@@ -23,25 +23,25 @@ export class RepositoryFactory {
    * Creates a repository for `Session` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `Session`.
    */
-  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, [Monster, HistoryMessage, EntityTurn], 5);
+  sessionRepository = (): Repository<Session> => new SequelizeRepository(Session, [Monster, HistoryMessage, EntityTurn], 1);
 
   /**
    * Creates a repository for `Monster` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `Monster`.
    */
-  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, [MonsterSkill, Session], 15);
+  monsterRepository = (): Repository<Monster> => new SequelizeRepository(Monster, [MonsterSkill, Session], 5);
 
   /**
    * Creates a repository for `EntityTurn` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `EntityTurn`.
    */
-  entityTurnRepository = (): Repository<EntityTurn> => new SequelizeRepository(EntityTurn, [Session], 60);
+  entityTurnRepository = (): Repository<EntityTurn> => new SequelizeRepository(EntityTurn, [Session], 10);
 
   /**
    * Creates a repository for `MonsterSkill` entities with Sequelize.
    * @returns A `SequelizeRepository` instance for `MonsterSkill`.
    */
-  monsterSkillRepository = (): Repository<MonsterSkill> => new SequelizeRepository(MonsterSkill, [Monster], 20);
+  monsterSkillRepository = (): Repository<MonsterSkill> => new SequelizeRepository(MonsterSkill, [Monster], 3);
 
   /**
    * Creates a repository for `HistoryMessage` entities with Sequelize.

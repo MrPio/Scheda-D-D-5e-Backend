@@ -12,6 +12,8 @@ dotenv.config();
 
 // Flag to check if the database has been synced
 let synced: boolean = false;
+if (process.env.IM_CONTAINER == 'true')
+  console.warn('I\m running inside a container!')
 
 // Initialize Sequelize instance for PostgreSQL database
 const sequelize = new Sequelize({
@@ -20,7 +22,7 @@ const sequelize = new Sequelize({
   username: process.env.PG_USERNAME,
   password: process.env.PG_PASSWORD,
   port: +(process.env.PG_PORT ?? 5432),
-  host: process.env.PG_CONTAINER_NAME ?? 'localhost',
+  host: process.env.IM_CONTAINER == 'true' ? process.env.PG_CONTAINER_NAME : 'localhost',
   logging: false,
 });
 sequelize.addModels([Session, EntityTurn, Monster, MonsterSkill, HistoryMessage]);
