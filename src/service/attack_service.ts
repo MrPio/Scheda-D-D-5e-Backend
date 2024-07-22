@@ -199,7 +199,8 @@ export async function addEffectService(req: IAugmentedRequest, res: Response) {
   const body: { entitiesId: string[], effect: Effect | null } = req.body;
   for (const entityId of body.entitiesId) {
     const entity = await findEntity(req.session!, entityId);
-    updateEntity(req.session!, entityId, { effects: body.effect ? (entity!.entity.effects ?? []).concat([body.effect]) : [] });
+    if (!entity!.entity.effects || !entity!.entity.effects.includes(body.effect!))
+      updateEntity(req.session!, entityId, { effects: body.effect ? (entity!.entity.effects ?? []).concat([body.effect]) : [] });
   }
   return res.status(200).json({ message: body.effect ? `Effect ${body.effect} successfully added!` : 'Effects successfully removed!' });
 }

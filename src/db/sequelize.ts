@@ -13,7 +13,7 @@ dotenv.config();
 // Flag to check if the database has been synced
 let synced: boolean = false;
 if (process.env.IM_CONTAINER == 'true')
-  console.warn('I\m running inside a container!')
+  console.warn('I\m running inside a container!');
 
 // Initialize Sequelize instance for PostgreSQL database
 const sequelize = new Sequelize({
