@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { generateJWT } from '../jwt_service';
 
 const apiBaseUrl = `http://${process.env.WEBSOCKET_CONTAINER_NAME}:${process.env.WEBSOCKET_API_PORT ?? 3000}`;
 
@@ -9,4 +10,8 @@ const apiBaseUrl = `http://${process.env.WEBSOCKET_CONTAINER_NAME}:${process.env
  * @returns The HTTP response of any occurred error.
  */
 export const httpPost = async (route: string, body: object): Promise<object> =>
-  axios.post(apiBaseUrl + route, body);
+  axios.post(apiBaseUrl + route, body, {
+    headers: {
+      'Authorization': `Bearer ${generateJWT()}`,
+    },
+  });

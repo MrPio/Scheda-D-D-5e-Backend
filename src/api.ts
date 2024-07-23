@@ -48,7 +48,7 @@ app.get('/token', async (req: IAugmentedRequest, res: Response) => {
     email: process.env.FIREBASE_AUTH_TEST_EMAIL ?? '',
     password: process.env.FIREBASE_AUTH_TEST_PASSWORD ?? '',
   });
-  res.send(`Your JWT is ${token}`);
+  res.json({ token: token });
 });
 
 
