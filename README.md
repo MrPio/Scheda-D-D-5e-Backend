@@ -1,4 +1,4 @@
-[SchedaDnD5eBackend.postman_collection.json](https://github.com/user-attachments/files/16337126/SchedaDnD5eBackend.postman_collection.json)# Scheda DnD 5e Backend
+# Scheda DnD 5e Backend
 
 ######
 [![Postgres](https://img.shields.io/badge/Made%20with-postgres-%23316192.svg?style=plastic&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
