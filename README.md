@@ -310,6 +310,7 @@ As different objects are stored in different places, the repository pattern come
 Thanks to the repository pattern, client code can ignore not only which database the object is stored in, but also the caching policy, which is handled entirely by the repository itself.
 
 This is implemented in the [`/src/repository`](/src/repository/) directory.
+
 ---
 
 <a name="Observer"></a>
